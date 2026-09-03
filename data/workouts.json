@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "id": "log_1788447784400_c24mv",
+    "timestamp": 1788447784399,
+    "dateStr": "2026-09-03",
+    "timeFormatted": "8:33 PM",
+    "category": "barbell",
+    "name": "Barbell Overhead Press",
+    "liftName": "Overhead Press",
+    "reps": 10,
+    "weightKg": 30
+  },
+  {
+    "id": "log_1788448722635_c6iu9",
+    "timestamp": 1788448722635,
+    "dateStr": "2026-09-03",
+    "timeFormatted": "8:48 PM",
+    "category": "pullup",
+    "name": "Half Pull-ups",
+    "reps": 4,
+    "weightKg": 0
+  }
+]

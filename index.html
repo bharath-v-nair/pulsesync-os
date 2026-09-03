@@ -27,7 +27,7 @@
 </head>
 <body class="bg-[#080a0f] text-slate-100 antialiased min-h-screen pb-24">
 
-  <!-- Main Responsive Container -->
+  <!-- Main Container -->
   <div class="max-w-md mx-auto px-4 pt-3 sm:max-w-xl md:max-w-2xl">
 
     <!-- Top App Header -->
@@ -64,7 +64,7 @@
       </button>
     </header>
 
-    <!-- Historical Date Navigator (Previous Day, Selected Date, Next Day) -->
+    <!-- Historical Date Navigator -->
     <div class="matte-card p-2 mb-4 flex items-center justify-between">
       <button id="btnPrevDay" class="spring-btn p-2 rounded-lg text-slate-400 hover:text-white flex items-center justify-center tap-target" title="Previous Day">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -85,260 +85,368 @@
       </button>
     </div>
 
-    <!-- Domain Navigation (Move, Focus, Habits) -->
+    <!-- Domain Navigation (Move vs Focus vs Habits) -->
     <nav class="flex items-center p-1 bg-[#101520] rounded-xl border border-white/[0.06] mb-4 text-xs font-semibold">
-      <button class="spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm">
+      <button id="btnNavMove" class="spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm transition">
         Move
       </button>
-      <button id="tabFocus" class="spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
-        Focus
+      <button id="btnNavFocus" class="spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
+        Focus (P2)
       </button>
-      <button id="tabHabits" class="spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
+      <button id="btnNavHabits" class="spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
         Habits
       </button>
     </nav>
 
-    <!-- Sub-View Switcher within MOVE: Today vs Progress (7D) -->
-    <div class="flex items-center gap-2 mb-4">
-      <button id="subViewToday" class="spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15">
-        Today's Movement
-      </button>
-      <button id="subViewProgress" class="spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white">
-        Progress & Adherence
-      </button>
-    </div>
+    <!-- ================================================================= -->
+    <!-- DOMAIN 1: MOVE ENGINE (PHYSICAL TRAINING)                         -->
+    <!-- ================================================================= -->
+    <div id="viewMove" class="space-y-4">
 
-    <!-- ========================================== -->
-    <!-- VIEW 1: TODAY'S MOVEMENT (DEFAULT)         -->
-    <!-- ========================================== -->
-    <div id="sectionTodayView" class="space-y-5">
+      <!-- Sub-View Switcher within MOVE: Today vs Progress (7D) -->
+      <div class="flex items-center gap-2 mb-2">
+        <button id="subViewToday" class="spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15">
+          Today's Movement
+        </button>
+        <button id="subViewProgress" class="spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white">
+          Progress & Adherence
+        </button>
+      </div>
 
-      <!-- The 4 Separate Truths (No Fake Average Score!) -->
-      <section class="matte-card p-3.5 space-y-3.5">
-        <div class="flex items-center justify-between">
-          <span class="eyebrow text-slate-300">Movement Targets</span>
-          <span class="text-[10px] text-slate-500 font-mono" id="dateContextSubtitle">Selected Day</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 pt-1">
-          <!-- 1. Pull-ups -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-[11px]">
-              <span class="text-slate-400 font-medium">Half Pull-ups</span>
-              <span class="text-white font-bold tabular-nums font-mono"><span id="metricPullups">0</span> / 20</span>
-            </div>
-            <div class="progress-track">
-              <div id="barPullup" class="progress-fill bg-sky-400" style="width: 0%"></div>
-            </div>
-          </div>
-
-          <!-- 2. Push-ups -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-[11px]">
-              <span class="text-slate-400 font-medium">Push-ups</span>
-              <span class="text-white font-bold tabular-nums font-mono"><span id="metricPushups">0</span> / 50</span>
-            </div>
-            <div class="progress-track">
-              <div id="barPushup" class="progress-fill bg-emerald-400" style="width: 0%"></div>
-            </div>
-          </div>
-
-          <!-- 3. Barbell (Tap to expand drill-down) -->
-          <div class="space-y-1.5 cursor-pointer group" id="btnToggleBarbellDrawer">
-            <div class="flex justify-between text-[11px]">
-              <span class="text-slate-300 font-medium flex items-center gap-1 group-hover:text-amber-400 transition">
-                Barbell Vol
-                <svg id="arrowBarbellDrawer" class="w-3 h-3 text-slate-400 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </span>
-              <span class="text-white font-bold tabular-nums font-mono"><span id="metricTonnage">0</span> / 900kg</span>
-            </div>
-            <div class="progress-track">
-              <div id="barTonnage" class="progress-fill bg-amber-400" style="width: 0%"></div>
-            </div>
-          </div>
-
-          <!-- 4. Cardio Steps -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-[11px]">
-              <span class="text-slate-400 font-medium">Cardio Steps</span>
-              <span class="text-white font-bold tabular-nums font-mono"><span id="metricSteps">0</span> / 8k</span>
-            </div>
-            <div class="progress-track">
-              <div id="barSteps" class="progress-fill bg-purple-400" style="width: 0%"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Expandable Barbell Drill-Down Drawer -->
-        <div id="barbellBreakdownDrawer" class="expandable-drawer max-h-0 pt-0 opacity-0 border-t border-white/[0.06] transition-all">
-          <div class="pt-3 space-y-2">
-            <div class="flex items-center justify-between text-[10px] uppercase tracking-wider font-bold text-slate-400 font-mono">
-              <span>Exercise Breakdown</span>
-              <span>Reps (Sets)</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs" id="barbellExerciseGrid">
-              <!-- Dynamically populated per exercise -->
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Logging Controls (Preserving Sub-2s Micro-logging) -->
-      <section class="space-y-2.5">
-        <div class="flex items-center justify-between px-1">
-          <span class="eyebrow">Micro-Log Entry</span>
-          <span class="text-[10px] text-slate-500 font-mono">Instant Write</span>
-        </div>
-
-        <!-- Half Pull-ups Stepper Card -->
-        <div class="matte-card p-3 flex items-center justify-between gap-3">
-          <div>
-            <h3 class="text-xs font-bold text-white tracking-wide">Half Pull-ups</h3>
-            <p class="text-[11px] text-slate-400 font-mono mt-0.5">Grease the Groove</p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button id="btnPullupDec" class="stepper-btn spring-btn tap-target">−</button>
-            <span id="valPullup" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">4</span>
-            <button id="btnPullupInc" class="stepper-btn spring-btn tap-target">+</button>
-            <button id="btnPullupLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">
-              LOG
-            </button>
-          </div>
-        </div>
-
-        <!-- Push-ups Stepper Card -->
-        <div class="matte-card p-3 flex items-center justify-between gap-3">
-          <div>
-            <h3 class="text-xs font-bold text-white tracking-wide">Push-ups</h3>
-            <p class="text-[11px] text-slate-400 font-mono mt-0.5">Micro-Sets</p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button id="btnPushupDec" class="stepper-btn spring-btn tap-target">−</button>
-            <span id="valPushup" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">10</span>
-            <button id="btnPushupInc" class="stepper-btn spring-btn tap-target">+</button>
-            <button id="btnPushupLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">
-              LOG
-            </button>
-          </div>
-        </div>
-
-        <!-- Fixed 30kg Barbell Module -->
-        <div class="matte-card p-3.5 space-y-3">
+      <!-- VIEW 1: TODAY'S MOVEMENT -->
+      <div id="sectionTodayView" class="space-y-5">
+        <!-- The 4 Separate Truths Targets -->
+        <section class="matte-card p-3.5 space-y-3.5">
           <div class="flex items-center justify-between">
-            <h3 class="text-xs font-bold text-white tracking-wide">Fixed 30 kg Barbell</h3>
-            <span class="text-[10px] text-slate-400 font-mono">30 kg Bar</span>
+            <span class="eyebrow text-slate-300">Movement Targets</span>
+            <span class="text-[10px] text-slate-500 font-mono" id="dateContextSubtitle">Selected Day</span>
           </div>
 
-          <!-- Swipeable Exercise Selector -->
-          <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="barbellPills">
-            <button data-lift="Squats" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-950 shadow-sm whitespace-nowrap">Squats</button>
-            <button data-lift="Overhead Press" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Overhead Press</button>
-            <button data-lift="Bicep Curls" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Bicep Curls</button>
-            <button data-lift="Bent Rows" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Bent Rows</button>
-            <button data-lift="RDLs" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">RDLs</button>
-            <button data-lift="Deadlifts" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Deadlifts</button>
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-[11px]">
+                <span class="text-slate-400 font-medium">Half Pull-ups</span>
+                <span class="text-white font-bold tabular-nums font-mono"><span id="metricPullups">0</span> / 20</span>
+              </div>
+              <div class="progress-track">
+                <div id="barPullup" class="progress-fill bg-sky-400" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-[11px]">
+                <span class="text-slate-400 font-medium">Push-ups</span>
+                <span class="text-white font-bold tabular-nums font-mono"><span id="metricPushups">0</span> / 50</span>
+              </div>
+              <div class="progress-track">
+                <div id="barPushup" class="progress-fill bg-emerald-400" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 cursor-pointer group" id="btnToggleBarbellDrawer">
+              <div class="flex justify-between text-[11px]">
+                <span class="text-slate-300 font-medium flex items-center gap-1 group-hover:text-amber-400 transition">
+                  Barbell Vol
+                  <svg id="arrowBarbellDrawer" class="w-3 h-3 text-slate-400 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+                <span class="text-white font-bold tabular-nums font-mono"><span id="metricTonnage">0</span> / 900kg</span>
+              </div>
+              <div class="progress-track">
+                <div id="barTonnage" class="progress-fill bg-amber-400" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-[11px]">
+                <span class="text-slate-400 font-medium">Cardio Steps</span>
+                <span class="text-white font-bold tabular-nums font-mono"><span id="metricSteps">0</span> / 8k</span>
+              </div>
+              <div class="progress-track">
+                <div id="barSteps" class="progress-fill bg-purple-400" style="width: 0%"></div>
+              </div>
+            </div>
           </div>
 
-          <!-- Barbell Stepper -->
-          <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
-            <span class="text-xs text-slate-200 font-bold" id="selectedLiftName">Squats:</span>
+          <!-- Expandable Barbell Drill-Down Drawer -->
+          <div id="barbellBreakdownDrawer" class="expandable-drawer max-h-0 pt-0 opacity-0 border-t border-white/[0.06] transition-all">
+            <div class="pt-3 space-y-2">
+              <div class="flex items-center justify-between text-[10px] uppercase tracking-wider font-bold text-slate-400 font-mono">
+                <span>Exercise Breakdown</span>
+                <span>Reps (Sets)</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs" id="barbellExerciseGrid"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Logging Controls -->
+        <section class="space-y-2.5">
+          <div class="flex items-center justify-between px-1">
+            <span class="eyebrow">Micro-Log Entry</span>
+            <span class="text-[10px] text-slate-500 font-mono">Instant Write</span>
+          </div>
+
+          <!-- Pull-up Card -->
+          <div class="matte-card p-3 flex items-center justify-between gap-3">
+            <div>
+              <h3 class="text-xs font-bold text-white tracking-wide">Half Pull-ups</h3>
+              <p class="text-[11px] text-slate-400 font-mono mt-0.5">Grease the Groove</p>
+            </div>
             <div class="flex items-center gap-2">
-              <button id="btnBarbellDec" class="stepper-btn spring-btn tap-target">−</button>
-              <span id="valBarbell" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">10</span>
-              <button id="btnBarbellInc" class="stepper-btn spring-btn tap-target">+</button>
-              <button id="btnBarbellLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">
-                LOG (300kg)
-              </button>
+              <button id="btnPullupDec" class="stepper-btn spring-btn tap-target">−</button>
+              <span id="valPullup" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">4</span>
+              <button id="btnPullupInc" class="stepper-btn spring-btn tap-target">+</button>
+              <button id="btnPullupLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">LOG</button>
             </div>
           </div>
-        </div>
 
-        <!-- Cardio: Steps & Home Elliptical -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <!-- Steps Stepper Card -->
+          <!-- Push-up Card -->
           <div class="matte-card p-3 flex items-center justify-between gap-3">
             <div>
-              <h3 class="text-xs font-bold text-white tracking-wide">Outdoor Walk</h3>
-              <p class="text-[11px] text-slate-400 font-mono mt-0.5">Steps</p>
+              <h3 class="text-xs font-bold text-white tracking-wide">Push-ups</h3>
+              <p class="text-[11px] text-slate-400 font-mono mt-0.5">Micro-Sets</p>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button id="btnStepDec" class="stepper-btn spring-btn tap-target">−</button>
-              <span id="valSteps" class="w-12 text-center text-sm font-extrabold text-white tabular-nums font-mono">2500</span>
-              <button id="btnStepInc" class="stepper-btn spring-btn tap-target">+</button>
-              <button id="btnStepLog" class="btn-action-primary spring-btn tap-target px-3 py-2 text-xs font-bold ml-1">LOG</button>
+            <div class="flex items-center gap-2">
+              <button id="btnPushupDec" class="stepper-btn spring-btn tap-target">−</button>
+              <span id="valPushup" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">10</span>
+              <button id="btnPushupInc" class="stepper-btn spring-btn tap-target">+</button>
+              <button id="btnPushupLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">LOG</button>
             </div>
           </div>
 
-          <!-- Elliptical Stepper Card -->
-          <div class="matte-card p-3 flex items-center justify-between gap-3">
-            <div>
-              <h3 class="text-xs font-bold text-white tracking-wide">Elliptical</h3>
-              <p class="text-[11px] text-slate-400 font-mono mt-0.5">Home Machine</p>
+          <!-- Barbell Module -->
+          <div class="matte-card p-3.5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold text-white tracking-wide">Fixed 30 kg Barbell</h3>
+              <span class="text-[10px] text-slate-400 font-mono">30 kg Bar</span>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button id="btnEllipticalDec" class="stepper-btn spring-btn tap-target">−</button>
-              <span id="valElliptical" class="w-12 text-center text-sm font-extrabold text-white tabular-nums font-mono">15m</span>
-              <button id="btnEllipticalInc" class="stepper-btn spring-btn tap-target">+</button>
-              <button id="btnEllipticalLog" class="btn-action-primary spring-btn tap-target px-3 py-2 text-xs font-bold ml-1">LOG</button>
+            <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="barbellPills">
+              <button data-lift="Squats" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-950 shadow-sm whitespace-nowrap">Squats</button>
+              <button data-lift="Overhead Press" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Overhead Press</button>
+              <button data-lift="Bicep Curls" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Bicep Curls</button>
+              <button data-lift="Bent Rows" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Bent Rows</button>
+              <button data-lift="RDLs" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">RDLs</button>
+              <button data-lift="Deadlifts" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Deadlifts</button>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
+              <span class="text-xs text-slate-200 font-bold" id="selectedLiftName">Squats:</span>
+              <div class="flex items-center gap-2">
+                <button id="btnBarbellDec" class="stepper-btn spring-btn tap-target">−</button>
+                <span id="valBarbell" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">10</span>
+                <button id="btnBarbellInc" class="stepper-btn spring-btn tap-target">+</button>
+                <button id="btnBarbellLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">LOG (300kg)</button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- Activity Timeline for Selected Day -->
-      <section class="space-y-2">
-        <div class="flex items-center justify-between px-1">
-          <span class="eyebrow">Activity Timeline</span>
-          <span class="text-[11px] text-slate-400 font-mono" id="logCount">0 sets</span>
-        </div>
+          <!-- Cardio Steppers -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div class="matte-card p-3 flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-xs font-bold text-white tracking-wide">Outdoor Walk</h3>
+                <p class="text-[11px] text-slate-400 font-mono mt-0.5">Steps</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button id="btnStepDec" class="stepper-btn spring-btn tap-target">−</button>
+                <span id="valSteps" class="w-12 text-center text-sm font-extrabold text-white tabular-nums font-mono">2500</span>
+                <button id="btnStepInc" class="stepper-btn spring-btn tap-target">+</button>
+                <button id="btnStepLog" class="btn-action-primary spring-btn tap-target px-3 py-2 text-xs font-bold ml-1">LOG</button>
+              </div>
+            </div>
 
-        <div class="matte-card p-3.5 min-h-[120px]" id="timelineContainer">
-          <div class="text-center py-7 text-slate-500 text-xs font-mono" id="emptyTimeline">
-            No workouts logged for this day.
+            <div class="matte-card p-3 flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-xs font-bold text-white tracking-wide">Elliptical</h3>
+                <p class="text-[11px] text-slate-400 font-mono mt-0.5">Home Machine</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button id="btnEllipticalDec" class="stepper-btn spring-btn tap-target">−</button>
+                <span id="valElliptical" class="w-12 text-center text-sm font-extrabold text-white tabular-nums font-mono">15m</span>
+                <button id="btnEllipticalInc" class="stepper-btn spring-btn tap-target">+</button>
+                <button id="btnEllipticalLog" class="btn-action-primary spring-btn tap-target px-3 py-2 text-xs font-bold ml-1">LOG</button>
+              </div>
+            </div>
           </div>
-          <div class="space-y-2 hidden" id="timelineList"></div>
-        </div>
-      </section>
+        </section>
+
+        <!-- Movement Timeline -->
+        <section class="space-y-2">
+          <div class="flex items-center justify-between px-1">
+            <span class="eyebrow">Activity Timeline</span>
+            <span class="text-[11px] text-slate-400 font-mono" id="logCount">0 sets</span>
+          </div>
+          <div class="matte-card p-3.5 min-h-[120px]" id="timelineContainer">
+            <div class="text-center py-7 text-slate-500 text-xs font-mono" id="emptyTimeline">
+              No workouts logged for this day.
+            </div>
+            <div class="space-y-2 hidden" id="timelineList"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- VIEW 2: PROGRESS & ADHERENCE -->
+      <div id="sectionProgressView" class="space-y-5 hidden">
+        <section class="matte-card p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="eyebrow text-slate-300">7-Day Target Adherence</span>
+            <span class="text-[10px] text-slate-400 font-mono">✓ Met · ~ Some · ✕ None</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs font-mono">
+              <thead><tr class="text-slate-500 text-[10px] border-b border-white/[0.06]" id="adherenceHeaderRow"></tr></thead>
+              <tbody id="adherenceBodyRows" class="divide-y divide-white/[0.04]"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="matte-card p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="eyebrow text-slate-300">Exercise Progression (Last 7 Days)</span>
+            <span class="text-[10px] text-slate-500 font-mono">Reps & Sets</span>
+          </div>
+          <div class="space-y-2.5 text-xs font-mono" id="exerciseProgressionList"></div>
+        </section>
+      </div>
 
     </div>
 
-    <!-- ========================================== -->
-    <!-- VIEW 2: PROGRESS & ADHERENCE (DEDICATED)   -->
-    <!-- ========================================== -->
-    <div id="sectionProgressView" class="space-y-5 hidden">
+    <!-- ================================================================= -->
+    <!-- DOMAIN 2: FOCUS ENGINE (INTERVIEW PREPARATION & TASKS)            -->
+    <!-- ================================================================= -->
+    <div id="viewFocus" class="space-y-5 hidden">
 
-      <!-- 7-Day Target Adherence Matrix -->
+      <!-- Daily Task Target Progress Card -->
       <section class="matte-card p-3.5 space-y-3">
         <div class="flex items-center justify-between">
-          <span class="eyebrow text-slate-300">7-Day Target Adherence</span>
-          <span class="text-[10px] text-slate-400 font-mono">✓ Met · ~ Some · ✕ None</span>
+          <span class="eyebrow text-slate-300">Interview Task Target</span>
+          <span class="text-[10px] text-sky-400 font-mono font-bold" id="focusTargetRatio">0 / 20 Completed</span>
         </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs font-mono">
-            <thead>
-              <tr class="text-slate-500 text-[10px] border-b border-white/[0.06]" id="adherenceHeaderRow">
-                <!-- Dynamically populated with day names -->
-              </tr>
-            </thead>
-            <tbody id="adherenceBodyRows" class="divide-y divide-white/[0.04]">
-              <!-- Dynamically populated with rows for Pull-ups, Push-ups, Barbell, Cardio -->
-            </tbody>
-          </table>
+        <div class="space-y-1.5">
+          <div class="progress-track">
+            <div id="barFocusTasks" class="progress-fill bg-sky-400" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-slate-400 font-mono pt-0.5">
+            <span>Quota: 20 Questions / Tasks</span>
+            <span id="focusQuotaRemaining">20 remaining</span>
+          </div>
         </div>
       </section>
 
-      <!-- Exercise Progression Summary -->
-      <section class="matte-card p-3.5 space-y-3">
+      <!-- Dual-Clock Ratio Banner (Active vs Break Split) -->
+      <section class="matte-card p-3.5 space-y-2.5">
         <div class="flex items-center justify-between">
-          <span class="eyebrow text-slate-300">Exercise Progression (Last 7 Days)</span>
-          <span class="text-[10px] text-slate-500 font-mono">Reps & Sets</span>
+          <span class="eyebrow text-slate-300">Dual-Clock Study Ratio</span>
+          <span class="text-[10px] text-emerald-400 font-mono font-bold" id="ratioStatusText">Target: 70% Active</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-[10px] text-slate-400 block uppercase tracking-wider">Active Study</span>
+            <span class="text-base font-bold text-sky-400 tabular-nums" id="valActiveTime">0h 00m</span>
+          </div>
+          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-[10px] text-slate-400 block uppercase tracking-wider">Break Time</span>
+            <span class="text-base font-bold text-slate-300 tabular-nums" id="valBreakTime">0h 00m</span>
+          </div>
+        </div>
+        <div class="space-y-1 pt-1">
+          <div class="progress-track flex overflow-hidden">
+            <div id="barActiveRatio" class="h-full bg-sky-400 transition-all duration-300" style="width: 100%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+            <span id="labelActivePct">100% Active</span>
+            <span id="labelBreakPct">0% Break</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 45-15 Feynman Timebox Engine Card -->
+      <section class="matte-card p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="eyebrow text-slate-300">Feynman Timebox</span>
+            <span id="timerPhaseBadge" class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide">Deep Study</span>
+          </div>
+          <!-- Presets -->
+          <div class="flex items-center gap-1 text-[10px] font-mono">
+            <button id="preset4515" class="px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20">45-15</button>
+            <button id="preset255" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">25-5</button>
+          </div>
         </div>
 
-        <div class="space-y-2.5 text-xs font-mono" id="exerciseProgressionList">
-          <!-- Dynamically populated per exercise -->
+        <!-- Big Numeric Timer Display -->
+        <div class="text-center py-2">
+          <div id="timerDisplay" class="font-mono text-5xl sm:text-6xl font-black tabular-nums tracking-tight text-white select-none">
+            35:00
+          </div>
+          <div id="timerSubLabel" class="text-[11px] text-slate-400 font-mono mt-1">35m Deep Dive → 10m Active Recall</div>
+        </div>
+
+        <!-- Currently Bound Task Banner -->
+        <div id="boundTaskCard" class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.06] flex items-center justify-between">
+          <div class="flex items-center gap-2 truncate pr-2">
+            <span class="text-sky-400 font-bold text-xs">⚡</span>
+            <span id="boundTaskTitle" class="text-xs text-slate-200 font-semibold truncate">Select a task below to focus</span>
+          </div>
+          <button id="btnUnbindTask" class="text-[10px] text-slate-500 hover:text-slate-300 font-mono hidden">Clear</button>
+        </div>
+
+        <!-- Timer Controls -->
+        <div class="grid grid-cols-3 gap-2">
+          <button id="btnTimerStart" class="spring-btn py-2.5 rounded-xl btn-action-primary text-xs font-bold tracking-wider">
+            START
+          </button>
+          <button id="btnTimerPause" class="spring-btn py-2.5 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
+            PAUSE
+          </button>
+          <button id="btnTimerReset" class="spring-btn py-2.5 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
+            RESET
+          </button>
+        </div>
+
+        <!-- Quick Complete Button -->
+        <button id="btnTimerCompleteTask" class="spring-btn w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wide shadow-sm hidden">
+          ✓ Mark Current Task as Completed
+        </button>
+      </section>
+
+      <!-- Task Queue Management -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <div>
+            <span class="eyebrow">Task Queue</span>
+            <p class="text-[11px] text-slate-400 font-mono">Interview Preparation Questions</p>
+          </div>
+          <button id="btnOpenAddTaskModal" class="spring-btn tap-target px-3 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+            <span>+</span> Add Task
+          </button>
+        </div>
+
+        <!-- Category Filter Pills -->
+        <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="focusCategoryFilters">
+          <button data-cat="all" class="spring-btn px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-950 whitespace-nowrap">All</button>
+          <button data-cat="Angular" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Angular</button>
+          <button data-cat=".NET" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">.NET / C#</button>
+          <button data-cat="Full Stack" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Full Stack</button>
+          <button data-cat="LeetCode" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">LeetCode</button>
+        </div>
+
+        <!-- Task List Items -->
+        <div id="taskListContainer" class="space-y-2">
+          <!-- Dynamically populated tasks -->
+        </div>
+      </section>
+
+      <!-- Completed Tasks Feed for Today -->
+      <section class="space-y-2 pt-2">
+        <div class="flex items-center justify-between px-1">
+          <span class="eyebrow">Completed Tasks Today</span>
+          <span class="text-[11px] text-slate-400 font-mono" id="completedTaskCount">0 completed</span>
+        </div>
+        <div class="matte-card p-3.5 min-h-[90px]" id="completedTasksCard">
+          <div class="text-center py-5 text-slate-500 text-xs font-mono" id="emptyCompletedTasks">
+            No completed tasks recorded yet today.
+          </div>
+          <div class="space-y-2 hidden" id="completedTasksList"></div>
         </div>
       </section>
 
@@ -359,6 +467,71 @@
 
   </div>
 
+  <!-- Full-Screen Flash Alarm Overlay -->
+  <div id="screenFlashOverlay" class="fixed inset-0 bg-sky-400/30 z-[100] pointer-events-none opacity-0 transition-opacity"></div>
+
+  <!-- Alarm Alert Modal (Feynman Transition) -->
+  <div id="feynmanAlarmModal" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-[110] hidden">
+    <div class="matte-card p-6 max-w-sm w-full space-y-4 text-center">
+      <div class="w-12 h-12 rounded-2xl bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center mx-auto text-xl font-bold">
+        🔔
+      </div>
+      <h3 class="text-base font-extrabold text-white font-mono uppercase" id="feynmanAlarmTitle">Feynman Active Recall!</h3>
+      <p class="text-xs text-slate-300 leading-relaxed font-sans" id="feynmanAlarmBody">
+        Study timer finished. Close your notes. Explain the concept out loud in simple terms without looking at references!
+      </p>
+      <button id="btnDismissAlarm" class="spring-btn w-full py-2.5 rounded-xl bg-white text-slate-950 text-xs font-bold hover:bg-slate-200">
+        Start Active Recall (10m)
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Task Modal -->
+  <div id="modalAddTask" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="matte-card p-5 max-w-sm w-full space-y-4">
+      <div class="flex items-center justify-between border-b border-white/[0.06] pb-2">
+        <h3 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Create Interview Task</h3>
+        <button id="btnCloseAddTaskModal" class="text-slate-400 hover:text-white p-1 text-xs">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs font-mono">
+        <div>
+          <label class="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Task / Question Title</label>
+          <input type="text" id="inputTaskTitle" placeholder="e.g. Angular Signals vs RxJS Observables" class="w-full bg-[#0d131f] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-600 focus:outline-none focus:border-sky-400">
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Curriculum Category</label>
+          <div class="grid grid-cols-3 gap-1.5" id="modalCategoryPills">
+            <button data-val="Angular" class="p-1.5 rounded-lg bg-sky-500 text-slate-950 font-bold text-[10px]">Angular</button>
+            <button data-val=".NET" class="p-1.5 rounded-lg bg-[#1a2233] text-slate-300 text-[10px]">.NET</button>
+            <button data-val="Full Stack" class="p-1.5 rounded-lg bg-[#1a2233] text-slate-300 text-[10px]">Full Stack</button>
+            <button data-val="SysDesign" class="p-1.5 rounded-lg bg-[#1a2233] text-slate-300 text-[10px]">SysDesign</button>
+            <button data-val="LeetCode" class="p-1.5 rounded-lg bg-[#1a2233] text-slate-300 text-[10px]">LeetCode</button>
+            <button data-val="Mock" class="p-1.5 rounded-lg bg-[#1a2233] text-slate-300 text-[10px]">Mock</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Study Depth</label>
+          <div class="grid grid-cols-2 gap-2" id="modalPriorityPills">
+            <button data-val="Deep Dive" class="p-1.5 rounded-lg bg-white text-slate-950 font-bold text-[10px]">Deep Dive (45m)</button>
+            <button data-val="Rapid Recall" class="p-1.5 rounded-lg bg-[#1a2233] text-slate-300 text-[10px]">Rapid Recall (15m)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button id="btnCancelAddTask" class="spring-btn flex-1 py-2 rounded-xl btn-action-dark text-xs font-bold">
+          Cancel
+        </button>
+        <button id="btnSaveTask" class="spring-btn flex-1 py-2 rounded-xl btn-action-primary text-xs font-bold">
+          Add Task
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Floating 5-Second Undo Toast -->
   <div id="undoToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#121826] border border-white/15 shadow-2xl rounded-2xl p-3.5 flex flex-col gap-2 z-50 hidden toast-spring w-[90%] max-w-sm overflow-hidden">
     <div class="flex items-center justify-between">
@@ -375,7 +548,7 @@
     </div>
   </div>
 
-  <!-- Preview Modal for Phase 2 & 3 -->
+  <!-- Preview Modal for Phase 3 (Habits) -->
   <div id="previewModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
     <div class="matte-card p-6 max-w-sm w-full space-y-4">
       <h3 class="text-sm font-bold text-white tracking-wide font-mono uppercase" id="modalTitle">Phase Preview</h3>

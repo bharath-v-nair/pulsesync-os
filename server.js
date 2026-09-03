@@ -1,4 +1,4 @@
-// PulseSync Life OS - Local Wi-Fi Sync Server
+// PulseSync Life OS - Local Wi-Fi Sync Server (Move & Focus Engines)
 // Zero dependencies (Native Node.js http & fs)
 const http = require('http');
 const fs = require('fs');
@@ -6,11 +6,20 @@ const path = require('path');
 const url = require('url');
 
 const PORT = process.env.PORT || 8080;
-const DATA_FILE = path.join(__dirname, 'data', 'workouts.json');
+const DATA_DIR = path.join(__dirname, 'data');
+const WORKOUTS_FILE = path.join(DATA_DIR, 'workouts.json');
+const FOCUS_FILE = path.join(DATA_DIR, 'focus.json');
 
-// Ensure data file exists
-if (!fs.existsSync(DATA_FILE)) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+if (!fs.existsSync(WORKOUTS_FILE)) {
+  fs.writeFileSync(WORKOUTS_FILE, JSON.stringify([], null, 2));
+}
+
+if (!fs.existsSync(FOCUS_FILE)) {
+  fs.writeFileSync(FOCUS_FILE, JSON.stringify({ tasks: [], sessions: [], stats: { activeSeconds: 0, breakSeconds: 0 } }, null, 2));
 }
 
 const MIME_TYPES = {
@@ -23,22 +32,22 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-function readLogs() {
+function readJsonFile(filePath, defaultVal) {
   try {
-    const data = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(data || '[]');
+    const data = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(data || JSON.stringify(defaultVal));
   } catch (err) {
-    console.error('Error reading workouts.json:', err);
-    return [];
+    console.error(`Error reading ${filePath}:`, err);
+    return defaultVal;
   }
 }
 
-function writeLogs(logs) {
+function writeJsonFile(filePath, data) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(logs, null, 2), 'utf8');
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
     return true;
   } catch (err) {
-    console.error('Error writing workouts.json:', err);
+    console.error(`Error writing ${filePath}:`, err);
     return false;
   }
 }
@@ -58,35 +67,31 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API Route: GET /api/logs
+  // --- MOVE API ROUTES ---
+  // GET /api/logs
   if (pathname === '/api/logs' && req.method === 'GET') {
-    const logs = readLogs();
+    const logs = readJsonFile(WORKOUTS_FILE, []);
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(logs));
     return;
   }
 
-  // API Route: POST /api/logs (Add or replace log array)
+  // POST /api/logs
   if (pathname === '/api/logs' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
         const payload = JSON.parse(body);
-        let logs = readLogs();
+        let logs = readJsonFile(WORKOUTS_FILE, []);
         if (Array.isArray(payload)) {
-          // Bulk sync
           logs = payload;
         } else if (payload && payload.id) {
-          // Single item add / update
           const idx = logs.findIndex(item => item.id === payload.id);
-          if (idx >= 0) {
-            logs[idx] = payload;
-          } else {
-            logs.push(payload);
-          }
+          if (idx >= 0) logs[idx] = payload;
+          else logs.push(payload);
         }
-        writeLogs(logs);
+        writeJsonFile(WORKOUTS_FILE, logs);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, count: logs.length }));
       } catch (err) {
@@ -97,19 +102,46 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API Route: DELETE /api/logs/:id
+  // DELETE /api/logs/:id
   if (pathname.startsWith('/api/logs/') && req.method === 'DELETE') {
     const id = pathname.replace('/api/logs/', '');
-    let logs = readLogs();
+    let logs = readJsonFile(WORKOUTS_FILE, []);
     const initialLen = logs.length;
     logs = logs.filter(item => item.id !== id);
-    writeLogs(logs);
+    writeJsonFile(WORKOUTS_FILE, logs);
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ success: true, deleted: initialLen - logs.length }));
     return;
   }
 
-  // Static File Serving
+  // --- FOCUS API ROUTES ---
+  // GET /api/focus
+  if (pathname === '/api/focus' && req.method === 'GET') {
+    const focusData = readJsonFile(FOCUS_FILE, { tasks: [], sessions: [], stats: { activeSeconds: 0, breakSeconds: 0 } });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(focusData));
+    return;
+  }
+
+  // POST /api/focus
+  if (pathname === '/api/focus' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body);
+        writeJsonFile(FOCUS_FILE, payload);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON payload' }));
+      }
+    });
+    return;
+  }
+
+  // --- STATIC FILE SERVING ---
   let filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
   const ext = path.extname(filePath).toLowerCase();
 
@@ -129,5 +161,5 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`⚡ PulseSync Local Wi-Fi Sync Server running on port ${PORT}`);
   console.log(`👉 Access on Mac: http://localhost:${PORT}`);
-  console.log(`👉 Access on Phone: http://<YOUR_MAC_IP>:${PORT} (e.g. http://192.168.1.8:${PORT})`);
+  console.log(`👉 Access on Phone: http://<YOUR_MAC_IP>:${PORT}`);
 });

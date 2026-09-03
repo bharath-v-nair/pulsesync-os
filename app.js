@@ -1,24 +1,25 @@
-// PulseSync Life OS - Refined MOVE Engine with Wi-Fi Sync & 4-Level Architecture
+// PulseSync Life OS - Unified Move & Focus (Phase 2) Engine
 (function () {
   'use strict';
 
   // --- Constants & Storage Keys ---
   const STORAGE_KEY_LOGS = 'pulsesync_logs_v3';
   const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v3';
+  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v2';
 
-  // Daily targets for 90kg bodyweight + cognitive interview load
   const TARGETS = {
-    pullups: 20,       // 20 half pull-up reps (GTG)
-    pushups: 50,       // 50 push-up reps (micro-sets)
-    tonnage: 900,      // 900 kg volume (30 reps @ 30kg)
-    steps: 8000        // 8,000 steps (cardio / active recovery)
+    pullups: 20,
+    pushups: 50,
+    tonnage: 900,
+    steps: 8000,
+    tasks: 20 // Daily interview tasks goal
   };
 
   const BARBELL_EXERCISES = [
     'Squats', 'Overhead Press', 'Bicep Curls', 'Bent Rows', 'RDLs', 'Deadlifts'
   ];
 
-  // --- State ---
+  // --- State: Move Engine ---
   let logs = [];
   let stickyDefaults = {
     pullupReps: 4,
@@ -28,17 +29,73 @@
     stepIncrement: 2500,
     ellipticalMins: 15
   };
-
   let selectedDateStr = getTodayDateStr();
-  let undoTimeout = null;
-  let lastLoggedId = null;
   let isBarbellDrawerOpen = false;
+  let undoTimeout = null;
 
-  // --- DOM Elements ---
+  // --- State: Focus Engine ---
+  let focusData = {
+    tasks: [
+      {
+        id: 'task_1',
+        title: 'Angular Signals vs Observables & OnPush Change Detection',
+        category: 'Angular',
+        priority: 'Deep Dive',
+        dateStr: getTodayDateStr(),
+        completed: false,
+        completedAt: null
+      },
+      {
+        id: 'task_2',
+        title: 'C# async/await, SynchronizationContext & Deadlock scenarios',
+        category: '.NET',
+        priority: 'Deep Dive',
+        dateStr: getTodayDateStr(),
+        completed: false,
+        completedAt: null
+      },
+      {
+        id: 'task_3',
+        title: 'LeetCode: Two Sum & Valid Anagram in C#',
+        category: 'LeetCode',
+        priority: 'Rapid Recall',
+        dateStr: getTodayDateStr(),
+        completed: false,
+        completedAt: null
+      }
+    ],
+    sessions: [],
+    stats: {
+      activeSeconds: 0,
+      breakSeconds: 0
+    }
+  };
+
+  let activeCategoryFilter = 'all';
+  let modalSelectedCategory = 'Angular';
+  let modalSelectedPriority = 'Deep Dive';
+
+  // Timer State
+  let timerPreset = '45-15'; // '45-15' or '25-5'
+  let timerPhase = 'study'; // 'study', 'recall', 'break'
+  let timerTotalSeconds = 35 * 60;
+  let timerRemaining = 35 * 60;
+  let timerRunning = false;
+  let timerInterval = null;
+  let boundTaskId = null;
+
+  // --- DOM Elements: Global ---
   const syncIndicator = document.getElementById('syncIndicator');
   const serverSyncStatus = document.getElementById('serverSyncStatus');
   const btnWakeUp = document.getElementById('btnWakeUp');
   const wakeUpLabel = document.getElementById('wakeUpLabel');
+
+  // Domain Nav
+  const btnNavMove = document.getElementById('btnNavMove');
+  const btnNavFocus = document.getElementById('btnNavFocus');
+  const btnNavHabits = document.getElementById('btnNavHabits');
+  const viewMove = document.getElementById('viewMove');
+  const viewFocus = document.getElementById('viewFocus');
 
   // Date Navigation
   const btnPrevDay = document.getElementById('btnPrevDay');
@@ -49,87 +106,120 @@
   const datePickerInput = document.getElementById('datePickerInput');
   const dateContextSubtitle = document.getElementById('dateContextSubtitle');
 
-  // Sub-Views
+  // Move Sub-views
   const subViewToday = document.getElementById('subViewToday');
   const subViewProgress = document.getElementById('subViewProgress');
   const sectionTodayView = document.getElementById('sectionTodayView');
   const sectionProgressView = document.getElementById('sectionProgressView');
 
-  // Movement Targets
+  // Move Metrics
   const metricPullups = document.getElementById('metricPullups');
   const barPullup = document.getElementById('barPullup');
-
   const metricPushups = document.getElementById('metricPushups');
   const barPushup = document.getElementById('barPushup');
-
   const metricTonnage = document.getElementById('metricTonnage');
   const barTonnage = document.getElementById('barTonnage');
   const btnToggleBarbellDrawer = document.getElementById('btnToggleBarbellDrawer');
   const arrowBarbellDrawer = document.getElementById('arrowBarbellDrawer');
   const barbellBreakdownDrawer = document.getElementById('barbellBreakdownDrawer');
   const barbellExerciseGrid = document.getElementById('barbellExerciseGrid');
-
   const metricSteps = document.getElementById('metricSteps');
   const barSteps = document.getElementById('barSteps');
 
-  // Steppers
+  // Move Steppers
   const valPullup = document.getElementById('valPullup');
   const btnPullupDec = document.getElementById('btnPullupDec');
   const btnPullupInc = document.getElementById('btnPullupInc');
   const btnPullupLog = document.getElementById('btnPullupLog');
-
   const valPushup = document.getElementById('valPushup');
   const btnPushupDec = document.getElementById('btnPushupDec');
   const btnPushupInc = document.getElementById('btnPushupInc');
   const btnPushupLog = document.getElementById('btnPushupLog');
-
   const barbellPills = document.getElementById('barbellPills');
   const selectedLiftName = document.getElementById('selectedLiftName');
   const valBarbell = document.getElementById('valBarbell');
   const btnBarbellDec = document.getElementById('btnBarbellDec');
   const btnBarbellInc = document.getElementById('btnBarbellInc');
   const btnBarbellLog = document.getElementById('btnBarbellLog');
-
   const valSteps = document.getElementById('valSteps');
   const btnStepDec = document.getElementById('btnStepDec');
   const btnStepInc = document.getElementById('btnStepInc');
   const btnStepLog = document.getElementById('btnStepLog');
-
   const valElliptical = document.getElementById('valElliptical');
   const btnEllipticalDec = document.getElementById('btnEllipticalDec');
   const btnEllipticalInc = document.getElementById('btnEllipticalInc');
   const btnEllipticalLog = document.getElementById('btnEllipticalLog');
 
-  // Timeline
+  // Move Timeline
   const timelineContainer = document.getElementById('timelineContainer');
   const timelineList = document.getElementById('timelineList');
   const emptyTimeline = document.getElementById('emptyTimeline');
   const logCount = document.getElementById('logCount');
 
-  // Toast
-  const undoToast = document.getElementById('undoToast');
-  const undoMessage = document.getElementById('undoMessage');
-  const btnUndoAction = document.getElementById('btnUndoAction');
-  const toastProgressBar = document.getElementById('toastProgressBar');
-
-  // Progress View Elements
+  // Adherence
   const adherenceHeaderRow = document.getElementById('adherenceHeaderRow');
   const adherenceBodyRows = document.getElementById('adherenceBodyRows');
   const exerciseProgressionList = document.getElementById('exerciseProgressionList');
 
-  // Utilities & Previews
+  // --- DOM Elements: Focus Engine ---
+  const focusTargetRatio = document.getElementById('focusTargetRatio');
+  const barFocusTasks = document.getElementById('barFocusTasks');
+  const focusQuotaRemaining = document.getElementById('focusQuotaRemaining');
+
+  const valActiveTime = document.getElementById('valActiveTime');
+  const valBreakTime = document.getElementById('valBreakTime');
+  const barActiveRatio = document.getElementById('barActiveRatio');
+  const labelActivePct = document.getElementById('labelActivePct');
+  const labelBreakPct = document.getElementById('labelBreakPct');
+  const ratioStatusText = document.getElementById('ratioStatusText');
+
+  const timerPhaseBadge = document.getElementById('timerPhaseBadge');
+  const preset4515 = document.getElementById('preset4515');
+  const preset255 = document.getElementById('preset255');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const timerSubLabel = document.getElementById('timerSubLabel');
+  const boundTaskTitle = document.getElementById('boundTaskTitle');
+  const btnUnbindTask = document.getElementById('btnUnbindTask');
+  const btnTimerStart = document.getElementById('btnTimerStart');
+  const btnTimerPause = document.getElementById('btnTimerPause');
+  const btnTimerReset = document.getElementById('btnTimerReset');
+  const btnTimerCompleteTask = document.getElementById('btnTimerCompleteTask');
+
+  const btnOpenAddTaskModal = document.getElementById('btnOpenAddTaskModal');
+  const focusCategoryFilters = document.getElementById('focusCategoryFilters');
+  const taskListContainer = document.getElementById('taskListContainer');
+  const completedTaskCount = document.getElementById('completedTaskCount');
+  const completedTasksList = document.getElementById('completedTasksList');
+  const emptyCompletedTasks = document.getElementById('emptyCompletedTasks');
+
+  const screenFlashOverlay = document.getElementById('screenFlashOverlay');
+  const feynmanAlarmModal = document.getElementById('feynmanAlarmModal');
+  const feynmanAlarmTitle = document.getElementById('feynmanAlarmTitle');
+  const feynmanAlarmBody = document.getElementById('feynmanAlarmBody');
+  const btnDismissAlarm = document.getElementById('btnDismissAlarm');
+
+  const modalAddTask = document.getElementById('modalAddTask');
+  const btnCloseAddTaskModal = document.getElementById('btnCloseAddTaskModal');
+  const btnCancelAddTask = document.getElementById('btnCancelAddTask');
+  const btnSaveTask = document.getElementById('btnSaveTask');
+  const inputTaskTitle = document.getElementById('inputTaskTitle');
+  const modalCategoryPills = document.getElementById('modalCategoryPills');
+  const modalPriorityPills = document.getElementById('modalPriorityPills');
+
+  // Utilities
+  const undoToast = document.getElementById('undoToast');
+  const undoMessage = document.getElementById('undoMessage');
+  const btnUndoAction = document.getElementById('btnUndoAction');
+  const toastProgressBar = document.getElementById('toastProgressBar');
   const btnExportCSV = document.getElementById('btnExportCSV');
   const btnExportJSON = document.getElementById('btnExportJSON');
   const btnClearToday = document.getElementById('btnClearToday');
-
-  const tabFocus = document.getElementById('tabFocus');
-  const tabHabits = document.getElementById('tabHabits');
   const previewModal = document.getElementById('previewModal');
   const modalTitle = document.getElementById('modalTitle');
   const modalBody = document.getElementById('modalBody');
   const btnCloseModal = document.getElementById('btnCloseModal');
 
-  // --- Audio / Haptics Sensory Feedback ---
+  // --- Audio / Sensory Alerts ---
   function playClickAudio(freq = 550, duration = 0.035) {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -147,9 +237,33 @@
 
       osc.connect(gain);
       gain.connect(ctx.destination);
-
       osc.start();
       osc.stop(ctx.currentTime + duration);
+    } catch (e) {}
+  }
+
+  // Multi-tone Harmonic Chime for Timer Completion
+  function playFeynmanChime() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 chord
+
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.1));
+
+        gain.gain.setValueAtTime(0.08, ctx.currentTime + (idx * 0.1));
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.1) + 0.8);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + (idx * 0.1));
+        osc.stop(ctx.currentTime + (idx * 0.1) + 0.8);
+      });
     } catch (e) {}
   }
 
@@ -158,6 +272,38 @@
     if ('vibrate' in navigator) {
       try { navigator.vibrate(duration); } catch (e) {}
     }
+  }
+
+  // Triple Alert Alarm (User Specification: Chime + Flash + Vibration)
+  function triggerTripleAlarm() {
+    playFeynmanChime();
+
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate([250, 150, 250, 150, 500]);
+      } catch (e) {}
+    }
+
+    // Screen Flash
+    screenFlashOverlay.classList.remove('flash-active');
+    void screenFlashOverlay.offsetWidth;
+    screenFlashOverlay.classList.add('flash-active');
+
+    // Show Alarm Modal
+    if (timerPhase === 'study') {
+      feynmanAlarmTitle.textContent = 'Feynman Active Recall Time!';
+      feynmanAlarmBody.textContent = '35 minutes deep dive complete! Close your notes and IDE. Explain the concept out loud in simple terms without looking.';
+      btnDismissAlarm.textContent = 'Start Active Recall (10m)';
+    } else if (timerPhase === 'recall') {
+      feynmanAlarmTitle.textContent = 'Recall Complete!';
+      feynmanAlarmBody.textContent = 'Great explanation! Take a 5-minute physical walk or do a pull-up set to reset.';
+      btnDismissAlarm.textContent = 'Take 5m Break';
+    } else {
+      feynmanAlarmTitle.textContent = 'Break Finished!';
+      feynmanAlarmBody.textContent = 'Back to your interview tasks. Select your next question and dive in.';
+      btnDismissAlarm.textContent = 'Ready to Study';
+    }
+    feynmanAlarmModal.classList.remove('hidden');
   }
 
   // --- Date Helpers ---
@@ -201,32 +347,27 @@
 
   function formatDisplayDate(dateStr) {
     const todayStr = getTodayDateStr();
-    const yesterdayStr = offsetDate(todayStr, -1);
-    const tomorrowStr = offsetDate(todayStr, 1);
-
     if (dateStr === todayStr) return 'Today';
-    if (dateStr === yesterdayStr) return 'Yesterday';
-    if (dateStr === tomorrowStr) return 'Tomorrow';
-
+    if (dateStr === offsetDate(todayStr, -1)) return 'Yesterday';
+    if (dateStr === offsetDate(todayStr, 1)) return 'Tomorrow';
     const [y, m, d] = dateStr.split('-').map(Number);
     const date = new Date(y, m - 1, d);
     return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
   }
 
-  // --- Storage & Wi-Fi Sync Engine ---
+  // --- Storage & Sync Engine ---
   function loadLocalData() {
     try {
       const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
-      if (storedLogs) {
-        logs = JSON.parse(storedLogs);
-      }
+      if (storedLogs) logs = JSON.parse(storedLogs);
 
       const storedDefaults = localStorage.getItem(STORAGE_KEY_DEFAULTS);
-      if (storedDefaults) {
-        stickyDefaults = { ...stickyDefaults, ...JSON.parse(storedDefaults) };
-      }
+      if (storedDefaults) stickyDefaults = { ...stickyDefaults, ...JSON.parse(storedDefaults) };
+
+      const storedFocus = localStorage.getItem(STORAGE_KEY_FOCUS);
+      if (storedFocus) focusData = JSON.parse(storedFocus);
     } catch (err) {
-      console.error('Error reading localStorage:', err);
+      console.error('Error reading local storage:', err);
     }
   }
 
@@ -234,76 +375,78 @@
     try {
       localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
       localStorage.setItem(STORAGE_KEY_DEFAULTS, JSON.stringify(stickyDefaults));
+      localStorage.setItem(STORAGE_KEY_FOCUS, JSON.stringify(focusData));
     } catch (err) {
-      console.error('Error saving localStorage:', err);
+      console.error('Error saving local storage:', err);
     }
   }
 
-  // Real-Time Local Wi-Fi Sync with Node.js Server
   async function syncWithServer() {
     try {
-      const res = await fetch('/api/logs');
-      if (res.ok) {
-        const serverLogs = await res.json();
+      // 1. Sync Move Logs
+      const resLogs = await fetch('/api/logs');
+      if (resLogs.ok) {
+        const serverLogs = await resLogs.json();
         if (Array.isArray(serverLogs)) {
-          // Merge server logs with local logs
           const mergedMap = new Map();
           logs.forEach(l => mergedMap.set(l.id, l));
           serverLogs.forEach(l => mergedMap.set(l.id, l));
           logs = Array.from(mergedMap.values());
           saveLocalData();
-
-          // Push merged back if local had more
-          if (logs.length > serverLogs.length) {
-            await fetch('/api/logs', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(logs)
-            });
-          }
-
-          syncIndicator.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
-          serverSyncStatus.textContent = 'Wi-Fi Synced (Live)';
         }
       }
+
+      // 2. Sync Focus Tasks
+      const resFocus = await fetch('/api/focus');
+      if (resFocus.ok) {
+        const serverFocus = await resFocus.json();
+        if (serverFocus && Array.isArray(serverFocus.tasks)) {
+          focusData = serverFocus;
+          saveLocalData();
+        }
+      }
+
+      syncIndicator.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      serverSyncStatus.textContent = 'Wi-Fi Synced (Live)';
     } catch (err) {
-      // Offline / standalone PWA mode
       syncIndicator.className = 'w-1.5 h-1.5 rounded-full bg-slate-500';
-      serverSyncStatus.textContent = 'Offline (Local Storage)';
+      serverSyncStatus.textContent = 'Offline (Local Cache)';
     }
 
     renderDateDisplay();
     renderMetrics();
     renderTimeline();
+    renderFocusDashboard();
   }
 
-  async function postLogToServer(entry) {
+  async function postFocusToServer() {
     try {
-      await fetch('/api/logs', {
+      await fetch('/api/focus', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
+        body: JSON.stringify(focusData)
       });
-    } catch (err) {
-      // Silently fall back to localStorage
+    } catch (e) {}
+  }
+
+  // --- Domain Switching ---
+  function switchDomain(domain) {
+    if (domain === 'move') {
+      viewMove.classList.remove('hidden');
+      viewFocus.classList.add('hidden');
+      btnNavMove.className = 'spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
+      btnNavFocus.className = 'spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
+    } else if (domain === 'focus') {
+      viewMove.classList.add('hidden');
+      viewFocus.classList.remove('hidden');
+      btnNavFocus.className = 'spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
+      btnNavMove.className = 'spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
+      renderFocusDashboard();
     }
+    triggerHaptic(10, 520);
   }
 
-  async function deleteLogFromServer(id) {
-    try {
-      await fetch(`/api/logs/${id}`, { method: 'DELETE' });
-    } catch (err) {}
-  }
-
-  // --- Date Navigation Handlers ---
-  function setDate(newDateStr) {
-    selectedDateStr = newDateStr;
-    renderDateDisplay();
-    renderMetrics();
-    renderTimeline();
-    triggerHaptic(8, 480);
-  }
-
+  // --- Move Rendering Functions ---
   function renderDateDisplay() {
     const todayStr = getTodayDateStr();
     selectedDateTitle.textContent = formatDisplayDate(selectedDateStr);
@@ -317,7 +460,6 @@
     }
   }
 
-  // --- Rendering Functions ---
   function renderMetrics() {
     const dayLogs = logs.filter(item => item.dateStr === selectedDateStr);
 
@@ -327,10 +469,9 @@
     let totalSteps = 0;
     let wokeUpTime = null;
 
-    // Per barbell lift tracking
     const barbellStats = {};
     BARBELL_EXERCISES.forEach(name => {
-      barbellStats[name] = { reps: 0, sets: 0, bestSet: 0 };
+      barbellStats[name] = { reps: 0, sets: 0 };
     });
 
     dayLogs.forEach(item => {
@@ -343,7 +484,6 @@
         if (barbellStats[lift]) {
           barbellStats[lift].reps += reps;
           barbellStats[lift].sets += 1;
-          barbellStats[lift].bestSet = Math.max(barbellStats[lift].bestSet, reps);
         }
       }
       if (item.category === 'walk') totalSteps += (item.steps || 0);
@@ -351,24 +491,16 @@
       if (item.category === 'wake_up') wokeUpTime = item.timeFormatted;
     });
 
-    // Update numbers
     metricPullups.textContent = totalPullups;
     metricPushups.textContent = totalPushups;
     metricTonnage.textContent = totalTonnage;
     metricSteps.textContent = totalSteps >= 1000 ? `${(totalSteps / 1000).toFixed(1)}k` : totalSteps;
 
-    // Progress Bar percentage calculations
-    const pctPullup = Math.min(100, Math.round((totalPullups / TARGETS.pullups) * 100));
-    const pctPushup = Math.min(100, Math.round((totalPushups / TARGETS.pushups) * 100));
-    const pctTonnage = Math.min(100, Math.round((totalTonnage / TARGETS.tonnage) * 100));
-    const pctSteps = Math.min(100, Math.round((totalSteps / TARGETS.steps) * 100));
+    barPullup.style.width = `${Math.min(100, Math.round((totalPullups / TARGETS.pullups) * 100))}%`;
+    barPushup.style.width = `${Math.min(100, Math.round((totalPushups / TARGETS.pushups) * 100))}%`;
+    barTonnage.style.width = `${Math.min(100, Math.round((totalTonnage / TARGETS.tonnage) * 100))}%`;
+    barSteps.style.width = `${Math.min(100, Math.round((totalSteps / TARGETS.steps) * 100))}%`;
 
-    barPullup.style.width = `${pctPullup}%`;
-    barPushup.style.width = `${pctPushup}%`;
-    barTonnage.style.width = `${pctTonnage}%`;
-    barSteps.style.width = `${pctSteps}%`;
-
-    // Render Barbell Breakdown Grid in Drawer
     barbellExerciseGrid.innerHTML = BARBELL_EXERCISES.map(name => {
       const stat = barbellStats[name];
       const isDone = stat.reps > 0;
@@ -381,7 +513,6 @@
       `;
     }).join('');
 
-    // Wake-Up Button update
     if (wokeUpTime) {
       wakeUpLabel.textContent = `Woke ${wokeUpTime}`;
       btnWakeUp.classList.add('border-amber-500/40', 'bg-amber-950/20');
@@ -447,7 +578,6 @@
       `;
     }).join('');
 
-    // Attach delete listeners
     document.querySelectorAll('.btn-delete-log').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
@@ -456,154 +586,333 @@
     });
   }
 
-  // --- Render Progress View (7D Adherence Matrix & Progression) ---
-  function renderProgressView() {
-    const todayStr = getTodayDateStr();
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      days.push(offsetDate(todayStr, -i));
-    }
-
-    // Render Table Header
-    adherenceHeaderRow.innerHTML = `
-      <th class="text-left py-2 px-1 font-semibold text-slate-400">Target</th>
-      ${days.map(d => {
-        const [y, m, dayNum] = d.split('-');
-        const dateObj = new Date(Number(y), Number(m) - 1, Number(dayNum));
-        const dayLabel = dateObj.toLocaleDateString(undefined, { weekday: 'narrow' });
-        const isSelected = d === selectedDateStr;
-        return `<th class="text-center py-2 px-1 font-semibold ${isSelected ? 'text-sky-400 font-bold' : ''}">${dayLabel}<br><span class="text-[8px] text-slate-600">${dayNum}</span></th>`;
-      }).join('')}
-    `;
-
-    // Calculate Daily Adherence for the 4 Domains
-    const categories = [
-      { id: 'pullups', label: 'Pull-ups', target: TARGETS.pullups },
-      { id: 'pushups', label: 'Push-ups', target: TARGETS.pushups },
-      { id: 'tonnage', label: 'Barbell', target: TARGETS.tonnage },
-      { id: 'steps', label: 'Cardio', target: TARGETS.steps }
-    ];
-
-    adherenceBodyRows.innerHTML = categories.map(cat => {
-      return `
-        <tr>
-          <td class="py-2 px-1 font-medium text-slate-300">${cat.label}</td>
-          ${days.map(d => {
-            const dayLogs = logs.filter(l => l.dateStr === d);
-            let val = 0;
-            dayLogs.forEach(l => {
-              if (cat.id === 'pullups' && l.category === 'pullup') val += (l.reps || 0);
-              if (cat.id === 'pushups' && l.category === 'pushup') val += (l.reps || 0);
-              if (cat.id === 'tonnage' && l.category === 'barbell') val += ((l.reps || 0) * (l.weightKg || 30));
-              if (cat.id === 'steps') {
-                if (l.category === 'walk') val += (l.steps || 0);
-                if (l.category === 'elliptical') val += ((l.minutes || 0) * 120);
-              }
-            });
-
-            let mark = '✕';
-            let cellClass = 'adherence-none';
-            if (val >= cat.target) {
-              mark = '✓';
-              cellClass = 'adherence-full';
-            } else if (val > 0) {
-              mark = '~';
-              cellClass = 'adherence-partial';
-            }
-
-            return `
-              <td class="text-center py-2 px-1">
-                <div class="adherence-cell mx-auto ${cellClass}">${mark}</div>
-              </td>
-            `;
-          }).join('')}
-        </tr>
-      `;
-    }).join('');
-
-    // Render Exercise Progression Summary (Last 7 Days)
-    const exerciseList = ['Half Pull-ups', 'Push-ups', ...BARBELL_EXERCISES.map(b => `Barbell ${b}`)];
-    exerciseProgressionList.innerHTML = exerciseList.map(name => {
-      const relevantLogs = logs.filter(l => (l.name === name || l.name === name.replace('Barbell ', '')) && days.includes(l.dateStr));
-      let totalReps = 0;
-      let totalSets = 0;
-      let bestSet = 0;
-      const activeDaysSet = new Set();
-
-      relevantLogs.forEach(l => {
-        const reps = l.reps || 0;
-        totalReps += reps;
-        totalSets += 1;
-        bestSet = Math.max(bestSet, reps);
-        activeDaysSet.add(l.dateStr);
-      });
-
-      if (totalReps === 0) return '';
-
-      return `
-        <div class="p-2.5 rounded-xl bg-[#111622] border border-white/[0.06] flex items-center justify-between">
-          <div>
-            <div class="font-bold text-white text-xs">${name}</div>
-            <div class="text-[10px] text-slate-400 mt-0.5">${activeDaysSet.size}/7 active days · Best set: ${bestSet} reps</div>
-          </div>
-          <div class="text-right font-mono">
-            <div class="text-xs font-bold text-sky-400">${totalReps} <span class="text-[10px] text-slate-400 font-normal">total reps</span></div>
-            <div class="text-[10px] text-slate-500">${totalSets} sets completed</div>
-          </div>
-        </div>
-      `;
-    }).filter(Boolean).join('') || '<div class="text-slate-500 py-4 text-center">No exercise history in last 7 days.</div>';
-  }
-
   function updateStepperDisplays() {
     valPullup.textContent = stickyDefaults.pullupReps;
     btnPullupLog.textContent = `LOG (+${stickyDefaults.pullupReps})`;
-
     valPushup.textContent = stickyDefaults.pushupReps;
     btnPushupLog.textContent = `LOG (+${stickyDefaults.pushupReps})`;
-
     selectedLiftName.textContent = `${stickyDefaults.selectedLift}:`;
     valBarbell.textContent = stickyDefaults.barbellReps;
-    const vol = stickyDefaults.barbellReps * 30;
-    btnBarbellLog.textContent = `LOG (${vol}kg)`;
-
+    btnBarbellLog.textContent = `LOG (${stickyDefaults.barbellReps * 30}kg)`;
     valSteps.textContent = stickyDefaults.stepIncrement.toLocaleString();
     valElliptical.textContent = `${stickyDefaults.ellipticalMins}m`;
   }
 
-  // --- Action Logging Handlers ---
   function addLog(entry) {
     const now = new Date();
     const newLog = {
       id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       timestamp: now.getTime(),
-      dateStr: selectedDateStr, // logs to current selected date!
+      dateStr: selectedDateStr,
       timeFormatted: formatTime(now),
       ...entry
     };
 
     logs.push(newLog);
     saveLocalData();
-    postLogToServer(newLog);
+    fetch('/api/logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newLog)
+    }).catch(() => {});
+
     triggerHaptic(15, 680);
     renderMetrics();
     renderTimeline();
-
-    lastLoggedId = newLog.id;
     showUndoToast(`Logged ${newLog.name}`, newLog.id);
   }
 
   function deleteLog(id) {
     logs = logs.filter(item => item.id !== id);
     saveLocalData();
-    deleteLogFromServer(id);
+    fetch(`/api/logs/${id}`, { method: 'DELETE' }).catch(() => {});
     triggerHaptic(10, 240);
     renderMetrics();
     renderTimeline();
   }
 
+  // --- Focus Engine Functions ---
+  function renderFocusDashboard() {
+    const todayStr = selectedDateStr;
+    const dayTasks = focusData.tasks.filter(t => t.dateStr === todayStr);
+    const completedList = dayTasks.filter(t => t.completed);
+    const pendingList = dayTasks.filter(t => !t.completed);
+
+    // Target Quota Calculation
+    const completedCount = completedList.length;
+    focusTargetRatio.textContent = `${completedCount} / ${TARGETS.tasks} Completed`;
+    const pct = Math.min(100, Math.round((completedCount / TARGETS.tasks) * 100));
+    barFocusTasks.style.width = `${pct}%`;
+    const remaining = Math.max(0, TARGETS.tasks - completedCount);
+    focusQuotaRemaining.textContent = `${remaining} remaining`;
+
+    // Dual Clock Calculation
+    const activeSec = focusData.stats.activeSeconds || 0;
+    const breakSec = focusData.stats.breakSeconds || 0;
+    const activeHr = Math.floor(activeSec / 3600);
+    const activeMin = Math.floor((activeSec % 3600) / 60);
+    const breakHr = Math.floor(breakSec / 3600);
+    const breakMin = Math.floor((breakSec % 3600) / 60);
+
+    valActiveTime.textContent = `${activeHr}h ${String(activeMin).padStart(2, '0')}m`;
+    valBreakTime.textContent = `${breakHr}h ${String(breakMin).padStart(2, '0')}m`;
+
+    const totalTrackedSec = activeSec + breakSec;
+    if (totalTrackedSec > 0) {
+      const activePct = Math.round((activeSec / totalTrackedSec) * 100);
+      const breakPct = 100 - activePct;
+      barActiveRatio.style.width = `${activePct}%`;
+      labelActivePct.textContent = `${activePct}% Active`;
+      labelBreakPct.textContent = `${breakPct}% Break`;
+      ratioStatusText.textContent = activePct >= 70 ? 'Optimal (≥ 70% Active)' : 'Elevated Break Time (< 70%)';
+      ratioStatusText.className = activePct >= 70 ? 'text-[10px] text-emerald-400 font-mono font-bold' : 'text-[10px] text-amber-400 font-mono font-bold';
+    } else {
+      barActiveRatio.style.width = '100%';
+      labelActivePct.textContent = '100% Active';
+      labelBreakPct.textContent = '0% Break';
+    }
+
+    // Filter Tasks
+    const filteredTasks = pendingList.filter(t => {
+      if (activeCategoryFilter === 'all') return true;
+      return t.category.toLowerCase().includes(activeCategoryFilter.toLowerCase());
+    });
+
+    if (filteredTasks.length === 0) {
+      taskListContainer.innerHTML = `
+        <div class="text-center py-6 text-slate-500 text-xs font-mono matte-card p-4">
+          No pending tasks in this category.<br>Tap <span class="text-white font-bold">+ Add Task</span> to schedule your next question!
+        </div>
+      `;
+    } else {
+      taskListContainer.innerHTML = filteredTasks.map(t => {
+        const isBound = boundTaskId === t.id;
+        let catColor = 'text-sky-400 bg-sky-950/40 border-sky-800/40';
+        if (t.category === 'Angular') catColor = 'text-red-400 bg-red-950/40 border-red-800/40';
+        if (t.category === '.NET') catColor = 'text-purple-400 bg-purple-950/40 border-purple-800/40';
+        if (t.category === 'LeetCode') catColor = 'text-emerald-400 bg-emerald-950/40 border-emerald-800/40';
+        if (t.category === 'SysDesign') catColor = 'text-amber-400 bg-amber-950/40 border-amber-800/40';
+
+        const priorityColor = t.priority === 'Deep Dive' ? 'text-white bg-slate-800' : 'text-slate-400 bg-slate-900';
+
+        return `
+          <div class="p-3 rounded-xl bg-[#111622] border ${isBound ? 'border-sky-400/60 shadow-lg shadow-sky-500/10' : 'border-white/[0.06]'} flex items-center justify-between gap-3 transition">
+            <div class="flex items-start gap-2.5 truncate">
+              <button data-id="${t.id}" class="btn-check-task w-5 h-5 rounded-md border border-white/20 hover:border-emerald-400 flex items-center justify-center text-transparent hover:text-emerald-400 text-xs transition mt-0.5">
+                ✓
+              </button>
+              <div class="truncate">
+                <div class="text-xs font-bold text-slate-100 truncate">${t.title}</div>
+                <div class="flex items-center gap-1.5 mt-1 font-mono text-[9px]">
+                  <span class="px-1.5 py-0.5 rounded border ${catColor} font-semibold">${t.category}</span>
+                  <span class="px-1.5 py-0.5 rounded ${priorityColor}">${t.priority}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button data-id="${t.id}" class="btn-focus-task spring-btn px-2.5 py-1 rounded-lg text-xs font-bold ${isBound ? 'bg-sky-500 text-slate-950' : 'bg-[#1a2233] text-slate-300 hover:text-white'}">
+                ${isBound ? 'Active' : 'Focus'}
+              </button>
+              <button data-id="${t.id}" class="btn-delete-task text-slate-500 hover:text-rose-400 p-1.5 rounded tap-target text-xs">
+                ✕
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Attach Task Actions
+    document.querySelectorAll('.btn-check-task').forEach(btn => {
+      btn.addEventListener('click', () => {
+        completeTask(btn.getAttribute('data-id'));
+      });
+    });
+
+    document.querySelectorAll('.btn-focus-task').forEach(btn => {
+      btn.addEventListener('click', () => {
+        bindTaskToTimer(btn.getAttribute('data-id'));
+      });
+    });
+
+    document.querySelectorAll('.btn-delete-task').forEach(btn => {
+      btn.addEventListener('click', () => {
+        deleteTask(btn.getAttribute('data-id'));
+      });
+    });
+
+    // Completed Tasks List
+    completedTaskCount.textContent = `${completedList.length} completed`;
+    if (completedList.length === 0) {
+      emptyCompletedTasks.classList.remove('hidden');
+      completedTasksList.classList.add('hidden');
+      completedTasksList.innerHTML = '';
+    } else {
+      emptyCompletedTasks.classList.add('hidden');
+      completedTasksList.classList.remove('hidden');
+      completedTasksList.innerHTML = completedList.map(t => {
+        return `
+          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04] flex items-center justify-between text-xs font-mono">
+            <div class="flex items-center gap-2 truncate pr-2">
+              <span class="text-emerald-400 font-bold">✓</span>
+              <span class="text-slate-300 truncate">${t.title}</span>
+            </div>
+            <span class="text-[10px] text-slate-500 whitespace-nowrap">${t.completedAt || ''}</span>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function bindTaskToTimer(taskId) {
+    boundTaskId = taskId;
+    const task = focusData.tasks.find(t => t.id === taskId);
+    if (task) {
+      boundTaskTitle.textContent = task.title;
+      btnUnbindTask.classList.remove('hidden');
+      btnTimerCompleteTask.classList.remove('hidden');
+    }
+    renderFocusDashboard();
+    triggerHaptic(12, 600);
+  }
+
+  function unbindTask() {
+    boundTaskId = null;
+    boundTaskTitle.textContent = 'Select a task below to focus';
+    btnUnbindTask.classList.add('hidden');
+    btnTimerCompleteTask.classList.add('hidden');
+    renderFocusDashboard();
+    triggerHaptic(8, 400);
+  }
+
+  function completeTask(taskId) {
+    const task = focusData.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.completed = true;
+    task.completedAt = formatTime(new Date());
+
+    if (boundTaskId === taskId) {
+      unbindTask();
+    }
+
+    saveLocalData();
+    postFocusToServer();
+    triggerHaptic(20, 750);
+    renderFocusDashboard();
+    showUndoToast(`Completed: ${task.title}`, task.id, () => {
+      task.completed = false;
+      task.completedAt = null;
+      saveLocalData();
+      postFocusToServer();
+      renderFocusDashboard();
+    });
+  }
+
+  function deleteTask(taskId) {
+    focusData.tasks = focusData.tasks.filter(t => t.id !== taskId);
+    if (boundTaskId === taskId) unbindTask();
+    saveLocalData();
+    postFocusToServer();
+    triggerHaptic(10, 250);
+    renderFocusDashboard();
+  }
+
+  // --- 45-15 Feynman Timer Functions ---
+  function updateTimerDisplay() {
+    const m = Math.floor(timerRemaining / 60);
+    const s = timerRemaining % 60;
+    timerDisplay.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  function setTimerPreset(preset) {
+    timerPreset = preset;
+    if (preset === '45-15') {
+      preset4515.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
+      preset255.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      timerTotalSeconds = 35 * 60;
+      timerSubLabel.textContent = '35m Deep Dive → 10m Active Recall';
+    } else {
+      preset255.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
+      preset4515.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      timerTotalSeconds = 25 * 60;
+      timerSubLabel.textContent = '25m Focus → 5m Recall & Break';
+    }
+    resetTimer();
+    triggerHaptic(8, 450);
+  }
+
+  function startTimer() {
+    if (timerRunning) return;
+    timerRunning = true;
+    btnTimerStart.className = 'spring-btn py-2.5 rounded-xl bg-sky-500 text-slate-950 text-xs font-bold tracking-wider';
+
+    timerInterval = setInterval(() => {
+      if (timerRemaining > 0) {
+        timerRemaining--;
+        updateTimerDisplay();
+
+        // Increment cumulative stats
+        if (timerPhase === 'break') {
+          focusData.stats.breakSeconds = (focusData.stats.breakSeconds || 0) + 1;
+        } else {
+          focusData.stats.activeSeconds = (focusData.stats.activeSeconds || 0) + 1;
+        }
+
+        // Periodic sync every 30 seconds
+        if (timerRemaining % 30 === 0) {
+          saveLocalData();
+          renderFocusDashboard();
+        }
+      } else {
+        pauseTimer();
+        triggerTripleAlarm();
+      }
+    }, 1000);
+
+    triggerHaptic(15, 600);
+  }
+
+  function pauseTimer() {
+    timerRunning = false;
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    btnTimerStart.className = 'spring-btn py-2.5 rounded-xl btn-action-primary text-xs font-bold tracking-wider';
+    saveLocalData();
+    renderFocusDashboard();
+    triggerHaptic(10, 400);
+  }
+
+  function resetTimer() {
+    pauseTimer();
+    timerRemaining = timerTotalSeconds;
+    updateTimerDisplay();
+    triggerHaptic(10, 300);
+  }
+
+  function transitionToPhase(newPhase, seconds) {
+    timerPhase = newPhase;
+    timerTotalSeconds = seconds;
+    timerRemaining = seconds;
+    updateTimerDisplay();
+
+    if (newPhase === 'study') {
+      timerPhaseBadge.textContent = 'Deep Study';
+      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide';
+    } else if (newPhase === 'recall') {
+      timerPhaseBadge.textContent = 'Active Recall';
+      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-950/60 text-amber-300 border border-amber-800/40 uppercase tracking-wide';
+    } else {
+      timerPhaseBadge.textContent = 'Break';
+      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 uppercase tracking-wide';
+    }
+    startTimer();
+  }
+
   // --- Undo Toast System ---
-  function showUndoToast(msg, logId) {
+  function showUndoToast(msg, id, onUndoCallback) {
     if (undoTimeout) clearTimeout(undoTimeout);
 
     undoMessage.textContent = msg;
@@ -614,7 +923,11 @@
     toastProgressBar.classList.add('toast-bar');
 
     btnUndoAction.onclick = () => {
-      deleteLog(logId);
+      if (onUndoCallback) {
+        onUndoCallback();
+      } else {
+        deleteLog(id);
+      }
       undoToast.classList.add('hidden');
       triggerHaptic(20, 220);
     };
@@ -626,29 +939,24 @@
 
   // --- Export Utilities ---
   function exportCSV() {
-    if (logs.length === 0) {
-      alert('No logs available to export yet.');
+    if (logs.length === 0 && focusData.tasks.length === 0) {
+      alert('No logs or tasks to export yet.');
       return;
     }
 
-    const headers = ['ID', 'Date', 'Time', 'Category', 'Exercise', 'Reps', 'WeightKg', 'Steps', 'Minutes'];
-    const rows = logs.map(item => [
-      item.id,
-      item.dateStr,
-      item.timeFormatted,
-      item.category,
-      `"${item.name}"`,
-      item.reps || 0,
-      item.weightKg || 0,
-      item.steps || 0,
-      item.minutes || 0
+    const headers = ['Type', 'ID', 'Date', 'Time', 'Title/Category', 'Reps/Status', 'Weight/Duration'];
+    const moveRows = logs.map(item => [
+      'MOVE', item.id, item.dateStr, item.timeFormatted, `"${item.name}"`, item.reps || 0, item.weightKg || item.steps || 0
+    ]);
+    const focusRows = focusData.tasks.map(t => [
+      'FOCUS', t.id, t.dateStr, t.completedAt || 'Pending', `"${t.title}"`, t.completed ? 'Completed' : 'Pending', t.category
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...moveRows.map(r => r.join(',')), ...focusRows.map(r => r.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `pulsesync_workouts_${getTodayDateStr()}.csv`);
+    link.setAttribute('download', `pulsesync_full_backup_${getTodayDateStr()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -656,12 +964,13 @@
   }
 
   function exportJSON() {
-    if (logs.length === 0) {
-      alert('No workout logs to export yet.');
-      return;
-    }
-
-    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(logs, null, 2));
+    const fullBackup = {
+      workouts: logs,
+      focus: focusData,
+      defaults: stickyDefaults,
+      exportedAt: new Date().toISOString()
+    };
+    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
     const link = document.createElement('a');
     link.setAttribute('href', jsonStr);
     link.setAttribute('download', `pulsesync_backup_${getTodayDateStr()}.json`);
@@ -671,54 +980,73 @@
     triggerHaptic(15, 500);
   }
 
-  function clearToday() {
-    const count = logs.filter(i => i.dateStr === selectedDateStr).length;
-    if (count === 0) {
-      alert(`No workouts logged for ${selectedDateStr}.`);
-      return;
-    }
-
-    if (confirm(`Reset all ${count} workouts for ${selectedDateStr}?`)) {
-      const toDelete = logs.filter(i => i.dateStr === selectedDateStr);
+  function clearSelectedDay() {
+    if (confirm(`Reset all workouts and tasks for ${selectedDateStr}?`)) {
       logs = logs.filter(i => i.dateStr !== selectedDateStr);
+      focusData.tasks = focusData.tasks.filter(i => i.dateStr !== selectedDateStr);
       saveLocalData();
-      toDelete.forEach(item => deleteLogFromServer(item.id));
-      triggerHaptic(30, 200);
       renderMetrics();
       renderTimeline();
+      renderFocusDashboard();
+      triggerHaptic(30, 200);
     }
   }
 
   // --- Event Listeners Setup ---
   function setupListeners() {
+    // Navigation Domains
+    btnNavMove.addEventListener('click', () => switchDomain('move'));
+    btnNavFocus.addEventListener('click', () => switchDomain('focus'));
+    btnNavHabits.addEventListener('click', () => {
+      modalTitle.textContent = 'Phase 3: Habits & Peer Sync';
+      modalBody.textContent = 'Coming in Phase 3: Sleep tracking, 20m book reading, private dopamine detox clean streaks (anti-porn, anti-media bingeing), and lean peer pair code.';
+      previewModal.classList.remove('hidden');
+      triggerHaptic(10, 500);
+    });
+
     // Date Navigation
     btnPrevDay.addEventListener('click', () => {
-      setDate(offsetDate(selectedDateStr, -1));
+      selectedDateStr = offsetDate(selectedDateStr, -1);
+      renderDateDisplay();
+      renderMetrics();
+      renderTimeline();
+      renderFocusDashboard();
+      triggerHaptic(8, 480);
     });
 
     btnNextDay.addEventListener('click', () => {
-      setDate(offsetDate(selectedDateStr, 1));
+      selectedDateStr = offsetDate(selectedDateStr, 1);
+      renderDateDisplay();
+      renderMetrics();
+      renderTimeline();
+      renderFocusDashboard();
+      triggerHaptic(8, 480);
     });
 
     btnJumpToday.addEventListener('click', () => {
-      setDate(getTodayDateStr());
+      selectedDateStr = getTodayDateStr();
+      renderDateDisplay();
+      renderMetrics();
+      renderTimeline();
+      renderFocusDashboard();
+      triggerHaptic(8, 480);
     });
 
     btnDateContainer.addEventListener('click', () => {
-      try {
-        datePickerInput.showPicker();
-      } catch (e) {
-        datePickerInput.click();
-      }
+      try { datePickerInput.showPicker(); } catch (e) { datePickerInput.click(); }
     });
 
     datePickerInput.addEventListener('change', (e) => {
       if (e.target.value) {
-        setDate(e.target.value);
+        selectedDateStr = e.target.value;
+        renderDateDisplay();
+        renderMetrics();
+        renderTimeline();
+        renderFocusDashboard();
       }
     });
 
-    // Sub-view Switcher
+    // Move Sub-Views
     subViewToday.addEventListener('click', () => {
       subViewToday.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15';
       subViewProgress.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white';
@@ -736,7 +1064,6 @@
       triggerHaptic(8, 500);
     });
 
-    // Barbell Drawer Toggle
     btnToggleBarbellDrawer.addEventListener('click', () => {
       isBarbellDrawerOpen = !isBarbellDrawerOpen;
       if (isBarbellDrawerOpen) {
@@ -751,7 +1078,7 @@
       triggerHaptic(8, 450);
     });
 
-    // Pull-ups Stepper
+    // Move Steppers
     btnPullupDec.addEventListener('click', () => {
       if (stickyDefaults.pullupReps > 1) {
         stickyDefaults.pullupReps--;
@@ -760,24 +1087,16 @@
         triggerHaptic(8, 450);
       }
     });
-
     btnPullupInc.addEventListener('click', () => {
       stickyDefaults.pullupReps++;
       saveLocalData();
       updateStepperDisplays();
       triggerHaptic(8, 650);
     });
-
     btnPullupLog.addEventListener('click', () => {
-      addLog({
-        category: 'pullup',
-        name: 'Half Pull-ups',
-        reps: stickyDefaults.pullupReps,
-        weightKg: 0
-      });
+      addLog({ category: 'pullup', name: 'Half Pull-ups', reps: stickyDefaults.pullupReps, weightKg: 0 });
     });
 
-    // Push-ups Stepper
     btnPushupDec.addEventListener('click', () => {
       if (stickyDefaults.pushupReps > 1) {
         stickyDefaults.pushupReps = Math.max(1, stickyDefaults.pushupReps - 2);
@@ -786,24 +1105,16 @@
         triggerHaptic(8, 450);
       }
     });
-
     btnPushupInc.addEventListener('click', () => {
       stickyDefaults.pushupReps += 2;
       saveLocalData();
       updateStepperDisplays();
       triggerHaptic(8, 650);
     });
-
     btnPushupLog.addEventListener('click', () => {
-      addLog({
-        category: 'pushup',
-        name: 'Push-ups',
-        reps: stickyDefaults.pushupReps,
-        weightKg: 0
-      });
+      addLog({ category: 'pushup', name: 'Push-ups', reps: stickyDefaults.pushupReps, weightKg: 0 });
     });
 
-    // Barbell Pills
     barbellPills.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         barbellPills.querySelectorAll('button').forEach(b => {
@@ -817,7 +1128,6 @@
       });
     });
 
-    // Barbell Stepper
     btnBarbellDec.addEventListener('click', () => {
       if (stickyDefaults.barbellReps > 1) {
         stickyDefaults.barbellReps = Math.max(1, stickyDefaults.barbellReps - 2);
@@ -826,25 +1136,16 @@
         triggerHaptic(8, 450);
       }
     });
-
     btnBarbellInc.addEventListener('click', () => {
       stickyDefaults.barbellReps += 2;
       saveLocalData();
       updateStepperDisplays();
       triggerHaptic(8, 650);
     });
-
     btnBarbellLog.addEventListener('click', () => {
-      addLog({
-        category: 'barbell',
-        name: `Barbell ${stickyDefaults.selectedLift}`,
-        liftName: stickyDefaults.selectedLift,
-        reps: stickyDefaults.barbellReps,
-        weightKg: 30
-      });
+      addLog({ category: 'barbell', name: `Barbell ${stickyDefaults.selectedLift}`, liftName: stickyDefaults.selectedLift, reps: stickyDefaults.barbellReps, weightKg: 30 });
     });
 
-    // Steps Stepper
     btnStepDec.addEventListener('click', () => {
       if (stickyDefaults.stepIncrement > 500) {
         stickyDefaults.stepIncrement = Math.max(500, stickyDefaults.stepIncrement - 500);
@@ -853,23 +1154,16 @@
         triggerHaptic(8, 450);
       }
     });
-
     btnStepInc.addEventListener('click', () => {
       stickyDefaults.stepIncrement += 500;
       saveLocalData();
       updateStepperDisplays();
       triggerHaptic(8, 650);
     });
-
     btnStepLog.addEventListener('click', () => {
-      addLog({
-        category: 'walk',
-        name: 'Outdoor Walk',
-        steps: stickyDefaults.stepIncrement
-      });
+      addLog({ category: 'walk', name: 'Outdoor Walk', steps: stickyDefaults.stepIncrement });
     });
 
-    // Elliptical Stepper
     btnEllipticalDec.addEventListener('click', () => {
       if (stickyDefaults.ellipticalMins > 5) {
         stickyDefaults.ellipticalMins = Math.max(5, stickyDefaults.ellipticalMins - 5);
@@ -878,58 +1172,214 @@
         triggerHaptic(8, 450);
       }
     });
-
     btnEllipticalInc.addEventListener('click', () => {
       stickyDefaults.ellipticalMins += 5;
       saveLocalData();
       updateStepperDisplays();
       triggerHaptic(8, 650);
     });
-
     btnEllipticalLog.addEventListener('click', () => {
-      addLog({
-        category: 'elliptical',
-        name: 'Elliptical / Cycle',
-        minutes: stickyDefaults.ellipticalMins
-      });
+      addLog({ category: 'elliptical', name: 'Elliptical / Cycle', minutes: stickyDefaults.ellipticalMins });
     });
 
-    // Wake Up
     btnWakeUp.addEventListener('click', () => {
       const existing = logs.find(i => i.dateStr === selectedDateStr && i.category === 'wake_up');
       if (existing) {
         alert(`Wake-up already logged for ${selectedDateStr} at ${existing.timeFormatted}`);
         return;
       }
-      addLog({
-        category: 'wake_up',
-        name: 'Woke Up'
+      addLog({ category: 'wake_up', name: 'Woke Up' });
+    });
+
+    // Focus Timer Controls
+    btnTimerStart.addEventListener('click', startTimer);
+    btnTimerPause.addEventListener('click', pauseTimer);
+    btnTimerReset.addEventListener('click', resetTimer);
+    preset4515.addEventListener('click', () => setTimerPreset('45-15'));
+    preset255.addEventListener('click', () => setTimerPreset('25-5'));
+
+    btnUnbindTask.addEventListener('click', unbindTask);
+    btnTimerCompleteTask.addEventListener('click', () => {
+      if (boundTaskId) completeTask(boundTaskId);
+    });
+
+    // Feynman Alarm Dismissal
+    btnDismissAlarm.addEventListener('click', () => {
+      feynmanAlarmModal.classList.add('hidden');
+      screenFlashOverlay.classList.remove('flash-active');
+      if (timerPhase === 'study') {
+        transitionToPhase('recall', 10 * 60); // 10m Active recall
+      } else if (timerPhase === 'recall') {
+        transitionToPhase('break', 5 * 60);  // 5m Break
+      } else {
+        transitionToPhase('study', 35 * 60); // Back to 35m study
+      }
+    });
+
+    // Task Category Filters
+    focusCategoryFilters.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        focusCategoryFilters.querySelectorAll('button').forEach(b => {
+          b.className = 'spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap';
+        });
+        btn.className = 'spring-btn px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-950 whitespace-nowrap';
+        activeCategoryFilter = btn.getAttribute('data-cat');
+        renderFocusDashboard();
+        triggerHaptic(8, 480);
       });
     });
 
-    // Export & Clear
+    // Add Task Modal Controls
+    btnOpenAddTaskModal.addEventListener('click', () => {
+      inputTaskTitle.value = '';
+      modalAddTask.classList.remove('hidden');
+      inputTaskTitle.focus();
+      triggerHaptic(8, 500);
+    });
+
+    btnCloseAddTaskModal.addEventListener('click', () => modalAddTask.classList.add('hidden'));
+    btnCancelAddTask.addEventListener('click', () => modalAddTask.classList.add('hidden'));
+
+    modalCategoryPills.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        modalCategoryPills.querySelectorAll('button').forEach(b => {
+          b.className = 'p-1.5 rounded-lg bg-[#1a2233] text-slate-300 text-[10px]';
+        });
+        btn.className = 'p-1.5 rounded-lg bg-sky-500 text-slate-950 font-bold text-[10px]';
+        modalSelectedCategory = btn.getAttribute('data-val');
+        triggerHaptic(6, 450);
+      });
+    });
+
+    modalPriorityPills.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        modalPriorityPills.querySelectorAll('button').forEach(b => {
+          b.className = 'p-1.5 rounded-lg bg-[#1a2233] text-slate-300 text-[10px]';
+        });
+        btn.className = 'p-1.5 rounded-lg bg-white text-slate-950 font-bold text-[10px]';
+        modalSelectedPriority = btn.getAttribute('data-val');
+        triggerHaptic(6, 450);
+      });
+    });
+
+    btnSaveTask.addEventListener('click', () => {
+      const title = inputTaskTitle.value.trim();
+      if (!title) {
+        alert('Please enter a task or question title.');
+        return;
+      }
+
+      const newTask = {
+        id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        title,
+        category: modalSelectedCategory,
+        priority: modalSelectedPriority,
+        dateStr: selectedDateStr,
+        completed: false,
+        completedAt: null
+      };
+
+      focusData.tasks.unshift(newTask);
+      saveLocalData();
+      postFocusToServer();
+      modalAddTask.classList.add('hidden');
+      triggerHaptic(15, 650);
+      renderFocusDashboard();
+    });
+
+    // Global Utilities
     btnExportCSV.addEventListener('click', exportCSV);
     btnExportJSON.addEventListener('click', exportJSON);
-    btnClearToday.addEventListener('click', clearToday);
+    btnClearToday.addEventListener('click', clearSelectedDay);
+    btnCloseModal.addEventListener('click', () => previewModal.classList.add('hidden'));
+  }
 
-    // Modal Previews
-    tabFocus.addEventListener('click', () => {
-      modalTitle.textContent = 'Phase 2: Focus Engine';
-      modalBody.textContent = 'Coming in Phase 2: Add-Task Queue for interview questions, dual-clock Active vs Break Split timer, and 45-15 Feynman timebox with dual chime/flash alerts.';
-      previewModal.classList.remove('hidden');
-      triggerHaptic(10, 500);
-    });
+  // --- Adherence View ---
+  function renderProgressView() {
+    const todayStr = getTodayDateStr();
+    const days = [];
+    for (let i = 6; i >= 0; i--) days.push(offsetDate(todayStr, -i));
 
-    tabHabits.addEventListener('click', () => {
-      modalTitle.textContent = 'Phase 3: Habits & Peer Sync';
-      modalBody.textContent = 'Coming in Phase 3: Bedtime logging, 20m book reading, private dopamine detox clean streaks (anti-porn, anti-media bingeing), and lean peer pair code.';
-      previewModal.classList.remove('hidden');
-      triggerHaptic(10, 500);
-    });
+    adherenceHeaderRow.innerHTML = `
+      <th class="text-left py-2 px-1 font-semibold text-slate-400">Target</th>
+      ${days.map(d => {
+        const [, , dayNum] = d.split('-');
+        return `<th class="text-center py-2 px-1 font-semibold">${dayNum}</th>`;
+      }).join('')}
+    `;
 
-    btnCloseModal.addEventListener('click', () => {
-      previewModal.classList.add('hidden');
-    });
+    const categories = [
+      { id: 'pullups', label: 'Pull-ups', target: TARGETS.pullups },
+      { id: 'pushups', label: 'Push-ups', target: TARGETS.pushups },
+      { id: 'tonnage', label: 'Barbell', target: TARGETS.tonnage },
+      { id: 'steps', label: 'Cardio', target: TARGETS.steps },
+      { id: 'tasks', label: 'Focus Tasks', target: TARGETS.tasks }
+    ];
+
+    adherenceBodyRows.innerHTML = categories.map(cat => {
+      return `
+        <tr>
+          <td class="py-2 px-1 font-medium text-slate-300">${cat.label}</td>
+          ${days.map(d => {
+            let val = 0;
+            if (cat.id === 'tasks') {
+              val = focusData.tasks.filter(t => t.dateStr === d && t.completed).length;
+            } else {
+              const dayLogs = logs.filter(l => l.dateStr === d);
+              dayLogs.forEach(l => {
+                if (cat.id === 'pullups' && l.category === 'pullup') val += (l.reps || 0);
+                if (cat.id === 'pushups' && l.category === 'pushup') val += (l.reps || 0);
+                if (cat.id === 'tonnage' && l.category === 'barbell') val += ((l.reps || 0) * (l.weightKg || 30));
+                if (cat.id === 'steps') {
+                  if (l.category === 'walk') val += (l.steps || 0);
+                  if (l.category === 'elliptical') val += ((l.minutes || 0) * 120);
+                }
+              });
+            }
+
+            let mark = '✕';
+            let cellClass = 'adherence-none';
+            if (val >= cat.target) {
+              mark = '✓'; cellClass = 'adherence-full';
+            } else if (val > 0) {
+              mark = '~'; cellClass = 'adherence-partial';
+            }
+            return `<td class="text-center py-2 px-1"><div class="adherence-cell mx-auto ${cellClass}">${mark}</div></td>`;
+          }).join('')}
+        </tr>
+      `;
+    }).join('');
+
+    const exerciseList = ['Half Pull-ups', 'Push-ups', ...BARBELL_EXERCISES.map(b => `Barbell ${b}`)];
+    exerciseProgressionList.innerHTML = exerciseList.map(name => {
+      const relevantLogs = logs.filter(l => (l.name === name || l.name === name.replace('Barbell ', '')) && days.includes(l.dateStr));
+      let totalReps = 0;
+      let totalSets = 0;
+      let bestSet = 0;
+      const activeDaysSet = new Set();
+
+      relevantLogs.forEach(l => {
+        const reps = l.reps || 0;
+        totalReps += reps;
+        totalSets += 1;
+        bestSet = Math.max(bestSet, reps);
+        activeDaysSet.add(l.dateStr);
+      });
+
+      if (totalReps === 0) return '';
+      return `
+        <div class="p-2.5 rounded-xl bg-[#111622] border border-white/[0.06] flex items-center justify-between">
+          <div>
+            <div class="font-bold text-white text-xs">${name}</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">${activeDaysSet.size}/7 active days · Best set: ${bestSet} reps</div>
+          </div>
+          <div class="text-right font-mono">
+            <div class="text-xs font-bold text-sky-400">${totalReps} <span class="text-[10px] text-slate-400 font-normal">reps</span></div>
+            <div class="text-[10px] text-slate-500">${totalSets} sets</div>
+          </div>
+        </div>
+      `;
+    }).filter(Boolean).join('') || '<div class="text-slate-500 py-4 text-center">No exercise history in last 7 days.</div>';
   }
 
   // --- Service Worker ---
@@ -943,20 +1393,16 @@
     }
   }
 
-  // --- Initialization ---
+  // --- Init ---
   function init() {
     loadLocalData();
     updateStepperDisplays();
+    updateTimerDisplay();
     setupListeners();
     registerServiceWorker();
 
-    // Perform initial sync with server
     syncWithServer();
-
-    // Auto-refresh sync every 15 seconds
-    setInterval(() => {
-      syncWithServer();
-    }, 15000);
+    setInterval(syncWithServer, 15000);
   }
 
   init();
