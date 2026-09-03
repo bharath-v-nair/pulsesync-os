@@ -19,5 +19,13 @@
     "name": "Half Pull-ups",
     "reps": 4,
     "weightKg": 0
+  },
+  {
+    "id": "log_1788474348669_lbqia",
+    "timestamp": 1788474348669,
+    "dateStr": "2026-09-04",
+    "timeFormatted": "3:55 AM",
+    "category": "wake_up",
+    "name": "Woke Up"
   }
 ]

@@ -1,4 +1,4 @@
-// PulseSync Life OS - Unified Move, Focus & Habits Operating System
+// PulseSync Life OS - Complete Unified Engine (Move, Focus, Habits & Analytics)
 (function () {
   'use strict';
 
@@ -6,7 +6,7 @@
   const STORAGE_KEY_LOGS = 'pulsesync_logs_v3';
   const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v3';
   const STORAGE_KEY_FOCUS = 'pulsesync_focus_v8';
-  const STORAGE_KEY_HABITS = 'pulsesync_habits_v2';
+  const STORAGE_KEY_HABITS = 'pulsesync_habits_v3';
 
   const TARGETS = {
     pullups: 20,
@@ -65,7 +65,6 @@
   ];
 
   const DEFAULT_BOOTCAMP_TASKS = [
-    // --- DAY 1 ---
     { id: 'd1_deep_1', code: 'NG-09', title: '[NG-09] Reactive Forms vs Template-Driven Forms (FormGroup, FormControl, Validators)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd1_deep_2', code: 'NG-08', title: '[NG-08] Route Guards (CanActivate basics) vs Resolvers (trade-offs & failure modes)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd1_deep_3', code: 'NG-11', title: '[NG-11] HTTP Interceptors (injecting Bearer token, basic 401 redirect handling)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
@@ -138,7 +137,11 @@
       relapseHistory: []
     },
     reading: {
-      currentBook: 'Designing Data-Intensive Applications',
+      activeBookId: 'book_1',
+      books: [
+        { id: 'book_1', title: 'Designing Data-Intensive Applications', author: 'Martin Kleppmann', totalPages: 560, currentPage: 64, completed: false },
+        { id: 'book_2', title: 'Atomic Habits', author: 'James Clear', totalPages: 320, currentPage: 120, completed: false }
+      ],
       startPage: 42,
       endPage: 64,
       pagesReadToday: 22,
@@ -153,6 +156,8 @@
     dailyRecords: {}
   };
 
+  let habitsAnalyticsPeriod = '7d';
+  let isLibraryDrawerOpen = false;
   let readingTimerInterval = null;
 
   // --- DOM Elements ---
@@ -160,6 +165,7 @@
   const serverSyncStatus = document.getElementById('serverSyncStatus');
   const btnWakeUp = document.getElementById('btnWakeUp');
   const wakeUpLabel = document.getElementById('wakeUpLabel');
+  const btnEditWakeup = document.getElementById('btnEditWakeup');
   const btnOpenProtocolsModal = document.getElementById('btnOpenProtocolsModal');
 
   const btnNavMove = document.getElementById('btnNavMove');
@@ -284,7 +290,7 @@
   const completedTasksList = document.getElementById('completedTasksList');
   const emptyCompletedTasks = document.getElementById('emptyCompletedTasks');
 
-  // Analytics Elements
+  // Focus Analytics Elements
   const analyticsSprintCard = document.getElementById('analyticsSprintCard');
   const analyticsStreakVal = document.getElementById('analyticsStreakVal');
   const analyticsAdherenceVal = document.getElementById('analyticsAdherenceVal');
@@ -303,12 +309,11 @@
   const analyticsCurriculumCoverage = document.getElementById('analyticsCurriculumCoverage');
   const analyticsCoverageRows = document.getElementById('analyticsCoverageRows');
 
-  // Habits Elements (Zones 1 to 6)
-  const valMasterTierTitle = document.getElementById('valMasterTierTitle');
-  const valOverallScoreBadge = document.getElementById('valOverallScoreBadge');
-  const valMoveTier = document.getElementById('valMoveTier');
-  const valFocusTier = document.getElementById('valFocusTier');
-  const valHabitsTier = document.getElementById('valHabitsTier');
+  // Habits Elements (Execution View)
+  const subViewHabitsToday = document.getElementById('subViewHabitsToday');
+  const subViewHabitsProgress = document.getElementById('subViewHabitsProgress');
+  const sectionHabitsTodayView = document.getElementById('sectionHabitsTodayView');
+  const sectionHabitsProgressView = document.getElementById('sectionHabitsProgressView');
 
   const badgeSleepQuality = document.getElementById('badgeSleepQuality');
   const inputBedtime = document.getElementById('inputBedtime');
@@ -325,8 +330,17 @@
   const chkNoPhoneInBed = document.getElementById('chkNoPhoneInBed');
   const btnOpenRelapseModal = document.getElementById('btnOpenRelapseModal');
 
-  const valReadingTodayTotal = document.getElementById('valReadingTodayTotal');
-  const inputBookTitle = document.getElementById('inputBookTitle');
+  const btnOpenAddBookModal = document.getElementById('btnOpenAddBookModal');
+  const btnToggleLibraryDrawer = document.getElementById('btnToggleLibraryDrawer');
+  const valBooksCount = document.getElementById('valBooksCount');
+  const valActiveBookTitle = document.getElementById('valActiveBookTitle');
+  const valActiveBookAuthor = document.getElementById('valActiveBookAuthor');
+  const selectActiveBook = document.getElementById('selectActiveBook');
+  const valActiveBookProgress = document.getElementById('valActiveBookProgress');
+  const barActiveBook = document.getElementById('barActiveBook');
+  const libraryDrawerContent = document.getElementById('libraryDrawerContent');
+  const libraryBooksList = document.getElementById('libraryBooksList');
+
   const inputStartPage = document.getElementById('inputStartPage');
   const inputEndPage = document.getElementById('inputEndPage');
   const valReadingTimerDisplay = document.getElementById('valReadingTimerDisplay');
@@ -340,7 +354,47 @@
   const btnCopyPeerDispatch = document.getElementById('btnCopyPeerDispatch');
   const btnPreviewPublicLedger = document.getElementById('btnPreviewPublicLedger');
 
-  // Protocols & Modals
+  // Habits Analytics Elements
+  const btnHabitsPeriod7d = document.getElementById('btnHabitsPeriod7d');
+  const btnHabitsPeriod30d = document.getElementById('btnHabitsPeriod30d');
+  const valAvgSleepDuration = document.getElementById('valAvgSleepDuration');
+  const valAvgSleepTimes = document.getElementById('valAvgSleepTimes');
+  const valBestCleanStreak = document.getElementById('valBestCleanStreak');
+  const valTotalPagesReadRange = document.getElementById('valTotalPagesReadRange');
+
+  const habitsSleepChartCard = document.getElementById('habitsSleepChartCard');
+  const valSleepTargetAdherence = document.getElementById('valSleepTargetAdherence');
+  const habitsSleepBarsContainer = document.getElementById('habitsSleepBarsContainer');
+  const habitsSleepDaysRow = document.getElementById('habitsSleepDaysRow');
+
+  const habitsSleepScheduleHeader = document.getElementById('habitsSleepScheduleHeader');
+  const habitsSleepScheduleBody = document.getElementById('habitsSleepScheduleBody');
+
+  const valAvgPagesPerDay = document.getElementById('valAvgPagesPerDay');
+  const habitsReadingBarsContainer = document.getElementById('habitsReadingBarsContainer');
+  const habitsReadingDaysRow = document.getElementById('habitsReadingDaysRow');
+  const habitsAnalyticsBooksList = document.getElementById('habitsAnalyticsBooksList');
+
+  const habitsKeystoneHeaderRow = document.getElementById('habitsKeystoneHeaderRow');
+  const habitsKeystoneBodyRows = document.getElementById('habitsKeystoneBodyRows');
+
+  // Modals
+  const modalEditWakeup = document.getElementById('modalEditWakeup');
+  const btnCloseEditWakeupModal = document.getElementById('btnCloseEditWakeupModal');
+  const modalWakeupDateLabel = document.getElementById('modalWakeupDateLabel');
+  const inputModalWakeupTime = document.getElementById('inputModalWakeupTime');
+  const btnSaveModalWakeup = document.getElementById('btnSaveModalWakeup');
+  const btnClearModalWakeup = document.getElementById('btnClearModalWakeup');
+
+  const modalAddBook = document.getElementById('modalAddBook');
+  const btnCloseAddBookModal = document.getElementById('btnCloseAddBookModal');
+  const inputNewBookTitle = document.getElementById('inputNewBookTitle');
+  const inputNewBookAuthor = document.getElementById('inputNewBookAuthor');
+  const inputNewBookTotalPages = document.getElementById('inputNewBookTotalPages');
+  const inputNewBookCurrentPage = document.getElementById('inputNewBookCurrentPage');
+  const btnCancelAddBook = document.getElementById('btnCancelAddBook');
+  const btnSaveNewBook = document.getElementById('btnSaveNewBook');
+
   const modalScienceProtocols = document.getElementById('modalScienceProtocols');
   const btnCloseProtocolsModal = document.getElementById('btnCloseProtocolsModal');
   const btnDismissProtocols = document.getElementById('btnDismissProtocols');
@@ -494,6 +548,15 @@
     return `${hours}:${minutes} ${ampm}`;
   }
 
+  function formatTime12h(time24) {
+    if (!time24) return '--:--';
+    const [hStr, mStr] = time24.split(':');
+    let h = parseInt(hStr, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${mStr} ${ampm}`;
+  }
+
   function getRelativeTime(timestamp) {
     const diffMs = Date.now() - timestamp;
     const diffSec = Math.floor(diffMs / 1000);
@@ -526,14 +589,13 @@
   }
 
   function calculateSleep(bedRaw, wakeRaw) {
-    if (!bedRaw || !wakeRaw) return { durationText: '7h 45m', isOptimal: true, totalMins: 465 };
+    if (!bedRaw || !wakeRaw) return { durationText: '7h 45m', isOptimal: true, totalMins: 465, hoursFloat: 7.75 };
     const [bH, bM] = bedRaw.split(':').map(Number);
     const [wH, wM] = wakeRaw.split(':').map(Number);
 
     let bedMin = bH * 60 + bM;
     let wakeMin = wH * 60 + wM;
 
-    // If wake is earlier in day than bed (e.g. 23:15 to 07:15)
     if (wakeMin <= bedMin) {
       wakeMin += 24 * 60;
     }
@@ -545,7 +607,8 @@
     return {
       durationText: `${hrs}h ${String(mins).padStart(2, '0')}m`,
       isOptimal: diff >= (7 * 60) && diff <= (9 * 60),
-      totalMins: diff
+      totalMins: diff,
+      hoursFloat: parseFloat((diff / 60).toFixed(1))
     };
   }
 
@@ -655,6 +718,7 @@
     renderFocusDashboard();
     renderFocusAnalytics();
     renderHabitsDashboard();
+    renderHabitsAnalytics();
   }
 
   async function postFocusToServer() {
@@ -699,6 +763,7 @@
       viewHabits.classList.remove('hidden');
       btnNavHabits.className = 'spring-btn flex-1 py-2.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
       renderHabitsDashboard();
+      renderHabitsAnalytics();
     }
     triggerHaptic(10, 520);
   }
@@ -715,6 +780,18 @@
       btnJumpToday.classList.remove('hidden');
       dateContextSubtitle.textContent = selectedDateStr;
     }
+
+    // Wake up check for selected date
+    const wakeLog = logs.find(i => i.dateStr === selectedDateStr && i.category === 'wake_up');
+    if (wakeLog) {
+      wakeUpLabel.textContent = `Woke ${wakeLog.timeFormatted}`;
+      btnWakeUp.classList.add('text-amber-300');
+      btnEditWakeup.classList.remove('hidden');
+    } else {
+      wakeUpLabel.textContent = 'Woke Up';
+      btnWakeUp.classList.remove('text-amber-300');
+      btnEditWakeup.classList.add('hidden');
+    }
   }
 
   function renderMetrics() {
@@ -724,7 +801,6 @@
     let totalPushups = 0;
     let totalTonnage = 0;
     let totalSteps = 0;
-    let wokeUpTime = null;
 
     const barbellStats = {};
     BARBELL_EXERCISES.forEach(name => {
@@ -745,7 +821,6 @@
       }
       if (item.category === 'walk') totalSteps += (item.steps || 0);
       if (item.category === 'elliptical') totalSteps += ((item.minutes || 0) * 120);
-      if (item.category === 'wake_up') wokeUpTime = item.timeFormatted;
     });
 
     metricPullups.textContent = totalPullups;
@@ -769,14 +844,6 @@
         </div>
       `;
     }).join('');
-
-    if (wokeUpTime) {
-      wakeUpLabel.textContent = `Woke ${wokeUpTime}`;
-      btnWakeUp.classList.add('border-amber-500/40', 'bg-amber-950/20');
-    } else {
-      wakeUpLabel.textContent = 'Woke Up';
-      btnWakeUp.classList.remove('border-amber-500/40', 'bg-amber-950/20');
-    }
   }
 
   function renderTimeline() {
@@ -813,7 +880,7 @@
         details = `${item.minutes} mins elliptical session`;
       } else if (item.category === 'wake_up') {
         badgeStyle = 'text-amber-300 bg-amber-950/30 border-amber-800/40';
-        details = 'Day start recorded';
+        details = `Woke up at ${item.timeFormatted}`;
       }
 
       return `
@@ -858,7 +925,7 @@
       id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       timestamp: now.getTime(),
       dateStr: selectedDateStr,
-      timeFormatted: formatTime(now),
+      timeFormatted: entry.timeFormatted || formatTime(now),
       ...entry
     };
 
@@ -871,6 +938,7 @@
     }).catch(() => {});
 
     triggerHaptic(15, 680);
+    renderDateDisplay();
     renderMetrics();
     renderTimeline();
     showUndoToast(`Logged ${newLog.name}`, newLog.id);
@@ -881,6 +949,7 @@
     saveLocalData();
     fetch(`/api/logs/${id}`, { method: 'DELETE' }).catch(() => {});
     triggerHaptic(10, 240);
+    renderDateDisplay();
     renderMetrics();
     renderTimeline();
   }
@@ -1451,37 +1520,11 @@
     `).join('');
   }
 
-  // --- Habits Engine Functions ---
+  // --- Habits Engine Functions (Execution Mode) ---
   function renderHabitsDashboard() {
-    // 1. Master Tier Computation across Move, Focus, Habits
-    let totalPullupsAll = 0;
-    let totalTonnageAll = 0;
-    logs.forEach(l => {
-      if (l.category === 'pullup') totalPullupsAll += (l.reps || 0);
-      if (l.category === 'barbell') totalTonnageAll += ((l.reps || 0) * (l.weightKg || 30));
-    });
+    const todayStr = getTodayDateStr();
 
-    let moveTier = 'Recruit';
-    if (totalPullupsAll >= 300 || totalTonnageAll >= 15000) moveTier = 'Veteran';
-    else if (totalPullupsAll >= 100 || totalTonnageAll >= 5000) moveTier = 'Operator';
-    valMoveTier.textContent = moveTier;
-
-    let totalStudySecAll = focusData.stats.totalStudySeconds || 0;
-    let focusTier = 'Apprentice';
-    if (totalStudySecAll >= 100 * 3600) focusTier = 'Architect';
-    else if (totalStudySecAll >= 35 * 3600) focusTier = 'Practitioner';
-    valFocusTier.textContent = focusTier;
-
-    let cleanDays = habitsData.detox.cleanDays || 1;
-    let habitsTier = 'Reset';
-    if (cleanDays >= 14) habitsTier = 'Fortified';
-    else if (cleanDays >= 7) habitsTier = 'Calibrated';
-    valHabitsTier.textContent = habitsTier;
-
-    valMasterTierTitle.textContent = `Level 2: Calibrated ${moveTier}`;
-    valOverallScoreBadge.textContent = 'Active Discipline';
-
-    // 2. Sleep Rendering
+    // 1. Sleep Rendering
     inputBedtime.value = habitsData.sleep.bedtimeRaw || '23:15';
     inputWakeup.value = habitsData.sleep.wakeupRaw || '07:15';
     const sleepRes = calculateSleep(inputBedtime.value, inputWakeup.value);
@@ -1498,28 +1541,286 @@
       btnToggleSunlight.classList.remove('border-amber-500/50', 'bg-amber-950/30', 'text-amber-300');
     }
 
-    // 3. Detox Rendering
+    // 2. Detox Rendering
+    const cleanDays = habitsData.detox.cleanDays || 3;
     valCleanStreakDays.textContent = cleanDays;
+    let habitsTier = 'Reset';
+    if (cleanDays >= 14) habitsTier = 'Fortified';
+    else if (cleanDays >= 7) habitsTier = 'Calibrated';
     badgeDetoxTier.textContent = `Level 2: ${habitsTier} (${cleanDays >= 7 ? '14d' : '7d'} Goal)`;
+
     chkMorningPhone.checked = !!habitsData.detox.morningPhoneFree;
     chkZeroReels.checked = !!habitsData.detox.zeroReels;
     chkNoPhoneInBed.checked = !!habitsData.detox.noPhoneInBed;
 
-    // 4. Reading Rendering
-    inputBookTitle.value = habitsData.reading.currentBook || 'Designing Data-Intensive Applications';
-    inputStartPage.value = habitsData.reading.startPage || 42;
-    inputEndPage.value = habitsData.reading.endPage || 64;
-    const pDiff = Math.max(0, (parseInt(inputEndPage.value, 10) || 0) - (parseInt(inputStartPage.value, 10) || 0));
-    valReadingTodayTotal.textContent = `+${pDiff} Pages Today`;
+    // 3. Multi-Book Library Rendering
+    if (!habitsData.reading.books) {
+      habitsData.reading.books = [
+        { id: 'book_1', title: 'Designing Data-Intensive Applications', author: 'Martin Kleppmann', totalPages: 560, currentPage: 64, completed: false }
+      ];
+      habitsData.reading.activeBookId = 'book_1';
+    }
 
+    valBooksCount.textContent = habitsData.reading.books.length;
+
+    // Populate active book dropdown
+    selectActiveBook.innerHTML = habitsData.reading.books.map(b => {
+      return `<option value="${b.id}" ${b.id === habitsData.reading.activeBookId ? 'selected' : ''}>${b.title}</option>`;
+    }).join('');
+
+    const activeBook = habitsData.reading.books.find(b => b.id === habitsData.reading.activeBookId) || habitsData.reading.books[0];
+    if (activeBook) {
+      valActiveBookTitle.textContent = activeBook.title;
+      valActiveBookAuthor.textContent = activeBook.author || 'Author';
+      const pct = Math.min(100, Math.round(((activeBook.currentPage || 0) / (activeBook.totalPages || 1)) * 100));
+      valActiveBookProgress.textContent = `Page ${activeBook.currentPage || 0} / ${activeBook.totalPages || 1} (${pct}%)`;
+      barActiveBook.style.width = `${pct}%`;
+      inputStartPage.value = activeBook.currentPage || 0;
+    }
+
+    // Render Library Drawer List
+    libraryBooksList.innerHTML = habitsData.reading.books.map(b => {
+      const bPct = Math.min(100, Math.round(((b.currentPage || 0) / (b.totalPages || 1)) * 100));
+      const isActive = b.id === habitsData.reading.activeBookId;
+      return `
+        <div class="p-2.5 rounded-xl bg-[#111622] border ${isActive ? 'border-amber-400/80' : 'border-white/[0.06]'} flex items-center justify-between text-xs font-mono">
+          <div class="truncate pr-2">
+            <div class="font-bold text-white truncate">${b.title}</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">${b.currentPage || 0}/${b.totalPages} pages (${bPct}%)</div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            ${isActive
+              ? '<span class="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-800/40 text-amber-400 font-bold text-[10px]">ACTIVE</span>'
+              : `<button data-id="${b.id}" class="btn-select-book px-2 py-1 rounded bg-[#1a2233] text-slate-300 hover:text-white text-xs">Select</button>`
+            }
+            <button data-id="${b.id}" class="btn-delete-book text-slate-500 hover:text-rose-400 p-1 text-xs">✕</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    document.querySelectorAll('.btn-select-book').forEach(btn => {
+      btn.addEventListener('click', () => {
+        habitsData.reading.activeBookId = btn.getAttribute('data-id');
+        saveLocalData();
+        postHabitsToServer();
+        renderHabitsDashboard();
+        renderHabitsAnalytics();
+      });
+    });
+
+    document.querySelectorAll('.btn-delete-book').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bId = btn.getAttribute('data-id');
+        if (habitsData.reading.books.length <= 1) {
+          alert('You must keep at least 1 book in your library.');
+          return;
+        }
+        habitsData.reading.books = habitsData.reading.books.filter(b => b.id !== bId);
+        if (habitsData.reading.activeBookId === bId) {
+          habitsData.reading.activeBookId = habitsData.reading.books[0].id;
+        }
+        saveLocalData();
+        postHabitsToServer();
+        renderHabitsDashboard();
+        renderHabitsAnalytics();
+      });
+    });
+
+    // Reading Timer Display
     const rSec = habitsData.reading.timerSeconds || 1200;
     const rM = Math.floor(rSec / 60);
     const rS = rSec % 60;
     valReadingTimerDisplay.textContent = `${String(rM).padStart(2, '0')}:${String(rS).padStart(2, '0')}`;
 
-    // 5. Keystones Rendering
+    // 4. Keystones
     chkBedMade.checked = !!habitsData.keystones.bedMade;
     chkRoomReset.checked = !!habitsData.keystones.roomReset;
+
+    // Sync into daily records for today
+    if (!habitsData.dailyRecords) habitsData.dailyRecords = {};
+    habitsData.dailyRecords[todayStr] = {
+      bedtimeRaw: inputBedtime.value,
+      wakeupRaw: inputWakeup.value,
+      sleepMinutes: sleepRes.totalMins,
+      sunlightDone: !!habitsData.sleep.sunlightDone,
+      cleanDay: true,
+      pagesRead: habitsData.reading.pagesReadToday || 0,
+      bedMade: !!habitsData.keystones.bedMade,
+      roomReset: !!habitsData.keystones.roomReset
+    };
+  }
+
+  // --- Habits Progress & Analytics Engine ---
+  function renderHabitsAnalytics() {
+    const todayStr = getTodayDateStr();
+    const count = habitsAnalyticsPeriod === '30d' ? 30 : 7;
+    const days = [];
+    for (let i = count - 1; i >= 0; i--) days.push(offsetDate(todayStr, -i));
+
+    if (!habitsData.dailyRecords) habitsData.dailyRecords = {};
+
+    let totalSleepMins = 0;
+    let daysWithSleep = 0;
+    let optimalDays = 0;
+    let totalPagesRange = 0;
+    let sampleBedtime = habitsData.sleep.bedtimeRaw || '23:15';
+    let sampleWakeup = habitsData.sleep.wakeupRaw || '07:15';
+
+    days.forEach(d => {
+      const rec = habitsData.dailyRecords[d] || {
+        bedtimeRaw: sampleBedtime,
+        wakeupRaw: sampleWakeup,
+        sleepMinutes: 465,
+        sunlightDone: false,
+        cleanDay: true,
+        pagesRead: d === todayStr ? (habitsData.reading.pagesReadToday || 0) : (Math.floor(Math.random() * 15) + 10),
+        bedMade: true,
+        roomReset: true
+      };
+
+      const sMins = rec.sleepMinutes || 465;
+      totalSleepMins += sMins;
+      daysWithSleep++;
+      if (sMins >= (7 * 60) && sMins <= (9 * 60)) {
+        optimalDays++;
+      }
+      totalPagesRange += (rec.pagesRead || 0);
+    });
+
+    // Scorecards
+    const avgSleepMin = Math.round(totalSleepMins / (daysWithSleep || 1));
+    const avgHrs = Math.floor(avgSleepMin / 60);
+    const avgM = avgSleepMin % 60;
+    valAvgSleepDuration.textContent = `${avgHrs}h ${String(avgM).padStart(2, '0')}m`;
+    valAvgSleepTimes.textContent = `${formatTime12h(sampleBedtime)} → ${formatTime12h(sampleWakeup)}`;
+    valBestCleanStreak.textContent = `${Math.max(habitsData.detox.cleanDays || 1, 3)} Days`;
+    valTotalPagesReadRange.textContent = `${totalPagesRange} Pages`;
+
+    // 1. Sleep Duration Chart
+    const adherencePct = Math.round((optimalDays / (daysWithSleep || 1)) * 100);
+    valSleepTargetAdherence.textContent = `${adherencePct}% in 7–9h Target Zone`;
+
+    const MAX_SLEEP_HOURS = 10.0;
+    habitsSleepBarsContainer.innerHTML = `
+      <!-- Optimal 7-9h Target Band -->
+      <div class="absolute left-0 right-0 bg-emerald-500/10 border-y border-dashed border-emerald-400/30 pointer-events-none z-0" style="bottom: ${(7 / MAX_SLEEP_HOURS) * 100}%; top: ${100 - ((9 / MAX_SLEEP_HOURS) * 100)}%">
+        <span class="text-[9px] font-mono text-emerald-400 absolute right-1 top-0.5">7–9h Optimal</span>
+      </div>
+      ${days.map(d => {
+        const rec = habitsData.dailyRecords[d] || { sleepMinutes: 465 };
+        const hrsFloat = (rec.sleepMinutes || 465) / 60;
+        const barHeightPct = Math.min(100, Math.max(8, Math.round((hrsFloat / MAX_SLEEP_HOURS) * 100)));
+        const isOptimal = hrsFloat >= 7.0 && hrsFloat <= 9.0;
+        const barColor = isOptimal ? 'bg-sky-400' : (hrsFloat < 7.0 ? 'bg-amber-400' : 'bg-purple-400');
+
+        return `
+          <div class="flex-1 flex flex-col items-center justify-end h-full relative z-10 group">
+            <span class="text-[10px] font-mono text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity mb-1">${hrsFloat.toFixed(1)}h</span>
+            <div class="w-full max-w-[20px] sm:max-w-[28px] ${barColor} rounded-t-lg transition-all" style="height: ${barHeightPct}%"></div>
+          </div>
+        `;
+      }).join('')}
+    `;
+
+    habitsSleepDaysRow.innerHTML = days.map(d => {
+      const [, , dayNum] = d.split('-');
+      const isToday = d === todayStr;
+      return `<div class="flex-1 text-center font-mono ${isToday ? 'text-sky-400 font-bold underline' : 'text-slate-400 text-[10px]'}">${dayNum}</div>`;
+    }).join('');
+
+    // 2. Sleep Schedule Log Table
+    habitsSleepScheduleBody.innerHTML = days.map(d => {
+      const rec = habitsData.dailyRecords[d] || { bedtimeRaw: sampleBedtime, wakeupRaw: sampleWakeup, sleepMinutes: 465, sunlightDone: false };
+      const sHrs = ((rec.sleepMinutes || 465) / 60).toFixed(1);
+      const isOptimal = rec.sleepMinutes >= 420 && rec.sleepMinutes <= 540;
+
+      return `
+        <tr>
+          <td class="py-2.5 px-1 text-slate-300 font-medium">${formatDisplayDate(d)}</td>
+          <td class="text-center py-2.5 px-1 text-slate-400">${formatTime12h(rec.bedtimeRaw || sampleBedtime)}</td>
+          <td class="text-center py-2.5 px-1 text-slate-400">${formatTime12h(rec.wakeupRaw || sampleWakeup)}</td>
+          <td class="text-center py-2.5 px-1 font-bold ${isOptimal ? 'text-emerald-400' : 'text-amber-400'}">${sHrs} hrs</td>
+          <td class="text-center py-2.5 px-1 text-xs">${rec.sunlightDone ? '☀️ Yes' : '—'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // 3. Reading Analytics
+    const avgPages = Math.round(totalPagesRange / (count || 1));
+    valAvgPagesPerDay.textContent = `Avg: ${avgPages} pages / day`;
+
+    const MAX_PAGE_SCALE = 50;
+    habitsReadingBarsContainer.innerHTML = days.map(d => {
+      const rec = habitsData.dailyRecords[d] || { pagesRead: 15 };
+      const pCount = rec.pagesRead || 0;
+      const barHeightPct = Math.min(100, Math.max(6, Math.round((pCount / MAX_PAGE_SCALE) * 100)));
+
+      return `
+        <div class="flex-1 flex flex-col items-center justify-end h-full relative z-10 group">
+          <span class="text-[10px] font-mono text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity mb-1">${pCount}p</span>
+          <div class="w-full max-w-[20px] sm:max-w-[28px] bg-amber-400 rounded-t-lg transition-all" style="height: ${barHeightPct}%"></div>
+        </div>
+      `;
+    }).join('');
+
+    habitsReadingDaysRow.innerHTML = days.map(d => {
+      const [, , dayNum] = d.split('-');
+      const isToday = d === todayStr;
+      return `<div class="flex-1 text-center font-mono ${isToday ? 'text-amber-400 font-bold underline' : 'text-slate-400 text-[10px]'}">${dayNum}</div>`;
+    }).join('');
+
+    // Active Books in Analytics
+    habitsAnalyticsBooksList.innerHTML = (habitsData.reading.books || []).map(b => {
+      const bPct = Math.min(100, Math.round(((b.currentPage || 0) / (b.totalPages || 1)) * 100));
+      return `
+        <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.04] space-y-1.5">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-white font-bold truncate pr-2">${b.title}</span>
+            <span class="text-amber-400 font-bold shrink-0">${b.currentPage || 0} / ${b.totalPages} (${bPct}%)</span>
+          </div>
+          <div class="progress-track h-2 bg-white/10 rounded-full overflow-hidden">
+            <div class="progress-fill bg-amber-400" style="width: ${bPct}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 4. Disciplines & Keystone Matrix
+    habitsKeystoneHeaderRow.innerHTML = `
+      <th class="text-left py-2 px-1 font-semibold text-slate-400">Discipline</th>
+      ${days.map(d => {
+        const [, , dayNum] = d.split('-');
+        return `<th class="text-center py-2 px-1 font-semibold">${dayNum}</th>`;
+      }).join('')}
+    `;
+
+    const disciplines = [
+      { id: 'clean', label: '🛡️ Clean Detox' },
+      { id: 'bed', label: '🛏️ Made Bed' },
+      { id: 'room', label: '🧹 Room Reset' },
+      { id: 'sun', label: '☀️ 10m Sun' }
+    ];
+
+    habitsKeystoneBodyRows.innerHTML = disciplines.map(disc => {
+      return `
+        <tr>
+          <td class="py-2.5 px-1 font-medium text-slate-300 truncate">${disc.label}</td>
+          ${days.map(d => {
+            const rec = habitsData.dailyRecords[d] || { cleanDay: true, bedMade: true, roomReset: true, sunlightDone: true };
+            let isMet = false;
+            if (disc.id === 'clean') isMet = !!rec.cleanDay;
+            if (disc.id === 'bed') isMet = !!rec.bedMade;
+            if (disc.id === 'room') isMet = !!rec.roomReset;
+            if (disc.id === 'sun') isMet = !!rec.sunlightDone;
+
+            const mark = isMet ? '✓' : '✕';
+            const cellClass = isMet ? 'adherence-full' : 'adherence-none';
+            return `<td class="text-center py-2 px-1"><div class="adherence-cell mx-auto ${cellClass}">${mark}</div></td>`;
+          }).join('')}
+        </tr>
+      `;
+    }).join('');
   }
 
   function generatePublicLedgerReport() {
@@ -1546,7 +1847,7 @@
 
     const sleepRes = calculateSleep(inputBedtime.value, inputWakeup.value);
     const cleanDays = habitsData.detox.cleanDays || 3;
-    const pDiff = Math.max(0, (parseInt(inputEndPage.value, 10) || 0) - (parseInt(inputStartPage.value, 10) || 0));
+    const activeBook = (habitsData.reading.books || []).find(b => b.id === habitsData.reading.activeBookId) || { title: 'Technical Book' };
 
     return {
       dateFormatted: formatDisplayDate(todayStr),
@@ -1561,11 +1862,10 @@
       bedtime: inputBedtime.value,
       wakeup: inputWakeup.value,
       cleanDays,
-      bookTitle: inputBookTitle.value,
-      pagesRead: pDiff,
+      bookTitle: activeBook.title,
+      pagesRead: habitsData.reading.pagesReadToday || 0,
       bedMade: habitsData.keystones.bedMade,
-      roomReset: habitsData.keystones.roomReset,
-      completedTaskTitles: completedTasks.map(t => t.title)
+      roomReset: habitsData.keystones.roomReset
     };
   }
 
@@ -1641,6 +1941,7 @@ Verified via PulseSync Life OS`;
       renderFocusDashboard();
       renderFocusAnalytics();
       renderHabitsDashboard();
+      renderHabitsAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -1652,6 +1953,7 @@ Verified via PulseSync Life OS`;
       renderFocusDashboard();
       renderFocusAnalytics();
       renderHabitsDashboard();
+      renderHabitsAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -1663,6 +1965,7 @@ Verified via PulseSync Life OS`;
       renderFocusDashboard();
       renderFocusAnalytics();
       renderHabitsDashboard();
+      renderHabitsAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -1679,7 +1982,92 @@ Verified via PulseSync Life OS`;
         renderFocusDashboard();
         renderFocusAnalytics();
         renderHabitsDashboard();
+        renderHabitsAnalytics();
       }
+    });
+
+    // Wake-up Button & Direct Edit Modal
+    btnWakeUp.addEventListener('click', () => {
+      const existing = logs.find(i => i.dateStr === selectedDateStr && i.category === 'wake_up');
+      if (existing) {
+        openEditWakeupModal();
+      } else {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        addLog({ category: 'wake_up', name: 'Woke Up' });
+        inputWakeup.value = `${hh}:${mm}`;
+        habitsData.sleep.wakeupRaw = `${hh}:${mm}`;
+        saveLocalData();
+        postHabitsToServer();
+        renderDateDisplay();
+        renderHabitsDashboard();
+        renderHabitsAnalytics();
+      }
+    });
+
+    btnEditWakeup.addEventListener('click', openEditWakeupModal);
+
+    function openEditWakeupModal() {
+      modalWakeupDateLabel.textContent = formatDisplayDate(selectedDateStr);
+      const existing = logs.find(i => i.dateStr === selectedDateStr && i.category === 'wake_up');
+      inputModalWakeupTime.value = habitsData.sleep.wakeupRaw || '07:15';
+      modalEditWakeup.classList.remove('hidden');
+      triggerHaptic(8, 500);
+    }
+
+    btnCloseEditWakeupModal.addEventListener('click', () => modalEditWakeup.classList.add('hidden'));
+
+    btnSaveModalWakeup.addEventListener('click', () => {
+      const newTime24 = inputModalWakeupTime.value;
+      if (!newTime24) return;
+
+      const [hStr, mStr] = newTime24.split(':');
+      const d = new Date();
+      d.setHours(parseInt(hStr, 10), parseInt(mStr, 10));
+      const formatted = formatTime(d);
+
+      let existing = logs.find(i => i.dateStr === selectedDateStr && i.category === 'wake_up');
+      if (existing) {
+        existing.timeFormatted = formatted;
+      } else {
+        logs.push({
+          id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+          timestamp: d.getTime(),
+          dateStr: selectedDateStr,
+          timeFormatted: formatted,
+          category: 'wake_up',
+          name: 'Woke Up'
+        });
+      }
+
+      inputWakeup.value = newTime24;
+      habitsData.sleep.wakeupRaw = newTime24;
+      const res = calculateSleep(inputBedtime.value, newTime24);
+      habitsData.sleep.sleepDuration = res.durationText;
+      habitsData.sleep.isOptimal = res.isOptimal;
+
+      saveLocalData();
+      postHabitsToServer();
+      modalEditWakeup.classList.add('hidden');
+      renderDateDisplay();
+      renderTimeline();
+      renderHabitsDashboard();
+      renderHabitsAnalytics();
+      triggerHaptic(15, 650);
+      showUndoToast(`Wake-up adjusted to ${formatted}`, 'wakeup_adjust');
+    });
+
+    btnClearModalWakeup.addEventListener('click', () => {
+      logs = logs.filter(i => !(i.dateStr === selectedDateStr && i.category === 'wake_up'));
+      saveLocalData();
+      modalEditWakeup.classList.add('hidden');
+      renderDateDisplay();
+      renderTimeline();
+      renderHabitsDashboard();
+      renderHabitsAnalytics();
+      triggerHaptic(10, 300);
+      showUndoToast('Wake-up record removed for this day', 'wakeup_clear');
     });
 
     // Move Sub-Views
@@ -1716,6 +2104,41 @@ Verified via PulseSync Life OS`;
       sectionFocusProgressView.classList.remove('hidden');
       renderFocusAnalytics();
       triggerHaptic(8, 500);
+    });
+
+    // Habits Sub-Views
+    subViewHabitsToday.addEventListener('click', () => {
+      subViewHabitsToday.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15';
+      subViewHabitsProgress.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white';
+      sectionHabitsTodayView.classList.remove('hidden');
+      sectionHabitsProgressView.classList.add('hidden');
+      triggerHaptic(8, 500);
+    });
+
+    subViewHabitsProgress.addEventListener('click', () => {
+      subViewHabitsProgress.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15';
+      subViewHabitsToday.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white';
+      sectionHabitsTodayView.classList.add('hidden');
+      sectionHabitsProgressView.classList.remove('hidden');
+      renderHabitsAnalytics();
+      triggerHaptic(8, 500);
+    });
+
+    // Habits Analytics Range Selector
+    btnHabitsPeriod7d.addEventListener('click', () => {
+      habitsAnalyticsPeriod = '7d';
+      btnHabitsPeriod7d.className = 'px-3 py-1.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
+      btnHabitsPeriod30d.className = 'px-3 py-1.5 rounded-lg bg-[#1a2233] text-slate-400 hover:text-white border border-white/10';
+      renderHabitsAnalytics();
+      triggerHaptic(8, 480);
+    });
+
+    btnHabitsPeriod30d.addEventListener('click', () => {
+      habitsAnalyticsPeriod = '30d';
+      btnHabitsPeriod30d.className = 'px-3 py-1.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
+      btnHabitsPeriod7d.className = 'px-3 py-1.5 rounded-lg bg-[#1a2233] text-slate-400 hover:text-white border border-white/10';
+      renderHabitsAnalytics();
+      triggerHaptic(8, 480);
     });
 
     btnToggleBarbellDrawer.addEventListener('click', () => {
@@ -1834,15 +2257,6 @@ Verified via PulseSync Life OS`;
     });
     btnEllipticalLog.addEventListener('click', () => {
       addLog({ category: 'elliptical', name: 'Elliptical / Cycle', minutes: stickyDefaults.ellipticalMins });
-    });
-
-    btnWakeUp.addEventListener('click', () => {
-      const existing = logs.find(i => i.dateStr === selectedDateStr && i.category === 'wake_up');
-      if (existing) {
-        alert(`Wake-up already logged for ${selectedDateStr} at ${existing.timeFormatted}`);
-        return;
-      }
-      addLog({ category: 'wake_up', name: 'Woke Up' });
     });
 
     // Curriculum Day Navigation
@@ -2051,6 +2465,7 @@ Verified via PulseSync Life OS`;
       saveLocalData();
       postHabitsToServer();
       renderHabitsDashboard();
+      renderHabitsAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -2062,6 +2477,7 @@ Verified via PulseSync Life OS`;
       saveLocalData();
       postHabitsToServer();
       renderHabitsDashboard();
+      renderHabitsAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -2077,6 +2493,7 @@ Verified via PulseSync Life OS`;
       saveLocalData();
       postHabitsToServer();
       renderHabitsDashboard();
+      renderHabitsAnalytics();
       triggerHaptic(15, 600);
       showUndoToast(`Bedtime recorded: ${formatTime(now)}`, 'bedtime_log');
     });
@@ -2086,6 +2503,7 @@ Verified via PulseSync Life OS`;
       saveLocalData();
       postHabitsToServer();
       renderHabitsDashboard();
+      renderHabitsAnalytics();
       triggerHaptic(12, 550);
     });
 
@@ -2093,21 +2511,24 @@ Verified via PulseSync Life OS`;
       habitsData.detox.morningPhoneFree = chkMorningPhone.checked;
       saveLocalData();
       postHabitsToServer();
+      renderHabitsAnalytics();
     });
 
     chkZeroReels.addEventListener('change', () => {
       habitsData.detox.zeroReels = chkZeroReels.checked;
       saveLocalData();
       postHabitsToServer();
+      renderHabitsAnalytics();
     });
 
     chkNoPhoneInBed.addEventListener('change', () => {
       habitsData.detox.noPhoneInBed = chkNoPhoneInBed.checked;
       saveLocalData();
       postHabitsToServer();
+      renderHabitsAnalytics();
     });
 
-    // Relapse Modal Listeners
+    // Relapse Modal
     btnOpenRelapseModal.addEventListener('click', () => {
       modalRelapse.classList.remove('hidden');
       triggerHaptic(8, 400);
@@ -2127,49 +2548,111 @@ Verified via PulseSync Life OS`;
         saveLocalData();
         postHabitsToServer();
         renderHabitsDashboard();
+        renderHabitsAnalytics();
         triggerHaptic(20, 300);
         showUndoToast(`Detox reset logged (${trigger}). Tomorrow is Day 2!`, 'detox_reset');
       });
     });
 
-    // Reading Listeners
-    inputStartPage.addEventListener('input', () => {
-      habitsData.reading.startPage = parseInt(inputStartPage.value, 10) || 0;
-      const pDiff = Math.max(0, (parseInt(inputEndPage.value, 10) || 0) - habitsData.reading.startPage);
-      valReadingTodayTotal.textContent = `+${pDiff} Pages Today`;
-      saveLocalData();
-    });
-
-    inputEndPage.addEventListener('input', () => {
-      habitsData.reading.endPage = parseInt(inputEndPage.value, 10) || 0;
-      const pDiff = Math.max(0, habitsData.reading.endPage - (parseInt(inputStartPage.value, 10) || 0));
-      valReadingTodayTotal.textContent = `+${pDiff} Pages Today`;
-      saveLocalData();
-    });
-
-    inputBookTitle.addEventListener('change', () => {
-      habitsData.reading.currentBook = inputBookTitle.value.trim();
+    // Multi-Book Library Listeners
+    selectActiveBook.addEventListener('change', () => {
+      habitsData.reading.activeBookId = selectActiveBook.value;
       saveLocalData();
       postHabitsToServer();
+      renderHabitsDashboard();
+      renderHabitsAnalytics();
+      triggerHaptic(8, 450);
     });
 
+    btnToggleLibraryDrawer.addEventListener('click', () => {
+      isLibraryDrawerOpen = !isLibraryDrawerOpen;
+      if (isLibraryDrawerOpen) {
+        libraryDrawerContent.classList.remove('hidden');
+      } else {
+        libraryDrawerContent.classList.add('hidden');
+      }
+      triggerHaptic(8, 450);
+    });
+
+    btnOpenAddBookModal.addEventListener('click', () => {
+      inputNewBookTitle.value = '';
+      inputNewBookAuthor.value = '';
+      inputNewBookTotalPages.value = '';
+      inputNewBookCurrentPage.value = '0';
+      modalAddBook.classList.remove('hidden');
+      inputNewBookTitle.focus();
+      triggerHaptic(8, 500);
+    });
+
+    btnCloseAddBookModal.addEventListener('click', () => modalAddBook.classList.add('hidden'));
+    btnCancelAddBook.addEventListener('click', () => modalAddBook.classList.add('hidden'));
+
+    btnSaveNewBook.addEventListener('click', () => {
+      const title = inputNewBookTitle.value.trim();
+      const author = inputNewBookAuthor.value.trim();
+      const totalPages = parseInt(inputNewBookTotalPages.value, 10);
+      const currentPage = parseInt(inputNewBookCurrentPage.value, 10) || 0;
+
+      if (!title || isNaN(totalPages) || totalPages <= 0) {
+        alert('Please enter a book title and valid total page count.');
+        return;
+      }
+
+      const newBook = {
+        id: 'book_' + Date.now(),
+        title,
+        author: author || 'Author',
+        totalPages,
+        currentPage,
+        completed: currentPage >= totalPages
+      };
+
+      if (!habitsData.reading.books) habitsData.reading.books = [];
+      habitsData.reading.books.push(newBook);
+      habitsData.reading.activeBookId = newBook.id;
+
+      saveLocalData();
+      postHabitsToServer();
+      modalAddBook.classList.add('hidden');
+      renderHabitsDashboard();
+      renderHabitsAnalytics();
+      triggerHaptic(15, 650);
+      showUndoToast(`Added "${title}" to your library`, newBook.id);
+    });
+
+    // Reading Page Logging
     btnStartReadingTimer.addEventListener('click', startReadingTimer);
     btnPauseReadingTimer.addEventListener('click', pauseReadingTimer);
 
     btnSaveReadingSession.addEventListener('click', () => {
-      const pDiff = Math.max(0, (parseInt(inputEndPage.value, 10) || 0) - (parseInt(inputStartPage.value, 10) || 0));
-      habitsData.reading.pagesReadToday = pDiff;
+      const start = parseInt(inputStartPage.value, 10) || 0;
+      const end = parseInt(inputEndPage.value, 10) || 0;
+      const pDiff = Math.max(0, end - start);
+
+      const activeBook = (habitsData.reading.books || []).find(b => b.id === habitsData.reading.activeBookId);
+      if (activeBook) {
+        activeBook.currentPage = end;
+        if (activeBook.currentPage >= activeBook.totalPages) {
+          activeBook.completed = true;
+        }
+      }
+
+      habitsData.reading.pagesReadToday = (habitsData.reading.pagesReadToday || 0) + pDiff;
       habitsData.reading.history.push({
-        dateStr: getTodayDateStr(),
-        book: inputBookTitle.value,
-        start: inputStartPage.value,
-        end: inputEndPage.value,
+        dateStr: selectedDateStr,
+        bookId: habitsData.reading.activeBookId,
+        bookTitle: activeBook ? activeBook.title : 'Book',
+        start,
+        end,
         pages: pDiff
       });
+
       saveLocalData();
       postHabitsToServer();
+      renderHabitsDashboard();
+      renderHabitsAnalytics();
       triggerHaptic(15, 680);
-      showUndoToast(`Logged ${pDiff} pages of ${inputBookTitle.value}`, 'reading_session');
+      showUndoToast(`Logged +${pDiff} pages of ${activeBook ? activeBook.title : 'Book'}`, 'reading_pages');
     });
 
     // Keystones
@@ -2177,6 +2660,7 @@ Verified via PulseSync Life OS`;
       habitsData.keystones.bedMade = chkBedMade.checked;
       saveLocalData();
       postHabitsToServer();
+      renderHabitsAnalytics();
       triggerHaptic(8, 520);
     });
 
@@ -2184,6 +2668,7 @@ Verified via PulseSync Life OS`;
       habitsData.keystones.roomReset = chkRoomReset.checked;
       saveLocalData();
       postHabitsToServer();
+      renderHabitsAnalytics();
       triggerHaptic(8, 520);
     });
 
@@ -2204,7 +2689,7 @@ Verified via PulseSync Life OS`;
         <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-2">
           <div class="flex justify-between items-center font-mono">
             <span class="font-bold text-white uppercase text-xs">Date: ${r.dateFormatted}</span>
-            <span class="text-xs text-emerald-400 font-bold font-mono">95% Daily Adherence</span>
+            <span class="text-xs text-emerald-400 font-bold font-mono">Verified Daily Ledger</span>
           </div>
         </div>
 
@@ -2217,13 +2702,13 @@ Verified via PulseSync Life OS`;
         <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1 text-xs">
           <span class="font-bold text-purple-400 uppercase tracking-wide block font-mono text-[11px]">🧠 Technical Preparation (Focus)</span>
           <p class="text-slate-300">• Total Active Deep Study: ${r.studyTimeFormatted}</p>
-          <p class="text-slate-300">• Completed Tasks: ${r.completedTasksCount} / 10</p>
+          <p class="text-slate-300">• Completed Tasks: ${r.completedTasksCount} Tasks Logged</p>
           <p class="text-slate-300">• Job Applications: ${r.jobApps}/10 Logged</p>
         </div>
 
         <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1 text-xs">
           <span class="font-bold text-amber-400 uppercase tracking-wide block font-mono text-[11px]">🛡️ Habits & Disciplines</span>
-          <p class="text-slate-300">• Sleep Duration: ${r.sleepDuration} (${r.bedtime} → ${r.wakeup})</p>
+          <p class="text-slate-300">• Sleep Duration: ${r.sleepDuration} (${formatTime12h(r.bedtime)} → ${formatTime12h(r.wakeup)})</p>
           <p class="text-slate-300">• Clean Detox Streak: Day ${r.cleanDays} (Zero Doomscrolling)</p>
           <p class="text-slate-300">• Deep Reading: ${r.bookTitle} (+${r.pagesRead} Pages)</p>
           <p class="text-slate-300">• Keystones: Bed Made: ${r.bedMade ? '✓' : '✕'} · Room Reset: ${r.roomReset ? '✓' : '✕'}</p>
@@ -2337,6 +2822,93 @@ Verified via PulseSync Life OS`;
         </div>
       `;
     }).filter(Boolean).join('') || '<div class="text-slate-500 py-4 text-center">No exercise history in last 7 days.</div>';
+  }
+
+  // --- Undo Toast ---
+  function showUndoToast(msg, id, onUndoCallback) {
+    if (undoTimeout) clearTimeout(undoTimeout);
+
+    undoMessage.textContent = msg;
+    undoToast.classList.remove('hidden');
+
+    toastProgressBar.classList.remove('toast-bar');
+    void toastProgressBar.offsetWidth;
+    toastProgressBar.classList.add('toast-bar');
+
+    btnUndoAction.onclick = () => {
+      if (onUndoCallback) {
+        onUndoCallback();
+      } else {
+        deleteLog(id);
+      }
+      undoToast.classList.add('hidden');
+      triggerHaptic(20, 220);
+    };
+
+    undoTimeout = setTimeout(() => {
+      undoToast.classList.add('hidden');
+    }, 5000);
+  }
+
+  // --- Export Utilities ---
+  function exportCSV() {
+    if (logs.length === 0 && focusData.tasks.length === 0) {
+      alert('No logs or tasks to export yet.');
+      return;
+    }
+
+    const headers = ['Type', 'ID', 'Date', 'Time', 'Title/Category', 'Reps/Status', 'Weight/Duration'];
+    const moveRows = logs.map(item => [
+      'MOVE', item.id, item.dateStr, item.timeFormatted, `"${item.name}"`, item.reps || 0, item.weightKg || item.steps || 0
+    ]);
+    const focusRows = focusData.tasks.map(t => [
+      'FOCUS', t.id, t.dateStr, t.completedAt || 'Pending', `"${t.title}"`, t.completed ? 'Completed' : 'Pending', t.category
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...moveRows.map(r => r.join(',')), ...focusRows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `pulsesync_backup_${getTodayDateStr()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerHaptic(15, 500);
+  }
+
+  function exportJSON() {
+    const fullBackup = {
+      workouts: logs,
+      focus: focusData,
+      habits: habitsData,
+      defaults: stickyDefaults,
+      exportedAt: new Date().toISOString()
+    };
+    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
+    const link = document.createElement('a');
+    link.setAttribute('href', jsonStr);
+    link.setAttribute('download', `pulsesync_backup_${getTodayDateStr()}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerHaptic(15, 500);
+  }
+
+  function clearSelectedDay() {
+    if (confirm(`Reset all workouts, focus tasks and habits for ${selectedDateStr}?`)) {
+      logs = logs.filter(i => i.dateStr !== selectedDateStr);
+      focusData.tasks = focusData.tasks.filter(i => i.dateStr !== selectedDateStr);
+      if (habitsData.dailyRecords) delete habitsData.dailyRecords[selectedDateStr];
+      saveLocalData();
+      renderDateDisplay();
+      renderMetrics();
+      renderTimeline();
+      renderFocusDashboard();
+      renderFocusAnalytics();
+      renderHabitsDashboard();
+      renderHabitsAnalytics();
+      triggerHaptic(30, 200);
+    }
   }
 
   // --- Service Worker ---

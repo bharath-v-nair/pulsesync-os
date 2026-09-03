@@ -1,11 +1,9 @@
 {
   "sleep": {
-    "bedtimeFormatted": "11:15 PM",
-    "wakeupFormatted": "07:15 AM",
-    "bedtimeRaw": "23:15",
-    "wakeupRaw": "07:15",
-    "sleepDuration": "8h 00m",
-    "isOptimal": true,
+    "bedtimeRaw": "03:55",
+    "wakeupRaw": "10:15",
+    "sleepDuration": "6h 20m",
+    "isOptimal": false,
     "sunlightDone": false
   },
   "detox": {
