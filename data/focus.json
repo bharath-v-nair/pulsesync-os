@@ -1,28 +1,101 @@
 {
+  "currentCurriculumDay": 1,
   "tasks": [
     {
-      "id": "task_1",
-      "title": "Angular Signals vs Observables & OnPush Change Detection",
+      "id": "task_d1_1",
+      "title": "Angular Signals vs RxJS: Core mental model, reactivity differences, and when to use toSignal()",
       "category": "Angular",
-      "priority": "Deep Dive",
+      "bucket": "concept",
+      "subType": "deep",
+      "curriculumDay": 1,
       "dateStr": "2026-09-03",
       "completed": false,
       "completedAt": null
     },
     {
-      "id": "task_2",
-      "title": "C# async/await, SynchronizationContext & Deadlock scenarios",
-      "category": ".NET",
-      "priority": "Deep Dive",
+      "id": "task_d1_2",
+      "title": "OnPush Change Detection: How it works with immutable inputs vs signal-based fine-grained updates",
+      "category": "Angular",
+      "bucket": "concept",
+      "subType": "deep",
+      "curriculumDay": 1,
       "dateStr": "2026-09-03",
       "completed": false,
       "completedAt": null
     },
     {
-      "id": "task_3",
-      "title": "LeetCode: Two Sum & Valid Anagram in C#",
+      "id": "task_d1_3",
+      "title": "Dependency Injection Hierarchy: root vs component vs EnvironmentInjector & viewProviders",
+      "category": "Angular",
+      "bucket": "concept",
+      "subType": "deep",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-03",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "task_d1_4",
+      "title": "Control Flow Syntax: @if, @for, @switch vs legacy structural directives performance impact",
+      "category": "Angular",
+      "bucket": "concept",
+      "subType": "deep",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-03",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "task_d1_5",
+      "title": "RxJS Higher-Order Mapping: switchMap vs mergeMap vs concatMap vs exhaustMap real scenarios",
+      "category": "Angular",
+      "bucket": "concept",
+      "subType": "repeat",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-03",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "task_d1_live_1",
+      "title": "Live Coding: Build a Typeahead Autocomplete Component using Signals & debounceTime",
+      "category": "Angular",
+      "bucket": "live",
+      "subType": "live",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-03",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "task_d1_live_2",
+      "title": "Live Coding: Create a Custom Attribute Directive with HostListener & Renderer2",
+      "category": "Angular",
+      "bucket": "live",
+      "subType": "live",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-03",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "task_d1_dsa_1",
+      "title": "NeetCode DSA (C#): Two Sum (Array / Hash Map O(N))",
       "category": "LeetCode",
-      "priority": "Rapid Recall",
+      "bucket": "dsa",
+      "subType": "dsa",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-03",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "task_d1_dsa_2",
+      "title": "NeetCode DSA (C#): Valid Anagram (Frequency array / Dictionary)",
+      "category": "LeetCode",
+      "bucket": "dsa",
+      "subType": "dsa",
+      "curriculumDay": 1,
       "dateStr": "2026-09-03",
       "completed": false,
       "completedAt": null
@@ -41,13 +114,8 @@
   },
   "stats": {
     "totalStudySeconds": 0,
-    "byCategory": {
-      "Angular": 0,
-      ".NET": 0,
-      "Full Stack": 0,
-      "LeetCode": 0,
-      "SysDesign": 0,
-      "Mock": 0
+    "byDay": {
+      "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0
     }
   }
 }
