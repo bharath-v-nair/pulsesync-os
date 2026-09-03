@@ -85,7 +85,7 @@
       </button>
     </div>
 
-    <!-- Domain Navigation (Move vs Focus vs Habits) -->
+    <!-- Domain Navigation -->
     <nav class="flex items-center p-1 bg-[#101520] rounded-xl border border-white/[0.06] mb-4 text-xs font-semibold">
       <button id="btnNavMove" class="spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm transition">
         Move
@@ -302,7 +302,7 @@
     </div>
 
     <!-- ================================================================= -->
-    <!-- DOMAIN 2: FOCUS ENGINE (7-DAY THEMED SPRINT PROTOCOL)             -->
+    <!-- DOMAIN 2: FOCUS ENGINE (WEEK 1 FOUNDATION BOOTCAMP)               -->
     <!-- ================================================================= -->
     <div id="viewFocus" class="space-y-4 hidden">
 
@@ -311,12 +311,12 @@
         <button id="btnPrevCurriculumDay" class="spring-btn p-2 rounded-lg text-slate-400 hover:text-white tap-target" title="Previous Curriculum Day">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
-        <div class="text-center">
-          <div id="curriculumDayBadge" class="text-xs font-bold text-white font-mono uppercase tracking-wider">
-            Day 1 of 7: Frontend (Angular)
+        <div class="text-center px-1">
+          <div id="curriculumDayBadge" class="text-xs font-bold text-white font-mono uppercase tracking-wider truncate max-w-[240px] sm:max-w-md">
+            Day 1: Frontend 1 — Angular Forms & Interceptors
           </div>
           <div id="curriculumDaySub" class="text-[10px] text-sky-400 font-mono mt-0.5">
-            20 Concept Qs · 2-3 Live Coding · 2 C# DSA
+            3 Deep Anchors · 5 Spaced Checks · 1 Live Coding · 1 C# DSA
           </div>
         </div>
         <button id="btnNextCurriculumDay" class="spring-btn p-2 rounded-lg text-slate-400 hover:text-white tap-target" title="Next Curriculum Day">
@@ -324,42 +324,84 @@
         </button>
       </section>
 
-      <!-- The 3-Bucket Daily Quota Scorecards -->
-      <section class="grid grid-cols-3 gap-2 text-xs font-mono">
-        <!-- Bucket 1: 20 Concept Qs -->
+      <!-- Tomorrow's Plan Reminder Banner -->
+      <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.06] flex items-center justify-between text-xs font-mono" id="bannerTomorrow">
+        <div class="flex items-center gap-2 truncate pr-2">
+          <span class="text-amber-400">📅</span>
+          <span id="labelTomorrowTitle" class="text-slate-300 truncate">Tomorrow: Day 2 — Backend 1 (.NET & Memory)</span>
+        </div>
+        <button id="btnPlanTomorrow" class="px-2.5 py-1 rounded-lg bg-[#1a2233] hover:bg-slate-700 text-sky-400 text-[10px] font-bold shrink-0 transition">
+          Switch to Tomorrow
+        </button>
+      </div>
+
+      <!-- The 4 Daily Core Finish Lines -->
+      <section class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+        <!-- 1. Deep Anchors -->
         <div class="matte-card p-2.5 space-y-1.5 flex flex-col justify-between">
           <div class="flex items-center justify-between text-[10px]">
-            <span class="text-slate-400 uppercase font-semibold">Concept Qs</span>
-            <span class="font-bold text-sky-400 tabular-nums" id="valConceptCount">0/20</span>
+            <span class="text-slate-400 uppercase font-semibold">3 Anchors</span>
+            <span class="font-bold text-sky-400 tabular-nums" id="valDeepCount">0/3</span>
           </div>
           <div class="progress-track">
-            <div id="barConcept" class="progress-fill bg-sky-400" style="width: 0%"></div>
+            <div id="barDeep" class="progress-fill bg-sky-400" style="width: 0%"></div>
           </div>
-          <div class="text-[9px] text-slate-500 font-mono truncate" id="valConceptSub">0 Deep · 0 Recall</div>
+          <div class="text-[9px] text-slate-500 font-mono truncate">50m Study + 10m Break</div>
         </div>
 
-        <!-- Bucket 2: 2-3 Live Coding -->
+        <!-- 2. Spaced Checks -->
         <div class="matte-card p-2.5 space-y-1.5 flex flex-col justify-between">
           <div class="flex items-center justify-between text-[10px]">
-            <span class="text-slate-400 uppercase font-semibold">Live Coding</span>
-            <span class="font-bold text-amber-400 tabular-nums" id="valLiveCount">0/3</span>
+            <span class="text-slate-400 uppercase font-semibold">5 Spaced</span>
+            <span class="font-bold text-purple-400 tabular-nums" id="valSpacedCount">0/5</span>
+          </div>
+          <div class="progress-track">
+            <div id="barSpaced" class="progress-fill bg-purple-400" style="width: 0%"></div>
+          </div>
+          <div class="text-[9px] text-slate-500 font-mono truncate">30m Rapid Verbal</div>
+        </div>
+
+        <!-- 3. Live Coding -->
+        <div class="matte-card p-2.5 space-y-1.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-slate-400 uppercase font-semibold">1 Live Code</span>
+            <span class="font-bold text-amber-400 tabular-nums" id="valLiveCount">0/1</span>
           </div>
           <div class="progress-track">
             <div id="barLive" class="progress-fill bg-amber-400" style="width: 0%"></div>
           </div>
-          <div class="text-[9px] text-slate-500 font-mono truncate">Practical Impl</div>
+          <div class="text-[9px] text-slate-500 font-mono truncate">1h IDE Build</div>
         </div>
 
-        <!-- Bucket 3: 2 NeetCode DSA -->
+        <!-- 4. C# NeetCode DSA -->
         <div class="matte-card p-2.5 space-y-1.5 flex flex-col justify-between">
           <div class="flex items-center justify-between text-[10px]">
-            <span class="text-slate-400 uppercase font-semibold">C# DSA</span>
-            <span class="font-bold text-emerald-400 tabular-nums" id="valDsaCount">0/2</span>
+            <span class="text-slate-400 uppercase font-semibold">1 C# DSA</span>
+            <span class="font-bold text-emerald-400 tabular-nums" id="valDsaCount">0/1</span>
           </div>
           <div class="progress-track">
             <div id="barDsa" class="progress-fill bg-emerald-400" style="width: 0%"></div>
           </div>
-          <div class="text-[9px] text-slate-500 font-mono truncate">Daily Anchor</div>
+          <div class="text-[9px] text-slate-500 font-mono truncate">1h LeetCode O(N)</div>
+        </div>
+      </section>
+
+      <!-- Secondary Tracks: Job Apps & Azure Bonus -->
+      <section class="grid grid-cols-2 gap-2 text-xs font-mono">
+        <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04] flex items-center justify-between">
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase block font-semibold">Job Applications</span>
+            <span class="text-xs font-bold text-slate-200" id="valAppsStatus">Day 4 Launch (0/10)</span>
+          </div>
+          <span class="text-[10px] text-slate-500 font-mono">8:30 AM Golden Hr</span>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04] flex items-center justify-between">
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase block font-semibold">Azure AI (Bonus)</span>
+            <span class="text-xs font-bold text-emerald-400" id="valAzureStatus">Optional Track</span>
+          </div>
+          <span class="text-[10px] text-slate-500 font-mono">Zero Guilt</span>
         </div>
       </section>
 
@@ -369,32 +411,35 @@
         <span class="text-white font-bold tabular-nums text-sm font-mono" id="valTotalStudyTime">0h 00m</span>
       </div>
 
-      <!-- 45-15 Feynman Timebox Engine Card -->
+      <!-- 50m / 30m / 60m Feynman Timebox Engine Card -->
       <section class="matte-card p-4 space-y-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="eyebrow text-slate-300">Feynman Timebox</span>
-            <span id="timerPhaseBadge" class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide">Deep Study</span>
+            <span id="timerPhaseBadge" class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide">Deep Anchor (50m)</span>
           </div>
           <div class="flex items-center gap-1 text-[10px] font-mono">
-            <button id="preset4515" class="px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20">45-15</button>
-            <button id="preset255" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">25-5</button>
+            <button id="preset50m" class="px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20">50m (Anchor)</button>
+            <button id="preset30m" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">30m (Spaced)</button>
+            <button id="preset60m" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">60m (Code/DSA)</button>
           </div>
         </div>
 
         <!-- Big Numeric Timer Display -->
         <div class="text-center py-2">
           <div id="timerDisplay" class="font-mono text-5xl sm:text-6xl font-black tabular-nums tracking-tight text-white select-none">
-            35:00
+            50:00
           </div>
-          <div id="timerSubLabel" class="text-[11px] text-slate-400 font-mono mt-1">35m Deep Dive → 10m Active Recall</div>
+          <div id="timerSubLabel" class="text-[11px] text-slate-400 font-mono mt-1">
+            50m Hard Stop · 15m Early Answer Warning
+          </div>
         </div>
 
         <!-- Currently Bound Task Banner -->
         <div id="boundTaskCard" class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.06] flex items-center justify-between">
           <div class="flex items-center gap-2 truncate pr-2">
             <span class="text-sky-400 font-bold text-xs">⚡</span>
-            <span id="boundTaskTitle" class="text-xs text-slate-200 font-semibold truncate">Select a task below to focus</span>
+            <span id="boundTaskTitle" class="text-xs text-slate-200 font-semibold truncate">Select a question below to focus</span>
           </div>
           <button id="btnUnbindTask" class="text-[10px] text-slate-500 hover:text-slate-300 font-mono hidden">Clear</button>
         </div>
@@ -422,8 +467,8 @@
       <section class="space-y-3">
         <div class="flex items-center justify-between px-1">
           <div>
-            <span class="eyebrow">Curriculum Task Queue</span>
-            <p class="text-[11px] text-slate-400 font-mono">Today's Specific Plan</p>
+            <span class="eyebrow">Today's Operating Roster</span>
+            <p class="text-[11px] text-slate-400 font-mono">3 Anchors · 5 Spaced · 1 Live · 1 DSA</p>
           </div>
           <button id="btnOpenAddTaskModal" class="spring-btn tap-target px-3 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-sm">
             <span>+</span> Add Task
@@ -433,10 +478,12 @@
         <!-- Bucket Filter Pills -->
         <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="focusBucketFilters">
           <button data-bucket="all" class="spring-btn px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-950 whitespace-nowrap">All Tasks</button>
-          <button data-bucket="concept" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Concept Qs (20)</button>
-          <button data-bucket="live" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Live Coding (3)</button>
-          <button data-bucket="dsa" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">C# DSA (2)</button>
-          <button data-bucket="project" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Projects & STAR</button>
+          <button data-bucket="deep" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">3 Anchors</button>
+          <button data-bucket="spaced" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">5 Spaced Checks</button>
+          <button data-bucket="live" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">1 Live Coding</button>
+          <button data-bucket="dsa" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">1 C# DSA</button>
+          <button data-bucket="apps" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Job Apps</button>
+          <button data-bucket="azure" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Azure Bonus</button>
         </div>
 
         <!-- Task List Items -->
@@ -485,7 +532,7 @@
       </div>
       <h3 class="text-base font-extrabold text-white font-mono uppercase" id="feynmanAlarmTitle">Feynman Active Recall!</h3>
       <p class="text-xs text-slate-300 leading-relaxed font-sans" id="feynmanAlarmBody">
-        Study timer finished. Close your notes. Explain the concept out loud in simple terms without looking!
+        Study timer finished. Close notes and explain this topic out loud in plain English.
       </p>
       <button id="btnDismissAlarm" class="spring-btn w-full py-2.5 rounded-xl bg-white text-slate-950 text-xs font-bold hover:bg-slate-200">
         Start Active Recall (10m)
@@ -503,32 +550,36 @@
 
       <div class="space-y-3 text-xs font-mono">
         <div>
-          <label class="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Task / Question Title</label>
-          <input type="text" id="inputTaskTitle" placeholder="e.g. Signals vs Observables in Angular" class="w-full bg-[#0d131f] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-600 focus:outline-none focus:border-sky-400">
+          <label class="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Question ID & Title</label>
+          <input type="text" id="inputTaskTitle" placeholder="e.g. [NG-09] Reactive Forms vs Template Forms" class="w-full bg-[#0d131f] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-600 focus:outline-none focus:border-sky-400">
         </div>
 
         <div>
           <label class="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Interview Bucket</label>
           <div class="grid grid-cols-2 gap-1.5" id="modalBucketPills">
-            <button data-bucket="concept" data-subtype="deep" class="p-2 rounded-lg bg-sky-500 text-slate-950 font-bold text-[10px] text-left">
-              <div>Concept Q (Deep)</div>
-              <div class="text-[8px] opacity-80">10 Deep Block Qs</div>
+            <button data-bucket="deep" class="p-2 rounded-lg bg-sky-500 text-slate-950 font-bold text-[10px] text-left">
+              <div>Deep Anchor (50m)</div>
+              <div class="text-[8px] opacity-80">3 Core Daily Anchors</div>
             </button>
-            <button data-bucket="concept" data-subtype="repeat" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>Concept Q (Recall)</div>
-              <div class="text-[8px] opacity-70">10 Spaced Retrieval Qs</div>
+            <button data-bucket="spaced" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
+              <div>Spaced Check (6m)</div>
+              <div class="text-[8px] opacity-70">5 Rapid Verbal Checks</div>
             </button>
-            <button data-bucket="live" data-subtype="live" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>Live Coding</div>
-              <div class="text-[8px] opacity-70">2-3 Practical Tasks</div>
+            <button data-bucket="live" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
+              <div>Live Coding (1h)</div>
+              <div class="text-[8px] opacity-70">IDE Hands-on Build</div>
             </button>
-            <button data-bucket="dsa" data-subtype="dsa" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>NeetCode DSA</div>
-              <div class="text-[8px] opacity-70">2 C# LeetCode Qs</div>
+            <button data-bucket="dsa" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
+              <div>C# NeetCode (1h)</div>
+              <div class="text-[8px] opacity-70">LeetCode Problem O(N)</div>
             </button>
-            <button data-bucket="project" data-subtype="project" class="col-span-2 p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>Personal Project / STAR Story</div>
-              <div class="text-[8px] opacity-70">Day 7 Architecture, Code Review & Behavioral</div>
+            <button data-bucket="apps" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
+              <div>Job Application (Day 4+)</div>
+              <div class="text-[8px] opacity-70">10 Submissions Batch</div>
+            </button>
+            <button data-bucket="azure" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
+              <div>Azure AI (Bonus)</div>
+              <div class="text-[8px] opacity-70">Optional Certification Drill</div>
             </button>
           </div>
         </div>

@@ -1,11 +1,11 @@
-// PulseSync Life OS - 7-Day Themed Sprint Protocol & Move Engine
+// PulseSync Life OS - Week 1 Foundation Bootcamp & Move Engine
 (function () {
   'use strict';
 
-  // --- Constants & Storage Keys ---
+  // --- Storage Keys ---
   const STORAGE_KEY_LOGS = 'pulsesync_logs_v3';
   const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v3';
-  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v5';
+  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v6';
 
   const TARGETS = {
     pullups: 20,
@@ -21,46 +21,97 @@
   const CURRICULUM_DAYS = [
     {
       day: 1,
-      title: 'Day 1 of 7: Frontend (Angular)',
-      subtitle: '20 Concept Qs · 2-3 Live Coding · 2 C# DSA',
+      title: 'Day 1: Frontend 1 — Angular Forms & Interceptors',
+      subtitle: '3 Deep Anchors · 5 Spaced Checks · 1 Live Coding · 1 C# DSA',
       category: 'Angular'
     },
     {
       day: 2,
-      title: 'Day 2 of 7: Backend (.NET / C#)',
-      subtitle: '20 Concept Qs · 2-3 Live Coding · 2 C# DSA',
+      title: 'Day 2: Backend 1 — C# Fundamentals & Memory',
+      subtitle: '3 Deep Anchors · 5 Spaced Checks · 1 Live Coding · 1 C# DSA',
       category: '.NET'
     },
     {
       day: 3,
-      title: 'Day 3 of 7: Full Stack (Angular + .NET + Azure)',
-      subtitle: '20 Concept Qs · 2-3 Azure Live · 2 C# DSA',
-      category: 'Full Stack'
-    },
-    {
-      day: 4,
-      title: 'Day 4 of 7: Frontend (Angular Spaced Retrieval)',
-      subtitle: '10 Deep Block + 10 Repeat Qs · 2-3 Live · 2 DSA',
+      title: 'Day 3: Frontend 2 — RxJS Basics & Observables',
+      subtitle: '3 Deep Anchors · 5 Spaced Checks · 1 Live Coding · 1 C# DSA',
       category: 'Angular'
     },
     {
-      day: 5,
-      title: 'Day 5 of 7: Backend (.NET Spaced Retrieval)',
-      subtitle: '10 Deep Block + 10 Repeat Qs · 2-3 Live · 2 DSA',
+      day: 4,
+      title: 'Day 4: Backend 2 — ASP.NET Core Web API Basics 🚀',
+      subtitle: '3 Deep Anchors · 5 Spaced · 1 Live · 1 DSA · [10 Job Applications]',
       category: '.NET'
     },
     {
+      day: 5,
+      title: 'Day 5: Frontend 3 — Components & State Basics',
+      subtitle: '3 Deep Anchors · 5 Spaced · 1 Live · 1 DSA · [10 Job Applications]',
+      category: 'Angular'
+    },
+    {
       day: 6,
-      title: 'Day 6 of 7: Full Stack & Azure Live',
-      subtitle: '20 Concept Qs · 2-3 Azure Live · 2 C# DSA',
-      category: 'Full Stack'
+      title: 'Day 6: Backend 3 — EF Core & SQL Basics',
+      subtitle: '3 Deep Anchors · 5 Spaced · 1 Live · 1 DSA · [10 Job Applications]',
+      category: '.NET'
     },
     {
       day: 7,
-      title: 'Day 7 of 7: System Design & STAR Behavioral',
-      subtitle: 'System Design · Projects Review · STAR Stories',
-      category: 'SysDesign & STAR'
+      title: 'Day 7: Cloud & Behavioral Basics (Cap & Review)',
+      subtitle: '3 Deep Anchors · 5 Spaced · Live Recap · Review DSA · Audit Applications',
+      category: 'Azure & STAR'
     }
+  ];
+
+  const DEFAULT_BOOTCAMP_TASKS = [
+    // --- DAY 1 ---
+    { id: 'd1_deep_1', code: 'NG-09', title: '[NG-09] Reactive Forms vs Template-Driven Forms (FormGroup, FormControl, basic Validators)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_deep_2', code: 'NG-08', title: '[NG-08] Route Guards (CanActivate basics) vs Resolvers (trade-offs & failure modes)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_deep_3', code: 'NG-11', title: '[NG-11] HTTP Interceptors (injecting Bearer token, basic 401 redirect handling)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_spd_1', code: 'NG-01', title: '[NG-01] Component vs Directive in 60 seconds', category: 'Angular', bucket: 'spaced', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_spd_2', code: 'NG-02', title: '[NG-02] Data Binding types (Interpolation vs Property vs Event)', category: 'Angular', bucket: 'spaced', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_spd_3', code: 'NG-06', title: '[NG-06] Constructor vs ngOnInit (when to initialize subscriptions)', category: 'Angular', bucket: 'spaced', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_spd_4', code: 'NG-03', title: '[NG-03] What does providedIn: root mean in Angular DI?', category: 'Angular', bucket: 'spaced', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_spd_5', code: 'NG-15', title: '[NG-15] Smart vs Dumb Components (@Input, @Output communication)', category: 'Angular', bucket: 'spaced', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_live_1', code: 'LIVE-01', title: 'Live Coding: Build an Angular Reactive Form with 2 fields (Email, Amount) & basic validation', category: 'Angular', bucket: 'live', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_dsa_1', code: 'DSA-01', title: 'C# NeetCode DSA: LeetCode Easy — Two Sum (Hash Map O(N) time, O(N) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+
+    // --- DAY 2 ---
+    { id: 'd2_deep_1', code: 'CS-01', title: '[CS-01] Value Types vs Reference Types (Stack vs Heap memory allocation)', category: '.NET', bucket: 'deep', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_deep_2', code: 'CS-02', title: '[CS-02, CS-03] class vs struct vs record (immutability and value equality)', category: '.NET', bucket: 'deep', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_deep_3', code: 'WA-04', title: '[WA-04] Dependency Injection in .NET Core (Transient, Scoped, Singleton lifetimes)', category: '.NET', bucket: 'deep', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_spd_1', code: 'CS-04', title: '[CS-04] Why are strings immutable in C#? What does StringBuilder do?', category: '.NET', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_spd_2', code: 'CS-09', title: '[CS-09] Nullable reference types (string?) and null operators (??, ?.)', category: '.NET', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_spd_3', code: 'WA-07', title: '[WA-07] Basic REST verbs and status codes (200, 201, 204, 400, 404, 500)', category: '.NET', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_spd_4', code: 'NG-09', title: '[NG-09] Reactive Forms key classes (Day 1 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_spd_5', code: 'NG-11', title: '[NG-11] Interceptor flow & Bearer tokens (Day 1 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_live_1', code: 'LIVE-02', title: 'Live Coding: Build an ASP.NET Core Controller with constructor injection of a service', category: '.NET', bucket: 'live', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd2_dsa_1', code: 'DSA-02', title: 'C# NeetCode DSA: LeetCode Easy — Valid Palindrome (Two Pointers O(N) time, O(1) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+
+    // --- DAY 3 ---
+    { id: 'd3_deep_1', code: 'NG-04', title: '[NG-04] Observable vs Promise (lazy vs eager, stream vs single value)', category: 'Angular', bucket: 'deep', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_deep_2', code: 'NG-07', title: '[NG-07] Subscription Memory Leaks (why they happen, using async pipe & takeUntilDestroyed)', category: 'Angular', bucket: 'deep', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_deep_3', code: 'NG-19', title: '[NG-19] Core RxJS Operators (map, filter, and switchMap basics for search)', category: 'Angular', bucket: 'deep', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_spd_1', code: 'NG-09', title: '[NG-09] Reactive Forms key classes (Day 1 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_spd_2', code: 'NG-11', title: '[NG-11] Interceptor flow (Day 1 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_spd_3', code: 'NG-03', title: '[NG-03] What does providedIn: root mean in Angular DI?', category: 'Angular', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_spd_4', code: 'CS-01', title: '[CS-01] Value vs Reference Types Stack/Heap (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_spd_5', code: 'WA-04', title: '[WA-04] DI Lifetimes: Transient vs Scoped vs Singleton (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_live_1', code: 'LIVE-03', title: 'Live Coding: Build an Angular service with an HttpClient GET call returning an Observable stream', category: 'Angular', bucket: 'live', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd3_dsa_1', code: 'DSA-03', title: 'C# NeetCode DSA: LeetCode Easy/Medium — Best Time to Buy and Sell Stock (Sliding Window O(N))', category: 'LeetCode', bucket: 'dsa', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+
+    // --- DAY 4 ---
+    { id: 'd4_deep_1', code: 'WA-01', title: '[WA-01, AR-03] Program.cs basics: builder vs app phases; Controller vs Minimal API', category: '.NET', bucket: 'deep', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_deep_2', code: 'WA-02', title: '[WA-02] Middleware Pipeline: what is middleware, the pipeline concept, why order matters', category: '.NET', bucket: 'deep', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_deep_3', code: 'WA-06', title: '[WA-06] Model Binding & Validation ([ApiController] behavior, ModelState)', category: '.NET', bucket: 'deep', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_spd_1', code: 'CS-01', title: '[CS-01] Value vs Reference Types (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_spd_2', code: 'WA-04', title: '[WA-04] DI Lifetimes: Transient vs Scoped vs Singleton (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_spd_3', code: 'CS-03', title: '[CS-03] When to use record vs class (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_spd_4', code: 'NG-04', title: '[NG-04] Observable vs Promise (Day 3 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_spd_5', code: 'NG-07', title: '[NG-07] Preventing subscription memory leaks (Day 3 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_live_1', code: 'LIVE-04', title: 'Live Coding: Build an API endpoint validating an incoming DTO and returning BadRequest or Ok', category: '.NET', bucket: 'live', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_dsa_1', code: 'DSA-04', title: 'C# NeetCode DSA: LeetCode Easy — Valid Parentheses (Stack O(N) time, O(N) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd4_apps_1', code: 'APP-01', title: 'Job Hunt: Submit 10 job applications on LinkedIn / Naukri (Golden Hour: 8:30–9:15 AM)', category: 'Career', bucket: 'apps', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null }
   ];
 
   // --- State: Move Engine ---
@@ -80,117 +131,18 @@
   // --- State: Focus Engine ---
   let focusData = {
     currentCurriculumDay: 1,
-    tasks: [
-      {
-        id: 'task_d1_1',
-        title: 'Angular Signals vs RxJS: Core mental model, fine-grained reactivity, and when to use toSignal()',
-        category: 'Angular',
-        bucket: 'concept',
-        subType: 'deep',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      },
-      {
-        id: 'task_d1_2',
-        title: 'OnPush Change Detection: Mental model with immutable inputs vs signal-based leaf updates',
-        category: 'Angular',
-        bucket: 'concept',
-        subType: 'deep',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      },
-      {
-        id: 'task_d1_3',
-        title: 'Dependency Injection Hierarchy: root vs component vs EnvironmentInjector & viewProviders',
-        category: 'Angular',
-        bucket: 'concept',
-        subType: 'deep',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      },
-      {
-        id: 'task_d1_4',
-        title: 'Control Flow Syntax: @if, @for, @switch vs legacy structural directives performance impact',
-        category: 'Angular',
-        bucket: 'concept',
-        subType: 'deep',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      },
-      {
-        id: 'task_d1_5',
-        title: 'RxJS Higher-Order Mapping: switchMap vs mergeMap vs concatMap vs exhaustMap real scenarios',
-        category: 'Angular',
-        bucket: 'concept',
-        subType: 'repeat',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      },
-      {
-        id: 'task_d1_live_1',
-        title: 'Live Coding: Build a Typeahead Autocomplete Component using Signals & debounceTime',
-        category: 'Angular',
-        bucket: 'live',
-        subType: 'live',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      },
-      {
-        id: 'task_d1_live_2',
-        title: 'Live Coding: Create a Custom Attribute Directive with HostListener & Renderer2',
-        category: 'Angular',
-        bucket: 'live',
-        subType: 'live',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      },
-      {
-        id: 'task_d1_dsa_1',
-        title: 'NeetCode DSA (C#): Two Sum (Array / Hash Map O(N))',
-        category: 'LeetCode',
-        bucket: 'dsa',
-        subType: 'dsa',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      },
-      {
-        id: 'task_d1_dsa_2',
-        title: 'NeetCode DSA (C#): Valid Anagram (Frequency array / Dictionary)',
-        category: 'LeetCode',
-        bucket: 'dsa',
-        subType: 'dsa',
-        curriculumDay: 1,
-        dateStr: getTodayDateStr(),
-        completed: false,
-        completedAt: null
-      }
-    ],
+    tasks: [...DEFAULT_BOOTCAMP_TASKS],
     timerState: {
       isRunning: false,
-      phase: 'study', // 'study' (35m) or 'recall' (10m)
-      preset: '45-15',
-      totalSeconds: 35 * 60,
-      remainingSeconds: 35 * 60,
+      phase: 'study',
+      preset: '50m',
+      totalSeconds: 50 * 60,
+      remainingSeconds: 50 * 60,
       startTimestamp: null,
       endTimestamp: null,
       lastTickTimestamp: null,
-      boundTaskId: null
+      boundTaskId: null,
+      warningTriggered: false
     },
     stats: {
       totalStudySeconds: 0
@@ -198,8 +150,7 @@
   };
 
   let activeBucketFilter = 'all';
-  let modalSelectedBucket = 'concept';
-  let modalSelectedSubType = 'deep';
+  let modalSelectedBucket = 'deep';
   let timerInterval = null;
 
   // --- DOM Elements ---
@@ -280,21 +231,26 @@
   const curriculumDayBadge = document.getElementById('curriculumDayBadge');
   const curriculumDaySub = document.getElementById('curriculumDaySub');
 
-  const valConceptCount = document.getElementById('valConceptCount');
-  const barConcept = document.getElementById('barConcept');
-  const valConceptSub = document.getElementById('valConceptSub');
+  const labelTomorrowTitle = document.getElementById('labelTomorrowTitle');
+  const btnPlanTomorrow = document.getElementById('btnPlanTomorrow');
 
+  const valDeepCount = document.getElementById('valDeepCount');
+  const barDeep = document.getElementById('barDeep');
+  const valSpacedCount = document.getElementById('valSpacedCount');
+  const barSpaced = document.getElementById('barSpaced');
   const valLiveCount = document.getElementById('valLiveCount');
   const barLive = document.getElementById('barLive');
-
   const valDsaCount = document.getElementById('valDsaCount');
   const barDsa = document.getElementById('barDsa');
 
+  const valAppsStatus = document.getElementById('valAppsStatus');
+  const valAzureStatus = document.getElementById('valAzureStatus');
   const valTotalStudyTime = document.getElementById('valTotalStudyTime');
 
   const timerPhaseBadge = document.getElementById('timerPhaseBadge');
-  const preset4515 = document.getElementById('preset4515');
-  const preset255 = document.getElementById('preset255');
+  const preset50m = document.getElementById('preset50m');
+  const preset30m = document.getElementById('preset30m');
+  const preset60m = document.getElementById('preset60m');
   const timerDisplay = document.getElementById('timerDisplay');
   const timerSubLabel = document.getElementById('timerSubLabel');
   const boundTaskTitle = document.getElementById('boundTaskTitle');
@@ -337,7 +293,7 @@
   const modalBody = document.getElementById('modalBody');
   const btnCloseModal = document.getElementById('btnCloseModal');
 
-  // --- Audio / Sensory Alerts ---
+  // --- Audio / Alerts ---
   function playClickAudio(freq = 550, duration = 0.035) {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -357,6 +313,30 @@
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + duration);
+    } catch (e) {}
+  }
+
+  function playWarningAlert() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const notes = [440.00, 880.00];
+
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.15));
+
+        gain.gain.setValueAtTime(0.08, ctx.currentTime + (idx * 0.15));
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.15) + 0.4);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + (idx * 0.15));
+        osc.stop(ctx.currentTime + (idx * 0.15) + 0.4);
+      });
     } catch (e) {}
   }
 
@@ -405,13 +385,13 @@
     screenFlashOverlay.classList.add('flash-active');
 
     if (focusData.timerState.phase === 'study') {
-      feynmanAlarmTitle.textContent = 'Feynman Active Recall Time!';
-      feynmanAlarmBody.textContent = 'Deep study block completed! Close notes and explain this topic out loud in plain English.';
-      btnDismissAlarm.textContent = 'Start Active Recall (10m)';
+      feynmanAlarmTitle.textContent = 'Feynman Time Ceiling Reached!';
+      feynmanAlarmBody.textContent = 'Hard stop! Close all tabs. Explain this concept out loud in plain English before taking your 10m break.';
+      btnDismissAlarm.textContent = 'Start 10m Verbal Recall';
     } else {
-      feynmanAlarmTitle.textContent = 'Active Recall Complete!';
-      feynmanAlarmBody.textContent = 'Concept solidified! Mark this completed and select your next challenge.';
-      btnDismissAlarm.textContent = 'Ready for Next Challenge';
+      feynmanAlarmTitle.textContent = 'Break Finished!';
+      feynmanAlarmBody.textContent = 'Time for your next question. Clear your mind and dive in.';
+      btnDismissAlarm.textContent = 'Ready for Next Question';
     }
     feynmanAlarmModal.classList.remove('hidden');
   }
@@ -518,7 +498,7 @@
             focusData.currentCurriculumDay = serverFocus.currentCurriculumDay;
           }
 
-          if (Array.isArray(serverFocus.tasks)) {
+          if (Array.isArray(serverFocus.tasks) && serverFocus.tasks.length > 0) {
             const taskMap = new Map();
             focusData.tasks.forEach(t => taskMap.set(t.id, t));
             serverFocus.tasks.forEach(t => taskMap.set(t.id, t));
@@ -529,7 +509,6 @@
             focusData.stats.totalStudySeconds = Math.max(focusData.stats.totalStudySeconds || 0, serverFocus.stats.totalStudySeconds || 0);
           }
 
-          // Sync Running Timer across devices
           if (serverFocus.timerState && serverFocus.timerState.isRunning) {
             const now = Date.now();
             if (now < serverFocus.timerState.endTimestamp) {
@@ -774,58 +753,70 @@
     renderTimeline();
   }
 
-  // --- Focus Engine Functions (7-Day Themed Sprint Protocol) ---
+  // --- Focus Engine Functions (Bootcamp 3 + 5 + 1 + 1 Protocol) ---
   function renderFocusDashboard() {
     const currentDayConfig = CURRICULUM_DAYS.find(d => d.day === focusData.currentCurriculumDay) || CURRICULUM_DAYS[0];
 
-    // 1. Curriculum Day Header
+    // 1. Header
     curriculumDayBadge.textContent = currentDayConfig.title;
     curriculumDaySub.textContent = currentDayConfig.subtitle;
 
-    // Filter tasks for this curriculum day
+    // 2. Tomorrow's Plan Reminder
+    const tomorrowDayIndex = (focusData.currentCurriculumDay % 7) + 1;
+    const tomorrowConfig = CURRICULUM_DAYS.find(d => d.day === tomorrowDayIndex);
+    if (tomorrowConfig) {
+      labelTomorrowTitle.textContent = `Tomorrow: ${tomorrowConfig.title.split('—')[1] || tomorrowConfig.title}`;
+    }
+
+    // Filter tasks for this day
     const dayTasks = focusData.tasks.filter(t => t.curriculumDay === focusData.currentCurriculumDay);
     const completedTasks = dayTasks.filter(t => t.completed);
     const pendingTasks = dayTasks.filter(t => !t.completed);
 
-    // 2. Scorecards: 3 Buckets
-    // Bucket 1: 20 Concept Qs (10 Deep + 10 Recall)
-    const conceptTasks = dayTasks.filter(t => t.bucket === 'concept');
-    const conceptCompleted = conceptTasks.filter(t => t.completed);
-    const deepCompleted = conceptTasks.filter(t => t.subType === 'deep' && t.completed).length;
-    const repeatCompleted = conceptTasks.filter(t => t.subType === 'repeat' && t.completed).length;
+    // 3. The 4 Finish Lines Calculation
+    const deepTasks = dayTasks.filter(t => t.bucket === 'deep');
+    const deepCompleted = deepTasks.filter(t => t.completed).length;
+    valDeepCount.textContent = `${deepCompleted}/3`;
+    barDeep.style.width = `${Math.min(100, Math.round((deepCompleted / 3) * 100))}%`;
 
-    valConceptCount.textContent = `${conceptCompleted.length}/20`;
-    barConcept.style.width = `${Math.min(100, Math.round((conceptCompleted.length / 20) * 100))}%`;
-    valConceptSub.textContent = `${deepCompleted}/10 Deep · ${repeatCompleted}/10 Recall`;
+    const spacedTasks = dayTasks.filter(t => t.bucket === 'spaced');
+    const spacedCompleted = spacedTasks.filter(t => t.completed).length;
+    valSpacedCount.textContent = `${spacedCompleted}/5`;
+    barSpaced.style.width = `${Math.min(100, Math.round((spacedCompleted / 5) * 100))}%`;
 
-    // Bucket 2: 2-3 Live Coding
     const liveTasks = dayTasks.filter(t => t.bucket === 'live');
-    const liveCompleted = liveTasks.filter(t => t.completed);
-    valLiveCount.textContent = `${liveCompleted.length}/3`;
-    barLive.style.width = `${Math.min(100, Math.round((liveCompleted.length / 3) * 100))}%`;
+    const liveCompleted = liveTasks.filter(t => t.completed).length;
+    valLiveCount.textContent = `${liveCompleted}/1`;
+    barLive.style.width = `${Math.min(100, Math.round((liveCompleted / 1) * 100))}%`;
 
-    // Bucket 3: 2 NeetCode DSA
     const dsaTasks = dayTasks.filter(t => t.bucket === 'dsa');
-    const dsaCompleted = dsaTasks.filter(t => t.completed);
-    valDsaCount.textContent = `${dsaCompleted.length}/2`;
-    barDsa.style.width = `${Math.min(100, Math.round((dsaCompleted.length / 2) * 100))}%`;
+    const dsaCompleted = dsaTasks.filter(t => t.completed).length;
+    valDsaCount.textContent = `${dsaCompleted}/1`;
+    barDsa.style.width = `${Math.min(100, Math.round((dsaCompleted / 1) * 100))}%`;
 
-    // 3. Study Time Today
+    // Job Apps & Azure
+    if (focusData.currentCurriculumDay >= 4) {
+      const appTasks = dayTasks.filter(t => t.bucket === 'apps');
+      const appsDone = appTasks.filter(t => t.completed).length;
+      valAppsStatus.textContent = `Active (${appsDone}/10)`;
+      valAppsStatus.className = appsDone >= 10 ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-sky-400';
+    } else {
+      valAppsStatus.textContent = 'Day 4 Launch (0/10)';
+      valAppsStatus.className = 'text-xs font-bold text-slate-400';
+    }
+
+    const azureTasks = dayTasks.filter(t => t.bucket === 'azure');
+    const azureDone = azureTasks.filter(t => t.completed).length;
+    valAzureStatus.textContent = azureDone > 0 ? `${azureDone} Drills Done` : 'Optional Track';
+
+    // Total Study Time Today
     const totalSec = focusData.stats.totalStudySeconds || 0;
     const hrs = Math.floor(totalSec / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
-    valTotalStudyTime.textContent = `${hrs}h ${String(mins).padStart(2, '0')}m`;
+    valTotalStudyTime.textContent = `${hrs}h ${String(mins).padStart(2, '0')}m / 5.5h Target`;
 
     // 4. Timer UI Update
     updateTimerDisplay();
-    if (focusData.timerState.phase === 'study') {
-      timerPhaseBadge.textContent = 'Deep Study';
-      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide';
-    } else {
-      timerPhaseBadge.textContent = 'Active Recall';
-      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-950/60 text-amber-300 border border-amber-800/40 uppercase tracking-wide';
-    }
-
     if (focusData.timerState.isRunning) {
       btnTimerStart.className = 'spring-btn py-2.5 rounded-xl bg-sky-500 text-slate-950 text-xs font-bold tracking-wider';
     } else {
@@ -839,17 +830,17 @@
         btnUnbindTask.classList.remove('hidden');
         btnTimerCompleteTask.classList.remove('hidden');
       } else {
-        boundTaskTitle.textContent = 'Select a task below to focus';
+        boundTaskTitle.textContent = 'Select a question below to focus';
         btnUnbindTask.classList.add('hidden');
         btnTimerCompleteTask.classList.add('hidden');
       }
     } else {
-      boundTaskTitle.textContent = 'Select a task below to focus';
+      boundTaskTitle.textContent = 'Select a question below to focus';
       btnUnbindTask.classList.add('hidden');
       btnTimerCompleteTask.classList.add('hidden');
     }
 
-    // 5. Filter & Render Task Queue
+    // 5. Filter & Render Tasks
     const filteredTasks = pendingTasks.filter(t => {
       if (activeBucketFilter === 'all') return true;
       return t.bucket === activeBucketFilter;
@@ -858,33 +849,34 @@
     if (filteredTasks.length === 0) {
       taskListContainer.innerHTML = `
         <div class="text-center py-6 text-slate-500 text-xs font-mono matte-card p-4">
-          No pending tasks in this category.<br>Tap <span class="text-white font-bold">+ Add Task</span> to schedule your next question!
+          No pending tasks in this filter.<br>Tap <span class="text-white font-bold">+ Add Task</span> to add your next question!
         </div>
       `;
     } else {
       taskListContainer.innerHTML = filteredTasks.map(t => {
         const isBound = focusData.timerState.boundTaskId === t.id;
 
-        let badgeLabel = 'Concept Q';
-        let badgeStyle = 'text-sky-400 bg-sky-950/40 border-sky-800/40';
+        let badgeLabel = 'Deep Anchor';
+        let badgeStyle = 'text-sky-300 bg-sky-950/50 border-sky-800/40';
 
-        if (t.bucket === 'concept') {
-          if (t.subType === 'deep') {
-            badgeLabel = '10 Deep Block';
-            badgeStyle = 'text-sky-300 bg-sky-950/50 border-sky-800/40';
-          } else {
-            badgeLabel = '10 Spaced Recall';
-            badgeStyle = 'text-purple-300 bg-purple-950/50 border-purple-800/40';
-          }
+        if (t.bucket === 'deep') {
+          badgeLabel = 'Deep Anchor (50m)';
+          badgeStyle = 'text-sky-300 bg-sky-950/50 border-sky-800/40';
+        } else if (t.bucket === 'spaced') {
+          badgeLabel = 'Spaced Check (6m)';
+          badgeStyle = 'text-purple-300 bg-purple-950/50 border-purple-800/40';
         } else if (t.bucket === 'live') {
-          badgeLabel = 'Live Coding';
+          badgeLabel = 'Live Coding (1h)';
           badgeStyle = 'text-amber-300 bg-amber-950/50 border-amber-800/40';
         } else if (t.bucket === 'dsa') {
-          badgeLabel = 'C# NeetCode DSA';
+          badgeLabel = 'C# NeetCode DSA (1h)';
           badgeStyle = 'text-emerald-300 bg-emerald-950/50 border-emerald-800/40';
-        } else if (t.bucket === 'project') {
-          badgeLabel = 'Personal Project / STAR';
-          badgeStyle = 'text-indigo-300 bg-indigo-950/50 border-indigo-800/40';
+        } else if (t.bucket === 'apps') {
+          badgeLabel = '10 Job Apps';
+          badgeStyle = 'text-blue-300 bg-blue-950/50 border-blue-800/40';
+        } else if (t.bucket === 'azure') {
+          badgeLabel = 'Azure AI Bonus';
+          badgeStyle = 'text-teal-300 bg-teal-950/50 border-teal-800/40';
         }
 
         return `
@@ -924,7 +916,7 @@
       btn.addEventListener('click', () => deleteTask(btn.getAttribute('data-id')));
     });
 
-    // 6. Completed Tasks List with Revert
+    // 6. Completed Tasks Feed
     completedTaskCount.textContent = `${completedTasks.length} completed`;
     if (completedTasks.length === 0) {
       emptyCompletedTasks.classList.remove('hidden');
@@ -960,6 +952,12 @@
 
   function bindTaskToTimer(taskId) {
     focusData.timerState.boundTaskId = taskId;
+    const task = focusData.tasks.find(t => t.id === taskId);
+    if (task) {
+      if (task.bucket === 'deep') setTimerPreset('50m');
+      else if (task.bucket === 'spaced') setTimerPreset('30m');
+      else if (task.bucket === 'live' || task.bucket === 'dsa') setTimerPreset('60m');
+    }
     saveLocalData();
     postFocusToServer();
     renderFocusDashboard();
@@ -1022,7 +1020,7 @@
     renderFocusDashboard();
   }
 
-  // --- Wall-Clock Timer ---
+  // --- Wall-Clock Timer with 15m Early Answer Alert ---
   function updateTimerDisplay() {
     const remaining = focusData.timerState.remainingSeconds;
     const m = Math.floor(remaining / 60);
@@ -1032,18 +1030,32 @@
 
   function setTimerPreset(preset) {
     focusData.timerState.preset = preset;
-    if (preset === '45-15') {
-      preset4515.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
-      preset255.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
-      focusData.timerState.totalSeconds = 35 * 60;
-      focusData.timerState.remainingSeconds = 35 * 60;
-      timerSubLabel.textContent = '35m Deep Dive → 10m Active Recall';
+    focusData.timerState.warningTriggered = false;
+
+    if (preset === '50m') {
+      preset50m.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
+      preset30m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      preset60m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      focusData.timerState.totalSeconds = 50 * 60;
+      focusData.timerState.remainingSeconds = 50 * 60;
+      timerPhaseBadge.textContent = 'Deep Anchor (50m)';
+      timerSubLabel.textContent = '50m Hard Stop · 15m Early Answer Warning';
+    } else if (preset === '30m') {
+      preset30m.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
+      preset50m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      preset60m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      focusData.timerState.totalSeconds = 30 * 60;
+      focusData.timerState.remainingSeconds = 30 * 60;
+      timerPhaseBadge.textContent = 'Spaced Checks (30m)';
+      timerSubLabel.textContent = '5 Rapid Verbal Checks · 6m per topic';
     } else {
-      preset255.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
-      preset4515.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
-      focusData.timerState.totalSeconds = 25 * 60;
-      focusData.timerState.remainingSeconds = 25 * 60;
-      timerSubLabel.textContent = '25m Focus Study Session';
+      preset60m.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
+      preset50m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      preset30m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      focusData.timerState.totalSeconds = 60 * 60;
+      focusData.timerState.remainingSeconds = 60 * 60;
+      timerPhaseBadge.textContent = 'Live Code / DSA (60m)';
+      timerSubLabel.textContent = '60m Hands-on Ceiling · 25m Lookup Rule';
     }
     resetTimer();
     triggerHaptic(8, 450);
@@ -1065,6 +1077,16 @@
     focusData.timerState.remainingSeconds = remaining;
     updateTimerDisplay();
 
+    // 15-Minute Remaining Warning Alert (User Directive)
+    if (focusData.timerState.totalSeconds >= 45 * 60 && remaining <= 15 * 60 && !focusData.timerState.warningTriggered) {
+      focusData.timerState.warningTriggered = true;
+      playWarningAlert();
+      showUndoToast('⚠️ 15 Mins Left! Close notes & start explaining out loud now.', 'warning_15m');
+      screenFlashOverlay.classList.remove('flash-active');
+      void screenFlashOverlay.offsetWidth;
+      screenFlashOverlay.classList.add('flash-active');
+    }
+
     if (remaining <= 0) {
       pauseTimer();
       triggerTripleAlarm();
@@ -1078,7 +1100,7 @@
         bindTaskToTimer(pendingTasks[0].id);
         showUndoToast(`Auto-selected: ${pendingTasks[0].title}`, pendingTasks[0].id);
       } else {
-        alert('Please add or select a question first before starting study!');
+        alert('Please select a question from today\'s roster to focus!');
         inputTaskTitle.value = '';
         modalAddTask.classList.remove('hidden');
         return;
@@ -1129,6 +1151,7 @@
   function resetTimer() {
     pauseTimer();
     focusData.timerState.remainingSeconds = focusData.timerState.totalSeconds;
+    focusData.timerState.warningTriggered = false;
     updateTimerDisplay();
     saveLocalData();
     postFocusToServer();
@@ -1140,6 +1163,7 @@
     focusData.timerState.phase = newPhase;
     focusData.timerState.totalSeconds = seconds;
     focusData.timerState.remainingSeconds = seconds;
+    focusData.timerState.warningTriggered = false;
     updateTimerDisplay();
     startTimer();
   }
@@ -1245,7 +1269,7 @@
     btnNavFocus.addEventListener('click', () => switchDomain('focus'));
     btnNavHabits.addEventListener('click', () => {
       modalTitle.textContent = 'Phase 3: Habits & Peer Sync';
-      modalBody.textContent = 'Coming in Phase 3: Sleep tracking, 20m book reading, private dopamine detox clean streaks (anti-porn, anti-media bingeing), and lean peer pair code.';
+      modalBody.textContent = 'Coming in Phase 3: Sleep tracking, 20m book reading, private dopamine detox clean streaks, and peer pair code.';
       previewModal.classList.remove('hidden');
       triggerHaptic(10, 500);
     });
@@ -1454,12 +1478,24 @@
       triggerHaptic(8, 480);
     });
 
+    btnPlanTomorrow.addEventListener('click', () => {
+      focusData.currentCurriculumDay = (focusData.currentCurriculumDay % 7) + 1;
+      saveLocalData();
+      postFocusToServer();
+      renderFocusDashboard();
+      triggerHaptic(12, 600);
+      showUndoToast(`Switched to ${CURRICULUM_DAYS[focusData.currentCurriculumDay - 1].title}`, 'plan_tomorrow');
+    });
+
+    // Timer Preset Buttons
+    preset50m.addEventListener('click', () => setTimerPreset('50m'));
+    preset30m.addEventListener('click', () => setTimerPreset('30m'));
+    preset60m.addEventListener('click', () => setTimerPreset('60m'));
+
     // Focus Timer Controls
     btnTimerStart.addEventListener('click', startTimer);
     btnTimerPause.addEventListener('click', pauseTimer);
     btnTimerReset.addEventListener('click', resetTimer);
-    preset4515.addEventListener('click', () => setTimerPreset('45-15'));
-    preset255.addEventListener('click', () => setTimerPreset('25-5'));
 
     btnUnbindTask.addEventListener('click', unbindTask);
     btnTimerCompleteTask.addEventListener('click', () => {
@@ -1473,11 +1509,11 @@
       if (focusData.timerState.phase === 'study') {
         transitionToPhase('recall', 10 * 60);
       } else {
-        transitionToPhase('study', 35 * 60);
+        transitionToPhase('study', 50 * 60);
       }
     });
 
-    // Bucket Filters
+    // Bucket Filter Pills
     focusBucketFilters.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         focusBucketFilters.querySelectorAll('button').forEach(b => {
@@ -1508,7 +1544,6 @@
         });
         btn.className = 'p-2 rounded-lg bg-sky-500 text-slate-950 font-bold text-[10px] text-left';
         modalSelectedBucket = btn.getAttribute('data-bucket');
-        modalSelectedSubType = btn.getAttribute('data-subtype');
         triggerHaptic(6, 450);
       });
     });
@@ -1516,19 +1551,21 @@
     btnSaveTask.addEventListener('click', () => {
       const title = inputTaskTitle.value.trim();
       if (!title) {
-        alert('Please enter a task or question title.');
+        alert('Please enter a question or task title.');
         return;
       }
 
       const currentDayConfig = CURRICULUM_DAYS.find(d => d.day === focusData.currentCurriculumDay) || CURRICULUM_DAYS[0];
-      const category = modalSelectedBucket === 'dsa' ? 'LeetCode' : (modalSelectedBucket === 'project' ? 'Project & STAR' : currentDayConfig.category);
+      let category = currentDayConfig.category;
+      if (modalSelectedBucket === 'dsa') category = 'LeetCode';
+      if (modalSelectedBucket === 'apps') category = 'Career';
+      if (modalSelectedBucket === 'azure') category = 'Azure';
 
       const newTask = {
         id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
         title,
         category,
         bucket: modalSelectedBucket,
-        subType: modalSelectedSubType,
         curriculumDay: focusData.currentCurriculumDay,
         dateStr: selectedDateStr,
         completed: false,
@@ -1573,7 +1610,7 @@
       { id: 'pushups', label: 'Push-ups', target: TARGETS.pushups },
       { id: 'tonnage', label: 'Barbell', target: TARGETS.tonnage },
       { id: 'steps', label: 'Cardio', target: TARGETS.steps },
-      { id: 'tasks', label: 'Curriculum Tasks', target: 20 }
+      { id: 'tasks', label: 'Bootcamp Tasks', target: 5 }
     ];
 
     adherenceBodyRows.innerHTML = categories.map(cat => {

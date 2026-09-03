@@ -2,101 +2,112 @@
   "currentCurriculumDay": 1,
   "tasks": [
     {
-      "id": "task_d1_1",
-      "title": "Angular Signals vs RxJS: Core mental model, reactivity differences, and when to use toSignal()",
+      "id": "d1_deep_1",
+      "code": "NG-09",
+      "title": "[NG-09] Reactive Forms vs Template-Driven Forms (FormGroup, FormControl, basic Validators)",
       "category": "Angular",
-      "bucket": "concept",
-      "subType": "deep",
+      "bucket": "deep",
       "curriculumDay": 1,
-      "dateStr": "2026-09-03",
+      "dateStr": "2026-09-04",
       "completed": false,
       "completedAt": null
     },
     {
-      "id": "task_d1_2",
-      "title": "OnPush Change Detection: How it works with immutable inputs vs signal-based fine-grained updates",
+      "id": "d1_deep_2",
+      "code": "NG-08",
+      "title": "[NG-08] Route Guards (CanActivate basics) vs Resolvers (trade-offs & failure modes)",
       "category": "Angular",
-      "bucket": "concept",
-      "subType": "deep",
+      "bucket": "deep",
       "curriculumDay": 1,
-      "dateStr": "2026-09-03",
+      "dateStr": "2026-09-04",
       "completed": false,
       "completedAt": null
     },
     {
-      "id": "task_d1_3",
-      "title": "Dependency Injection Hierarchy: root vs component vs EnvironmentInjector & viewProviders",
+      "id": "d1_deep_3",
+      "code": "NG-11",
+      "title": "[NG-11] HTTP Interceptors (injecting Bearer token, basic 401 redirect handling)",
       "category": "Angular",
-      "bucket": "concept",
-      "subType": "deep",
+      "bucket": "deep",
       "curriculumDay": 1,
-      "dateStr": "2026-09-03",
+      "dateStr": "2026-09-04",
       "completed": false,
       "completedAt": null
     },
     {
-      "id": "task_d1_4",
-      "title": "Control Flow Syntax: @if, @for, @switch vs legacy structural directives performance impact",
+      "id": "d1_spaced_1",
+      "code": "NG-01",
+      "title": "[NG-01] Component vs Directive in 60 seconds",
       "category": "Angular",
-      "bucket": "concept",
-      "subType": "deep",
+      "bucket": "spaced",
       "curriculumDay": 1,
-      "dateStr": "2026-09-03",
+      "dateStr": "2026-09-04",
       "completed": false,
       "completedAt": null
     },
     {
-      "id": "task_d1_5",
-      "title": "RxJS Higher-Order Mapping: switchMap vs mergeMap vs concatMap vs exhaustMap real scenarios",
+      "id": "d1_spaced_2",
+      "code": "NG-02",
+      "title": "[NG-02] Data Binding types (Interpolation vs Property vs Event)",
       "category": "Angular",
-      "bucket": "concept",
-      "subType": "repeat",
+      "bucket": "spaced",
       "curriculumDay": 1,
-      "dateStr": "2026-09-03",
+      "dateStr": "2026-09-04",
       "completed": false,
       "completedAt": null
     },
     {
-      "id": "task_d1_live_1",
-      "title": "Live Coding: Build a Typeahead Autocomplete Component using Signals & debounceTime",
+      "id": "d1_spaced_3",
+      "code": "NG-06",
+      "title": "[NG-06] Constructor vs ngOnInit (when to initialize subscriptions)",
+      "category": "Angular",
+      "bucket": "spaced",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-04",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "d1_spaced_4",
+      "code": "NG-03",
+      "title": "[NG-03] What does providedIn: 'root' mean in Angular DI?",
+      "category": "Angular",
+      "bucket": "spaced",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-04",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "d1_spaced_5",
+      "code": "NG-15",
+      "title": "[NG-15] Smart vs Dumb Components (@Input, @Output communication)",
+      "category": "Angular",
+      "bucket": "spaced",
+      "curriculumDay": 1,
+      "dateStr": "2026-09-04",
+      "completed": false,
+      "completedAt": null
+    },
+    {
+      "id": "d1_live_1",
+      "code": "LIVE-01",
+      "title": "Live Coding: Build an Angular Reactive Form with 2 fields (Email, Amount) and basic validation",
       "category": "Angular",
       "bucket": "live",
-      "subType": "live",
       "curriculumDay": 1,
-      "dateStr": "2026-09-03",
+      "dateStr": "2026-09-04",
       "completed": false,
       "completedAt": null
     },
     {
-      "id": "task_d1_live_2",
-      "title": "Live Coding: Create a Custom Attribute Directive with HostListener & Renderer2",
-      "category": "Angular",
-      "bucket": "live",
-      "subType": "live",
-      "curriculumDay": 1,
-      "dateStr": "2026-09-03",
-      "completed": false,
-      "completedAt": null
-    },
-    {
-      "id": "task_d1_dsa_1",
-      "title": "NeetCode DSA (C#): Two Sum (Array / Hash Map O(N))",
+      "id": "d1_dsa_1",
+      "code": "DSA-01",
+      "title": "C# NeetCode DSA: LeetCode Easy — Two Sum (Hash Map O(N) time, O(N) space)",
       "category": "LeetCode",
       "bucket": "dsa",
-      "subType": "dsa",
       "curriculumDay": 1,
-      "dateStr": "2026-09-03",
-      "completed": false,
-      "completedAt": null
-    },
-    {
-      "id": "task_d1_dsa_2",
-      "title": "NeetCode DSA (C#): Valid Anagram (Frequency array / Dictionary)",
-      "category": "LeetCode",
-      "bucket": "dsa",
-      "subType": "dsa",
-      "curriculumDay": 1,
-      "dateStr": "2026-09-03",
+      "dateStr": "2026-09-04",
       "completed": false,
       "completedAt": null
     }
@@ -104,18 +115,16 @@
   "timerState": {
     "isRunning": false,
     "phase": "study",
-    "preset": "45-15",
-    "totalSeconds": 2100,
-    "remainingSeconds": 2100,
+    "preset": "50m",
+    "totalSeconds": 3000,
+    "remainingSeconds": 3000,
     "startTimestamp": null,
     "endTimestamp": null,
     "lastTickTimestamp": null,
-    "boundTaskId": null
+    "boundTaskId": null,
+    "warningTriggered": false
   },
   "stats": {
-    "totalStudySeconds": 0,
-    "byDay": {
-      "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0
-    }
+    "totalStudySeconds": 0
   }
 }
