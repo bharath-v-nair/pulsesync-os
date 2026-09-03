@@ -36,10 +36,18 @@
     "remainingSeconds": 2100,
     "startTimestamp": null,
     "endTimestamp": null,
+    "lastTickTimestamp": null,
     "boundTaskId": null
   },
   "stats": {
-    "activeSeconds": 0,
-    "breakSeconds": 0
+    "totalStudySeconds": 0,
+    "byCategory": {
+      "Angular": 0,
+      ".NET": 0,
+      "Full Stack": 0,
+      "LeetCode": 0,
+      "SysDesign": 0,
+      "Mock": 0
+    }
   }
 }

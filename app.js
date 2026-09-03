@@ -1,11 +1,11 @@
-// PulseSync Life OS - Unified Move & Focus Engine with Wall-Clock Timer & Real-Time Sync
+// PulseSync Life OS - Unified Move & Focus Engine (Topic-Based Study Tracking)
 (function () {
   'use strict';
 
   // --- Constants & Storage Keys ---
   const STORAGE_KEY_LOGS = 'pulsesync_logs_v3';
   const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v3';
-  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v3';
+  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v4';
 
   const TARGETS = {
     pullups: 20,
@@ -18,6 +18,8 @@
   const BARBELL_EXERCISES = [
     'Squats', 'Overhead Press', 'Bicep Curls', 'Bent Rows', 'RDLs', 'Deadlifts'
   ];
+
+  const STUDY_CATEGORIES = ['Angular', '.NET', 'Full Stack', 'LeetCode', 'SysDesign', 'Mock'];
 
   // --- State: Move Engine ---
   let logs = [];
@@ -33,7 +35,7 @@
   let isBarbellDrawerOpen = false;
   let undoTimeout = null;
 
-  // --- State: Focus Engine ---
+  // --- State: Focus Engine (Pure Study Tracking, Zero Break Complexity) ---
   let focusData = {
     tasks: [
       {
@@ -66,7 +68,7 @@
     ],
     timerState: {
       isRunning: false,
-      phase: 'study', // 'study', 'recall', 'break'
+      phase: 'study', // 'study' (35m) or 'recall' (10m)
       preset: '45-15',
       totalSeconds: 35 * 60,
       remainingSeconds: 35 * 60,
@@ -76,8 +78,15 @@
       boundTaskId: null
     },
     stats: {
-      activeSeconds: 0,
-      breakSeconds: 0
+      totalStudySeconds: 0,
+      byCategory: {
+        'Angular': 0,
+        '.NET': 0,
+        'Full Stack': 0,
+        'LeetCode': 0,
+        'SysDesign': 0,
+        'Mock': 0
+      }
     }
   };
 
@@ -163,17 +172,12 @@
   const barFocusTasks = document.getElementById('barFocusTasks');
   const focusQuotaRemaining = document.getElementById('focusQuotaRemaining');
 
-  const valActiveTime = document.getElementById('valActiveTime');
-  const valBreakTime = document.getElementById('valBreakTime');
-  const barActiveRatio = document.getElementById('barActiveRatio');
-  const labelActivePct = document.getElementById('labelActivePct');
-  const labelBreakPct = document.getElementById('labelBreakPct');
-  const ratioStatusText = document.getElementById('ratioStatusText');
+  const valTotalStudyTime = document.getElementById('valTotalStudyTime');
+  const topicStudyGrid = document.getElementById('topicStudyGrid');
 
   const timerPhaseBadge = document.getElementById('timerPhaseBadge');
   const preset4515 = document.getElementById('preset4515');
   const preset255 = document.getElementById('preset255');
-  const btnTakeBreak = document.getElementById('btnTakeBreak');
   const timerDisplay = document.getElementById('timerDisplay');
   const timerSubLabel = document.getElementById('timerSubLabel');
   const boundTaskTitle = document.getElementById('boundTaskTitle');
@@ -288,14 +292,10 @@
       feynmanAlarmTitle.textContent = 'Feynman Active Recall Time!';
       feynmanAlarmBody.textContent = 'Deep dive finished! Close notes and explain the core concept out loud in plain English.';
       btnDismissAlarm.textContent = 'Start Active Recall (10m)';
-    } else if (focusData.timerState.phase === 'recall') {
-      feynmanAlarmTitle.textContent = 'Active Recall Complete!';
-      feynmanAlarmBody.textContent = 'Concept solidified! Take a quick 5-minute break or do a pull-up micro-set.';
-      btnDismissAlarm.textContent = 'Take 5m Break';
     } else {
-      feynmanAlarmTitle.textContent = 'Break Finished!';
-      feynmanAlarmBody.textContent = 'Ready for your next interview question. Select your task and dive in!';
-      btnDismissAlarm.textContent = 'Ready to Focus';
+      feynmanAlarmTitle.textContent = 'Active Recall Complete!';
+      feynmanAlarmBody.textContent = 'Concept solidified! Mark this question completed and select your next topic.';
+      btnDismissAlarm.textContent = 'Ready for Next Question';
     }
     feynmanAlarmModal.classList.remove('hidden');
   }
@@ -362,6 +362,9 @@
       if (storedFocus) {
         const parsed = JSON.parse(storedFocus);
         focusData = { ...focusData, ...parsed };
+        if (!focusData.stats.byCategory) {
+          focusData.stats.byCategory = {};
+        }
       }
     } catch (err) {
       console.error('Error reading local storage:', err);
@@ -398,7 +401,6 @@
       if (resFocus.ok) {
         const serverFocus = await resFocus.json();
         if (serverFocus) {
-          // Merge tasks
           if (Array.isArray(serverFocus.tasks)) {
             const taskMap = new Map();
             focusData.tasks.forEach(t => taskMap.set(t.id, t));
@@ -406,13 +408,14 @@
             focusData.tasks = Array.from(taskMap.values());
           }
 
-          // Merge cumulative stats (take higher value)
           if (serverFocus.stats) {
-            focusData.stats.activeSeconds = Math.max(focusData.stats.activeSeconds || 0, serverFocus.stats.activeSeconds || 0);
-            focusData.stats.breakSeconds = Math.max(focusData.stats.breakSeconds || 0, serverFocus.stats.breakSeconds || 0);
+            focusData.stats.totalStudySeconds = Math.max(focusData.stats.totalStudySeconds || 0, serverFocus.stats.totalStudySeconds || 0);
+            if (serverFocus.stats.byCategory) {
+              focusData.stats.byCategory = { ...focusData.stats.byCategory, ...serverFocus.stats.byCategory };
+            }
           }
 
-          // Sync Running Timer across Phone & Desktop!
+          // Sync Running Timer across Phone & Desktop
           if (serverFocus.timerState && serverFocus.timerState.isRunning) {
             const now = Date.now();
             if (now < serverFocus.timerState.endTimestamp) {
@@ -422,7 +425,6 @@
                 resumeTimerFromAnchor();
               }
             } else {
-              // Timer completed while offline
               focusData.timerState = serverFocus.timerState;
               focusData.timerState.isRunning = false;
               focusData.timerState.remainingSeconds = 0;
@@ -658,7 +660,7 @@
     renderTimeline();
   }
 
-  // --- Focus Engine Functions ---
+  // --- Focus Engine Functions (Topic Tracking Only) ---
   function renderFocusDashboard() {
     const todayStr = selectedDateStr;
     const dayTasks = focusData.tasks.filter(t => t.dateStr === todayStr);
@@ -673,43 +675,43 @@
     const remaining = Math.max(0, TARGETS.tasks - completedCount);
     focusQuotaRemaining.textContent = `${remaining} remaining`;
 
-    // 2. Dual Clock Calculation
-    const activeSec = focusData.stats.activeSeconds || 0;
-    const breakSec = focusData.stats.breakSeconds || 0;
-    const activeHr = Math.floor(activeSec / 3600);
-    const activeMin = Math.floor((activeSec % 3600) / 60);
-    const breakHr = Math.floor(breakSec / 3600);
-    const breakMin = Math.floor((breakSec % 3600) / 60);
+    // 2. Study Time by Topic Display
+    const totalSec = focusData.stats.totalStudySeconds || 0;
+    const hrs = Math.floor(totalSec / 3600);
+    const mins = Math.floor((totalSec % 3600) / 60);
+    valTotalStudyTime.textContent = `${hrs}h ${String(mins).padStart(2, '0')}m`;
 
-    valActiveTime.textContent = `${activeHr}h ${String(activeMin).padStart(2, '0')}m`;
-    valBreakTime.textContent = `${breakHr}h ${String(breakMin).padStart(2, '0')}m`;
+    topicStudyGrid.innerHTML = STUDY_CATEGORIES.map(cat => {
+      const catSec = (focusData.stats.byCategory && focusData.stats.byCategory[cat]) || 0;
+      const h = Math.floor(catSec / 3600);
+      const m = Math.floor((catSec % 3600) / 60);
+      const timeDisplay = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      const isActive = catSec > 0;
 
-    const totalTrackedSec = activeSec + breakSec;
-    if (totalTrackedSec > 0) {
-      const activePct = Math.round((activeSec / totalTrackedSec) * 100);
-      const breakPct = 100 - activePct;
-      barActiveRatio.style.width = `${activePct}%`;
-      labelActivePct.textContent = `${activePct}% Active`;
-      labelBreakPct.textContent = `${breakPct}% Break`;
-      ratioStatusText.textContent = activePct >= 70 ? 'Optimal (≥ 70% Active)' : 'Elevated Break Time (< 70%)';
-      ratioStatusText.className = activePct >= 70 ? 'text-[10px] text-emerald-400 font-mono font-bold' : 'text-[10px] text-amber-400 font-mono font-bold';
-    } else {
-      barActiveRatio.style.width = '100%';
-      labelActivePct.textContent = '100% Active';
-      labelBreakPct.textContent = '0% Break';
-    }
+      let badgeColor = 'text-slate-400 bg-[#0d131f] border-white/[0.04]';
+      if (cat === 'Angular') badgeColor = isActive ? 'text-red-300 bg-red-950/40 border-red-800/40' : badgeColor;
+      if (cat === '.NET') badgeColor = isActive ? 'text-purple-300 bg-purple-950/40 border-purple-800/40' : badgeColor;
+      if (cat === 'Full Stack') badgeColor = isActive ? 'text-blue-300 bg-blue-950/40 border-blue-800/40' : badgeColor;
+      if (cat === 'LeetCode') badgeColor = isActive ? 'text-emerald-300 bg-emerald-950/40 border-emerald-800/40' : badgeColor;
+      if (cat === 'SysDesign') badgeColor = isActive ? 'text-amber-300 bg-amber-950/40 border-amber-800/40' : badgeColor;
+      if (cat === 'Mock') badgeColor = isActive ? 'text-sky-300 bg-sky-950/40 border-sky-800/40' : badgeColor;
 
-    // 3. Timer State UI Update
+      return `
+        <div class="p-2 rounded-lg border ${badgeColor} flex flex-col justify-between">
+          <span class="text-[10px] text-slate-400 uppercase tracking-wide truncate">${cat}</span>
+          <span class="text-xs font-bold font-mono text-white mt-0.5">${timeDisplay}</span>
+        </div>
+      `;
+    }).join('');
+
+    // 3. Timer Display & Badge
     updateTimerDisplay();
     if (focusData.timerState.phase === 'study') {
-      timerPhaseBadge.textContent = 'Deep Study (Logging to Active)';
+      timerPhaseBadge.textContent = 'Deep Study';
       timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide';
-    } else if (focusData.timerState.phase === 'recall') {
-      timerPhaseBadge.textContent = 'Active Recall (Logging to Active)';
-      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-950/60 text-amber-300 border border-amber-800/40 uppercase tracking-wide';
     } else {
-      timerPhaseBadge.textContent = 'Break Mode (Logging to Break)';
-      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 uppercase tracking-wide';
+      timerPhaseBadge.textContent = 'Active Recall';
+      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-950/60 text-amber-300 border border-amber-800/40 uppercase tracking-wide';
     }
 
     if (focusData.timerState.isRunning) {
@@ -718,11 +720,11 @@
       btnTimerStart.className = 'spring-btn py-2.5 rounded-xl btn-action-primary text-xs font-bold tracking-wider';
     }
 
-    // Update Bound Task UI
+    // Bound Task UI
     if (focusData.timerState.boundTaskId) {
       const bTask = focusData.tasks.find(t => t.id === focusData.timerState.boundTaskId);
       if (bTask) {
-        boundTaskTitle.textContent = bTask.title;
+        boundTaskTitle.textContent = `${bTask.category}: ${bTask.title}`;
         btnUnbindTask.classList.remove('hidden');
         btnTimerCompleteTask.classList.remove('hidden');
       } else {
@@ -731,12 +733,12 @@
         btnTimerCompleteTask.classList.add('hidden');
       }
     } else {
-      boundTaskTitle.textContent = focusData.timerState.phase === 'break' ? 'Break Mode Active' : 'Select a task below to focus';
+      boundTaskTitle.textContent = 'Select a task below to focus';
       btnUnbindTask.classList.add('hidden');
       btnTimerCompleteTask.classList.add('hidden');
     }
 
-    // 4. Pending Tasks List
+    // 4. Tasks List
     const filteredTasks = pendingList.filter(t => {
       if (activeCategoryFilter === 'all') return true;
       return t.category.toLowerCase().includes(activeCategoryFilter.toLowerCase());
@@ -823,7 +825,6 @@
       }).join('');
     }
 
-    // Attach Revert Handler
     document.querySelectorAll('.btn-revert-task').forEach(btn => {
       btn.addEventListener('click', () => {
         revertCompletedTask(btn.getAttribute('data-id'));
@@ -895,7 +896,7 @@
     renderFocusDashboard();
   }
 
-  // --- Resilient Wall-Clock 45-15 Feynman Timer ---
+  // --- Wall-Clock Timer Engine ---
   function updateTimerDisplay() {
     const remaining = focusData.timerState.remainingSeconds;
     const m = Math.floor(remaining / 60);
@@ -916,13 +917,12 @@
       preset4515.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
       focusData.timerState.totalSeconds = 25 * 60;
       focusData.timerState.remainingSeconds = 25 * 60;
-      timerSubLabel.textContent = '25m Focus → 5m Recall & Break';
+      timerSubLabel.textContent = '25m Focus Study Session';
     }
     resetTimer();
     triggerHaptic(8, 450);
   }
 
-  // Wall-Clock Tick Function (Immune to Background Throttling)
   function tickTimer() {
     if (!focusData.timerState.isRunning) return;
 
@@ -931,11 +931,17 @@
     const elapsedSeconds = Math.max(0, Math.floor((now - lastTick) / 1000));
 
     if (elapsedSeconds > 0) {
-      if (focusData.timerState.phase === 'break') {
-        focusData.stats.breakSeconds = (focusData.stats.breakSeconds || 0) + elapsedSeconds;
-      } else {
-        focusData.stats.activeSeconds = (focusData.stats.activeSeconds || 0) + elapsedSeconds;
+      // Attribute study seconds directly to total and to the bound task's category
+      focusData.stats.totalStudySeconds = (focusData.stats.totalStudySeconds || 0) + elapsedSeconds;
+
+      if (focusData.timerState.boundTaskId) {
+        const boundTask = focusData.tasks.find(t => t.id === focusData.timerState.boundTaskId);
+        if (boundTask && boundTask.category) {
+          if (!focusData.stats.byCategory) focusData.stats.byCategory = {};
+          focusData.stats.byCategory[boundTask.category] = (focusData.stats.byCategory[boundTask.category] || 0) + elapsedSeconds;
+        }
       }
+
       focusData.timerState.lastTickTimestamp = now;
     }
 
@@ -950,15 +956,14 @@
   }
 
   function startTimer() {
-    // Check: Require an active task before starting a study session!
-    if (focusData.timerState.phase !== 'break' && !focusData.timerState.boundTaskId) {
+    // Require active task before starting
+    if (!focusData.timerState.boundTaskId) {
       const pendingTasks = focusData.tasks.filter(t => !t.completed);
       if (pendingTasks.length > 0) {
-        // Highlight first task
         bindTaskToTimer(pendingTasks[0].id);
         showUndoToast(`Auto-selected: ${pendingTasks[0].title}`, pendingTasks[0].id);
       } else {
-        alert('Please add or select an interview task first before starting a study session!');
+        alert('Please add or select an interview task first before starting study!');
         inputTaskTitle.value = '';
         modalAddTask.classList.remove('hidden');
         return;
@@ -989,7 +994,7 @@
   function pauseTimer() {
     if (!focusData.timerState.isRunning) return;
 
-    tickTimer(); // Capture last second
+    tickTimer();
     focusData.timerState.isRunning = false;
     focusData.timerState.startTimestamp = null;
     focusData.timerState.endTimestamp = null;
@@ -1024,7 +1029,6 @@
     startTimer();
   }
 
-  // --- Catch-up Ticker on App Wakeup / Tab Visibility Change ---
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && focusData.timerState.isRunning) {
       tickTimer();
@@ -1122,7 +1126,6 @@
 
   // --- Event Listeners Setup ---
   function setupListeners() {
-    // Navigation Domains
     btnNavMove.addEventListener('click', () => switchDomain('move'));
     btnNavFocus.addEventListener('click', () => switchDomain('focus'));
     btnNavHabits.addEventListener('click', () => {
@@ -1326,11 +1329,6 @@
     preset4515.addEventListener('click', () => setTimerPreset('45-15'));
     preset255.addEventListener('click', () => setTimerPreset('25-5'));
 
-    btnTakeBreak.addEventListener('click', () => {
-      transitionToPhase('break', 5 * 60);
-      triggerHaptic(12, 500);
-    });
-
     btnUnbindTask.addEventListener('click', unbindTask);
     btnTimerCompleteTask.addEventListener('click', () => {
       if (focusData.timerState.boundTaskId) completeTask(focusData.timerState.boundTaskId);
@@ -1342,14 +1340,12 @@
       screenFlashOverlay.classList.remove('flash-active');
       if (focusData.timerState.phase === 'study') {
         transitionToPhase('recall', 10 * 60); // 10m Active recall
-      } else if (focusData.timerState.phase === 'recall') {
-        transitionToPhase('break', 5 * 60);  // 5m Break
       } else {
         transitionToPhase('study', 35 * 60); // Back to 35m study
       }
     });
 
-    // Task Category Filters
+    // Category Filter Buttons
     focusCategoryFilters.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         focusCategoryFilters.querySelectorAll('button').forEach(b => {
@@ -1413,7 +1409,6 @@
       };
 
       focusData.tasks.unshift(newTask);
-      // Auto-bind this new task if no task is currently bound!
       if (!focusData.timerState.boundTaskId) {
         focusData.timerState.boundTaskId = newTask.id;
       }
@@ -1540,7 +1535,7 @@
     registerServiceWorker();
 
     syncWithServer();
-    setInterval(syncWithServer, 5000); // 5-second real-time sync polling
+    setInterval(syncWithServer, 5000);
   }
 
   init();

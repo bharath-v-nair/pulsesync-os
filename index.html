@@ -332,30 +332,17 @@
         </div>
       </section>
 
-      <!-- Dual-Clock Ratio Banner (Active vs Break Split) -->
+      <!-- Topic Study Investment Banner -->
       <section class="matte-card p-3.5 space-y-2.5">
         <div class="flex items-center justify-between">
-          <span class="eyebrow text-slate-300">Dual-Clock Study Ratio</span>
-          <span class="text-[10px] text-emerald-400 font-mono font-bold" id="ratioStatusText">Target: 70% Active</span>
-        </div>
-        <div class="grid grid-cols-2 gap-3 text-xs font-mono">
-          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
-            <span class="text-[10px] text-slate-400 block uppercase tracking-wider">Active Study</span>
-            <span class="text-base font-bold text-sky-400 tabular-nums" id="valActiveTime">0h 00m</span>
-          </div>
-          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
-            <span class="text-[10px] text-slate-400 block uppercase tracking-wider">Break Time</span>
-            <span class="text-base font-bold text-slate-300 tabular-nums" id="valBreakTime">0h 00m</span>
+          <span class="eyebrow text-slate-300">Study Investment by Topic</span>
+          <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-sky-400">
+            <span class="text-[10px] text-slate-400 font-normal uppercase">Total Today:</span>
+            <span id="valTotalStudyTime" class="tabular-nums">0h 00m</span>
           </div>
         </div>
-        <div class="space-y-1 pt-1">
-          <div class="progress-track flex overflow-hidden">
-            <div id="barActiveRatio" class="h-full bg-sky-400 transition-all duration-300" style="width: 100%"></div>
-          </div>
-          <div class="flex justify-between text-[10px] text-slate-400 font-mono">
-            <span id="labelActivePct">100% Active</span>
-            <span id="labelBreakPct">0% Break</span>
-          </div>
+        <div class="grid grid-cols-3 gap-2 text-xs font-mono" id="topicStudyGrid">
+          <!-- Dynamically rendered per category -->
         </div>
       </section>
 
@@ -370,7 +357,7 @@
           <div class="flex items-center gap-1 text-[10px] font-mono">
             <button id="preset4515" class="px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20">45-15</button>
             <button id="preset255" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">25-5</button>
-            <button id="btnTakeBreak" class="px-2 py-0.5 rounded text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 border border-emerald-800/40 ml-1 font-bold">+ Break (5m)</button>
+            
           </div>
         </div>
 
