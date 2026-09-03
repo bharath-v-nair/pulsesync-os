@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>PulseSync Life OS</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandDark: '#090d16',
+            cardDark: '#111827',
+            cardBorder: '#1e293b',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#090d16] text-slate-100 antialiased min-h-screen pb-24">
+
+  <!-- Main Container (Responsive for Phone & Desktop) -->
+  <div class="max-w-md mx-auto px-4 pt-4 sm:max-w-2xl">
+
+    <!-- Top App Header -->
+    <header class="flex items-center justify-between py-3 border-b border-slate-800/80 mb-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white leading-tight">PulseSync <span class="text-xs font-normal text-emerald-400 ml-1">Move MVP</span></h1>
+          <p class="text-[11px] text-slate-400" id="currentDateDisplay">Loading date...</p>
+        </div>
+      </div>
+
+      <!-- Wake-Up Quick Log Button -->
+      <button id="btnWakeUp" class="tap-target px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700/60 text-xs font-medium text-amber-300 hover:bg-slate-700 flex items-center gap-1.5 transition">
+        <span>☀️</span>
+        <span id="wakeUpLabel">Woke Up</span>
+      </button>
+    </header>
+
+    <!-- Navigation Tabs (Move, Focus, Habits) -->
+    <nav class="flex items-center p-1 bg-slate-900/90 rounded-2xl border border-slate-800 mb-5 text-xs font-semibold">
+      <button class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/30 flex items-center justify-center gap-1.5 transition">
+        <span>🏋️</span> Move
+      </button>
+      <button id="tabFocus" class="flex-1 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
+        <span>🧠</span> Focus <span class="text-[9px] bg-slate-800 px-1 py-0.5 rounded text-blue-400">P2</span>
+      </button>
+      <button id="tabHabits" class="flex-1 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
+        <span>🛡️</span> Habits <span class="text-[9px] bg-slate-800 px-1 py-0.5 rounded text-emerald-400">P3</span>
+      </button>
+    </nav>
+
+    <!-- Daily Running Totals (Metric Cards) -->
+    <section class="grid grid-cols-4 gap-2 mb-5">
+      <div class="glass-card p-2.5 text-center flex flex-col justify-center">
+        <span class="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Pull-ups</span>
+        <span class="text-xl font-extrabold text-white mt-0.5" id="metricPullups">0</span>
+        <span class="text-[9px] text-slate-400">reps</span>
+      </div>
+      <div class="glass-card p-2.5 text-center flex flex-col justify-center">
+        <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Push-ups</span>
+        <span class="text-xl font-extrabold text-white mt-0.5" id="metricPushups">0</span>
+        <span class="text-[9px] text-slate-400">reps</span>
+      </div>
+      <div class="glass-card p-2.5 text-center flex flex-col justify-center">
+        <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider">30kg Bar</span>
+        <span class="text-xl font-extrabold text-white mt-0.5" id="metricTonnage">0</span>
+        <span class="text-[9px] text-slate-400">kg vol</span>
+      </div>
+      <div class="glass-card p-2.5 text-center flex flex-col justify-center">
+        <span class="text-[10px] uppercase font-bold text-purple-400 tracking-wider">5k Walk</span>
+        <span class="text-xl font-extrabold text-white mt-0.5" id="metricWalks">0</span>
+        <span class="text-[9px] text-slate-400">km</span>
+      </div>
+    </section>
+
+    <!-- Section 1: Bodyweight Grease-the-Groove Steppers -->
+    <section class="mb-5 space-y-3">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Bodyweight Micro-Sets (GTG)</h2>
+        <span class="text-[10px] text-slate-500">1-Tap Fast Logging</span>
+      </div>
+
+      <!-- Half Pull-ups Stepper Card -->
+      <div class="glass-card p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-lg">
+            💪
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Half Pull-ups</h3>
+            <p class="text-[11px] text-slate-400">Bodyweight</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnPullupDec" class="stepper-btn tap-target">−</button>
+          <span id="valPullup" class="w-7 text-center text-base font-bold text-white">4</span>
+          <button id="btnPullupInc" class="stepper-btn tap-target">+</button>
+          <button id="btnPullupLog" class="log-btn tap-target px-4 ml-1">
+            LOG
+          </button>
+        </div>
+      </div>
+
+      <!-- Push-ups Stepper Card -->
+      <div class="glass-card p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-lg">
+            🤸
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Push-ups</h3>
+            <p class="text-[11px] text-slate-400">Standard</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnPushupDec" class="stepper-btn tap-target">−</button>
+          <span id="valPushup" class="w-7 text-center text-base font-bold text-white">10</span>
+          <button id="btnPushupInc" class="stepper-btn tap-target">+</button>
+          <button id="btnPushupLog" class="log-btn log-btn-emerald tap-target px-4 ml-1">
+            LOG
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: 30kg Fixed Barbell Module -->
+    <section class="mb-5">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Fixed 30 kg Barbell Lifts</h2>
+        <span class="text-[10px] text-amber-400 font-semibold">Fixed 30 kg</span>
+      </div>
+
+      <div class="glass-card p-3.5 space-y-3">
+        <!-- Exercise Pills Selector -->
+        <div class="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none" id="barbellPills">
+          <button data-lift="Squats" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 shadow transition whitespace-nowrap">Squats</button>
+          <button data-lift="Overhead Press" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Overhead Press</button>
+          <button data-lift="Bicep Curls" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Bicep Curls</button>
+          <button data-lift="Bent Rows" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Bent Rows</button>
+          <button data-lift="RDLs" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">RDLs</button>
+          <button data-lift="Deadlifts" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Deadlifts</button>
+        </div>
+
+        <!-- Barbell Stepper Row -->
+        <div class="flex items-center justify-between gap-2 pt-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-300 font-medium" id="selectedLiftName">Squats:</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnBarbellDec" class="stepper-btn tap-target">−</button>
+            <span id="valBarbell" class="w-7 text-center text-base font-bold text-white">10</span>
+            <button id="btnBarbellInc" class="stepper-btn tap-target">+</button>
+            <button id="btnBarbellLog" class="log-btn log-btn-amber tap-target px-4 ml-1">
+              LOG (300kg)
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: 5k Cardio Walks -->
+    <section class="mb-5">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Cardio Walks</h2>
+        <span class="text-[10px] text-purple-400 font-semibold">Goal: 2x 5k</span>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <button id="btnWalkMorning" class="glass-card p-3 flex items-center justify-between hover:bg-slate-800/80 transition group">
+          <div class="text-left">
+            <div class="text-xs font-bold text-white group-hover:text-purple-300 transition">Morning 5k</div>
+            <div class="text-[10px] text-slate-400" id="statusWalkMorning">Tap to complete</div>
+          </div>
+          <span class="text-xl">🌅</span>
+        </button>
+        <button id="btnWalkEvening" class="glass-card p-3 flex items-center justify-between hover:bg-slate-800/80 transition group">
+          <div class="text-left">
+            <div class="text-xs font-bold text-white group-hover:text-purple-300 transition">Evening 5k</div>
+            <div class="text-[10px] text-slate-400" id="statusWalkEvening">Tap to complete</div>
+          </div>
+          <span class="text-xl">🌆</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Section 4: 24-Hour Chronological Timeline -->
+    <section class="mb-6">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Today's Timeline</h2>
+        <span class="text-[11px] text-slate-400 font-medium" id="logCount">0 sets logged</span>
+      </div>
+
+      <div class="glass-card p-3 min-h-[140px]" id="timelineContainer">
+        <!-- Dynamic timeline items rendered here -->
+        <div class="text-center py-8 text-slate-500 text-xs" id="emptyTimeline">
+          No workouts logged yet today.<br>Walk past that pull-up bar and do 4 reps! 💪
+        </div>
+        <div class="space-y-2.5 hidden" id="timelineList"></div>
+      </div>
+    </section>
+
+    <!-- Bottom Utility Bar (Export & Clear) -->
+    <footer class="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
+      <button id="btnExportCSV" class="text-slate-400 hover:text-blue-400 flex items-center gap-1.5 transition py-2">
+        <span>📥</span> Export to CSV
+      </button>
+      <button id="btnExportJSON" class="text-slate-400 hover:text-emerald-400 flex items-center gap-1.5 transition py-2">
+        <span>💾</span> Backup JSON
+      </button>
+      <button id="btnClearToday" class="text-slate-500 hover:text-rose-400 transition py-2">
+        Reset Day
+      </button>
+    </footer>
+
+  </div>
+
+  <!-- Undo Toast (Fixed Bottom Floating) -->
+  <div id="undoToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-blue-500/40 shadow-2xl shadow-blue-500/30 rounded-2xl px-4 py-3 flex items-center gap-4 text-xs z-50 hidden toast w-[90%] max-w-sm">
+    <div class="flex-1 flex items-center gap-2">
+      <span class="text-blue-400 text-sm">✓</span>
+      <span class="text-slate-200 font-medium truncate" id="undoMessage">Set logged</span>
+    </div>
+    <button id="btnUndoAction" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition">
+      Undo
+    </button>
+  </div>
+
+  <!-- Phase Preview Modal -->
+  <div id="previewModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="glass-card p-6 max-w-sm w-full space-y-4">
+      <div class="text-2xl" id="modalIcon">🚀</div>
+      <h3 class="text-base font-bold text-white" id="modalTitle">Phase Preview</h3>
+      <p class="text-xs text-slate-300 leading-relaxed" id="modalBody">Description</p>
+      <button id="btnCloseModal" class="w-full py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500 transition">
+        Got it!
+      </button>
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="./app.js"></script>
+</body>
+</html>
