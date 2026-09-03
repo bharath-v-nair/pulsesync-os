@@ -2,6 +2,7 @@
   "currentCurriculumDay": 1,
   "jobAppsCount": 0,
   "azureMinutes": 0,
+  "dailyHistory": {},
   "tasks": [
     {
       "id": "d1_deep_1",
@@ -72,7 +73,7 @@
     {
       "id": "d1_spd_4",
       "code": "NG-03",
-      "title": "[NG-03] What does providedIn: 'root' mean in Angular DI?",
+      "title": "[NG-03] What does providedIn: root mean in Angular DI?",
       "category": "Angular",
       "bucket": "spaced",
       "curriculumDay": 1,

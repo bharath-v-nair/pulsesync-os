@@ -1,11 +1,11 @@
-// PulseSync Life OS - Minimalist Focus Engine & Physical Training Core
+// PulseSync Life OS - Minimalist Focus Engine & Progress Analytics
 (function () {
   'use strict';
 
   // --- Storage Keys ---
   const STORAGE_KEY_LOGS = 'pulsesync_logs_v3';
   const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v3';
-  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v7';
+  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v8';
 
   const TARGETS = {
     pullups: 20,
@@ -132,6 +132,7 @@
     currentCurriculumDay: 1,
     jobAppsCount: 0,
     azureMinutes: 0,
+    dailyHistory: {},
     tasks: [...DEFAULT_BOOTCAMP_TASKS],
     timerState: {
       isRunning: false,
@@ -226,7 +227,12 @@
   const adherenceBodyRows = document.getElementById('adherenceBodyRows');
   const exerciseProgressionList = document.getElementById('exerciseProgressionList');
 
-  // Focus Elements (Zone 1 to 5)
+  // Focus Elements (Zone 1 to 5 + Analytics)
+  const subViewFocusToday = document.getElementById('subViewFocusToday');
+  const subViewFocusProgress = document.getElementById('subViewFocusProgress');
+  const sectionFocusTodayView = document.getElementById('sectionFocusTodayView');
+  const sectionFocusProgressView = document.getElementById('sectionFocusProgressView');
+
   const btnPrevCurriculumDay = document.getElementById('btnPrevCurriculumDay');
   const btnNextCurriculumDay = document.getElementById('btnNextCurriculumDay');
   const curriculumDayBadge = document.getElementById('curriculumDayBadge');
@@ -275,6 +281,20 @@
   const completedTaskCount = document.getElementById('completedTaskCount');
   const completedTasksList = document.getElementById('completedTasksList');
   const emptyCompletedTasks = document.getElementById('emptyCompletedTasks');
+
+  // Analytics Elements
+  const analyticsStreakVal = document.getElementById('analyticsStreakVal');
+  const analyticsAdherenceVal = document.getElementById('analyticsAdherenceVal');
+  const analyticsTotalStudyVal = document.getElementById('analyticsTotalStudyVal');
+  const analyticsTotalAppsVal = document.getElementById('analyticsTotalAppsVal');
+  const analyticsMatrixHeaderRow = document.getElementById('analyticsMatrixHeaderRow');
+  const analyticsMatrixBodyRows = document.getElementById('analyticsMatrixBodyRows');
+  const analyticsAvgStudyVal = document.getElementById('analyticsAvgStudyVal');
+  const analyticsBarsContainer = document.getElementById('analyticsBarsContainer');
+  const analyticsBarsDaysRow = document.getElementById('analyticsBarsDaysRow');
+  const analyticsJobFunnelCount = document.getElementById('analyticsJobFunnelCount');
+  const barJobFunnel = document.getElementById('barJobFunnel');
+  const analyticsCoverageRows = document.getElementById('analyticsCoverageRows');
 
   const screenFlashOverlay = document.getElementById('screenFlashOverlay');
   const feynmanAlarmModal = document.getElementById('feynmanAlarmModal');
@@ -498,6 +518,7 @@
           if (serverFocus.currentCurriculumDay) focusData.currentCurriculumDay = serverFocus.currentCurriculumDay;
           if (serverFocus.jobAppsCount !== undefined) focusData.jobAppsCount = serverFocus.jobAppsCount;
           if (serverFocus.azureMinutes !== undefined) focusData.azureMinutes = serverFocus.azureMinutes;
+          if (serverFocus.dailyHistory) focusData.dailyHistory = { ...focusData.dailyHistory, ...serverFocus.dailyHistory };
 
           if (Array.isArray(serverFocus.tasks) && serverFocus.tasks.length > 0) {
             const taskMap = new Map();
@@ -538,6 +559,7 @@
     renderMetrics();
     renderTimeline();
     renderFocusDashboard();
+    renderFocusAnalytics();
   }
 
   async function postFocusToServer() {
@@ -563,6 +585,7 @@
       btnNavFocus.className = 'spring-btn flex-1 py-2.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
       btnNavMove.className = 'spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition';
       renderFocusDashboard();
+      renderFocusAnalytics();
     }
     triggerHaptic(10, 520);
   }
@@ -749,7 +772,7 @@
     renderTimeline();
   }
 
-  // --- Focus Engine Functions (Minimalist 3-Zone Architecture) ---
+  // --- Focus Engine Functions (Zone 1 to 5) ---
   function renderFocusDashboard() {
     const currentDayConfig = CURRICULUM_DAYS.find(d => d.day === focusData.currentCurriculumDay) || CURRICULUM_DAYS[0];
 
@@ -940,6 +963,182 @@
     });
   }
 
+  // --- Focus Engine Analytics Dashboard ---
+  function renderFocusAnalytics() {
+    const todayStr = getTodayDateStr();
+    const days = [];
+    for (let i = 6; i >= 0; i--) days.push(offsetDate(todayStr, -i));
+
+    // Ensure today's entry exists in dailyHistory
+    if (!focusData.dailyHistory) focusData.dailyHistory = {};
+    if (!focusData.dailyHistory[todayStr]) {
+      focusData.dailyHistory[todayStr] = {
+        studySeconds: focusData.stats.totalStudySeconds || 0,
+        jobApps: focusData.jobAppsCount || 0,
+        azureMinutes: focusData.azureMinutes || 0
+      };
+    } else {
+      focusData.dailyHistory[todayStr].studySeconds = Math.max(focusData.dailyHistory[todayStr].studySeconds || 0, focusData.stats.totalStudySeconds || 0);
+      focusData.dailyHistory[todayStr].jobApps = Math.max(focusData.dailyHistory[todayStr].jobApps || 0, focusData.jobAppsCount || 0);
+      focusData.dailyHistory[todayStr].azureMinutes = Math.max(focusData.dailyHistory[todayStr].azureMinutes || 0, focusData.azureMinutes || 0);
+    }
+
+    // 1. Calculate Sprint Overview Metrics
+    let activeStreak = 0;
+    for (let i = days.length - 1; i >= 0; i--) {
+      const d = days[i];
+      const hasCompleted = focusData.tasks.some(t => t.dateStr === d && t.completed);
+      const studied = (focusData.dailyHistory[d]?.studySeconds || 0) > 0;
+      if (hasCompleted || studied) {
+        activeStreak++;
+      } else if (d !== todayStr) {
+        break;
+      }
+    }
+    analyticsStreakVal.textContent = `${Math.max(1, activeStreak)} Day${activeStreak === 1 ? '' : 's'}`;
+
+    let totalTargetsHit = 0;
+    let totalPossibleTargets = days.length * 4; // 4 core tracks
+    let totalSprintStudySec = 0;
+    let totalSprintJobApps = 0;
+
+    days.forEach(d => {
+      const dTasks = focusData.tasks.filter(t => t.dateStr === d && t.completed);
+      const dSec = focusData.dailyHistory[d]?.studySeconds || (d === todayStr ? focusData.stats.totalStudySeconds || 0 : 0);
+      const dApps = focusData.dailyHistory[d]?.jobApps || (d === todayStr ? focusData.jobAppsCount || 0 : 0);
+
+      totalSprintStudySec += dSec;
+      totalSprintJobApps += dApps;
+
+      const deepHit = dTasks.filter(t => t.bucket === 'deep').length >= 3;
+      const spacedHit = dTasks.filter(t => t.bucket === 'spaced').length >= 5;
+      const liveHit = dTasks.filter(t => t.bucket === 'live').length >= 1;
+      const dsaHit = dTasks.filter(t => t.bucket === 'dsa').length >= 1;
+
+      if (deepHit) totalTargetsHit++;
+      if (spacedHit) totalTargetsHit++;
+      if (liveHit) totalTargetsHit++;
+      if (dsaHit) totalTargetsHit++;
+    });
+
+    const sprintAdherence = Math.min(100, Math.round((totalTargetsHit / totalPossibleTargets) * 100));
+    analyticsAdherenceVal.textContent = `${sprintAdherence > 0 ? sprintAdherence : 100}%`;
+
+    const sprintHrs = Math.floor(totalSprintStudySec / 3600);
+    const sprintMins = Math.floor((totalSprintStudySec % 3600) / 60);
+    analyticsTotalStudyVal.textContent = `${sprintHrs}h ${String(sprintMins).padStart(2, '0')}m`;
+    analyticsTotalAppsVal.textContent = `${totalSprintJobApps} / 40`;
+
+    // 2. 7-Day Consistency Matrix
+    analyticsMatrixHeaderRow.innerHTML = `
+      <th class="text-left py-2 px-1 font-semibold text-slate-400">Constant Track</th>
+      ${days.map(d => {
+        const [, , dayNum] = d.split('-');
+        return `<th class="text-center py-2 px-1 font-semibold">${dayNum}</th>`;
+      }).join('')}
+    `;
+
+    const matrixTracks = [
+      { id: 'deep', label: '3 Deep Anchors (50m)', target: 3 },
+      { id: 'spaced', label: '5 Spaced Checks (6m)', target: 5 },
+      { id: 'live', label: '1 Live Coding (1h)', target: 1 },
+      { id: 'dsa', label: '1 C# DSA (1h)', target: 1 },
+      { id: 'apps', label: 'Job Applications (10)', target: 10 }
+    ];
+
+    analyticsMatrixBodyRows.innerHTML = matrixTracks.map(trk => {
+      return `
+        <tr>
+          <td class="py-2.5 px-1 font-medium text-slate-300 truncate">${trk.label}</td>
+          ${days.map(d => {
+            let val = 0;
+            if (trk.id === 'apps') {
+              val = focusData.dailyHistory[d]?.jobApps || (d === todayStr ? focusData.jobAppsCount || 0 : 0);
+            } else {
+              val = focusData.tasks.filter(t => t.dateStr === d && t.bucket === trk.id && t.completed).length;
+            }
+
+            let mark = '✕';
+            let cellClass = 'adherence-none';
+            if (val >= trk.target) {
+              mark = '✓'; cellClass = 'adherence-full';
+            } else if (val > 0) {
+              mark = '~'; cellClass = 'adherence-partial';
+            }
+            return `<td class="text-center py-2 px-1"><div class="adherence-cell mx-auto ${cellClass}">${mark}</div></td>`;
+          }).join('')}
+        </tr>
+      `;
+    }).join('');
+
+    // 3. Daily Study Hours Chart (Max 6 hours scale)
+    const MAX_CHART_HOURS = 6.0;
+    const TARGET_HOURS = 5.5;
+    let avgHours = (totalSprintStudySec / 3600) / 7;
+    analyticsAvgStudyVal.textContent = `Avg: ${avgHours.toFixed(1)}h / day`;
+
+    analyticsBarsContainer.innerHTML = `
+      <!-- Target Baseline Line at 5.5h -->
+      <div class="absolute left-0 right-0 border-b border-dashed border-sky-400/40 z-0 pointer-events-none" style="bottom: ${(TARGET_HOURS / MAX_CHART_HOURS) * 100}%">
+        <span class="text-[10px] text-sky-400 font-mono absolute -top-4 right-1">5.5h Goal</span>
+      </div>
+      ${days.map(d => {
+        const dSec = focusData.dailyHistory[d]?.studySeconds || (d === todayStr ? focusData.stats.totalStudySeconds || 0 : 0);
+        const dHours = dSec / 3600;
+        const barHeightPct = Math.min(100, Math.max(6, Math.round((dHours / MAX_CHART_HOURS) * 100)));
+        const isMet = dHours >= TARGET_HOURS;
+        const barColor = isMet ? 'bg-sky-400 shadow-sm shadow-sky-400/30' : (dHours > 0 ? 'bg-sky-600' : 'bg-white/10');
+
+        return `
+          <div class="flex-1 flex flex-col items-center justify-end h-full relative z-10 group">
+            <span class="text-[10px] font-mono text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity mb-1">${dHours.toFixed(1)}h</span>
+            <div class="w-full max-w-[28px] ${barColor} rounded-t-lg transition-all" style="height: ${barHeightPct}%"></div>
+          </div>
+        `;
+      }).join('')}
+    `;
+
+    analyticsBarsDaysRow.innerHTML = days.map(d => {
+      const [y, m, dayNum] = d.split('-').map(Number);
+      const dt = new Date(y, m - 1, dayNum);
+      const dayName = dt.toLocaleDateString(undefined, { weekday: 'narrow' });
+      const isToday = d === todayStr;
+      return `<div class="flex-1 text-center font-bold ${isToday ? 'text-sky-400 underline underline-offset-4' : 'text-slate-400'}">${dayName} ${dayNum}</div>`;
+    }).join('');
+
+    // 4. Cumulative Job Applications Funnel
+    const funnelTarget = 40;
+    const funnelPct = Math.min(100, Math.round((totalSprintJobApps / funnelTarget) * 100));
+    analyticsJobFunnelCount.textContent = `${totalSprintJobApps} / ${funnelTarget} (${funnelPct}%)`;
+    barJobFunnel.style.width = `${funnelPct}%`;
+
+    // 5. Topic Mastery Breakdown (Curriculum Coverage)
+    const angularCompleted = focusData.tasks.filter(t => t.category === 'Angular' && t.completed).length;
+    const netCompleted = focusData.tasks.filter(t => t.category === '.NET' && t.completed).length;
+    const dsaCompleted = focusData.tasks.filter(t => t.category === 'LeetCode' && t.completed).length;
+    const azureMins = focusData.azureMinutes || 0;
+    const azureHrs = (azureMins / 60).toFixed(1);
+
+    const coverageData = [
+      { name: 'Angular (Forms, RxJS, Components)', count: `${angularCompleted}/10 Qs`, pct: Math.min(100, Math.round((angularCompleted / 10) * 100)), barColor: 'bg-rose-500' },
+      { name: '.NET Core (Memory, Web API, EF Core)', count: `${netCompleted}/10 Qs`, pct: Math.min(100, Math.round((netCompleted / 10) * 100)), barColor: 'bg-purple-500' },
+      { name: 'LeetCode DSA in C#', count: `${dsaCompleted}/7 Problems`, pct: Math.min(100, Math.round((dsaCompleted / 7) * 100)), barColor: 'bg-emerald-400' },
+      { name: 'Azure AI & STAR Behavioral', count: `${azureHrs} hrs logged`, pct: Math.min(100, Math.round((azureMins / 180) * 100)), barColor: 'bg-sky-400' }
+    ];
+
+    analyticsCoverageRows.innerHTML = coverageData.map(c => `
+      <div class="space-y-1.5">
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-slate-300 font-medium">${c.name}</span>
+          <span class="text-white font-bold font-mono">${c.count} (${c.pct}%)</span>
+        </div>
+        <div class="progress-track h-2 bg-white/10 rounded-full overflow-hidden">
+          <div class="progress-fill ${c.barColor}" style="width: ${c.pct}%"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
   function bindTaskToTimer(taskId) {
     focusData.timerState.boundTaskId = taskId;
     const task = focusData.tasks.find(t => t.id === taskId);
@@ -951,6 +1150,7 @@
     saveLocalData();
     postFocusToServer();
     renderFocusDashboard();
+    renderFocusAnalytics();
     triggerHaptic(12, 600);
   }
 
@@ -977,12 +1177,14 @@
     postFocusToServer();
     triggerHaptic(20, 750);
     renderFocusDashboard();
+    renderFocusAnalytics();
     showUndoToast(`Completed: ${task.title}`, task.id, () => {
       task.completed = false;
       task.completedAt = null;
       saveLocalData();
       postFocusToServer();
       renderFocusDashboard();
+      renderFocusAnalytics();
     });
   }
 
@@ -996,6 +1198,7 @@
     postFocusToServer();
     triggerHaptic(15, 500);
     renderFocusDashboard();
+    renderFocusAnalytics();
     showUndoToast(`Reverted: ${task.title}`, task.id);
   }
 
@@ -1008,6 +1211,7 @@
     postFocusToServer();
     triggerHaptic(10, 250);
     renderFocusDashboard();
+    renderFocusAnalytics();
   }
 
   // --- Wall-Clock Timer with 15m Early Answer Alert ---
@@ -1058,6 +1262,14 @@
     if (elapsedSeconds > 0) {
       focusData.stats.totalStudySeconds = (focusData.stats.totalStudySeconds || 0) + elapsedSeconds;
       focusData.timerState.lastTickTimestamp = now;
+
+      // Update daily history
+      const todayStr = getTodayDateStr();
+      if (!focusData.dailyHistory) focusData.dailyHistory = {};
+      if (!focusData.dailyHistory[todayStr]) {
+        focusData.dailyHistory[todayStr] = { studySeconds: 0, jobApps: focusData.jobAppsCount || 0, azureMinutes: focusData.azureMinutes || 0 };
+      }
+      focusData.dailyHistory[todayStr].studySeconds = (focusData.dailyHistory[todayStr].studySeconds || 0) + elapsedSeconds;
     }
 
     const remaining = Math.max(0, Math.round((focusData.timerState.endTimestamp - now) / 1000));
@@ -1132,6 +1344,7 @@
     saveLocalData();
     postFocusToServer();
     renderFocusDashboard();
+    renderFocusAnalytics();
     triggerHaptic(10, 400);
   }
 
@@ -1236,6 +1449,7 @@
       renderMetrics();
       renderTimeline();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(30, 200);
     }
   }
@@ -1258,6 +1472,7 @@
       renderMetrics();
       renderTimeline();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -1267,6 +1482,7 @@
       renderMetrics();
       renderTimeline();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -1276,6 +1492,7 @@
       renderMetrics();
       renderTimeline();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -1290,6 +1507,7 @@
         renderMetrics();
         renderTimeline();
         renderFocusDashboard();
+        renderFocusAnalytics();
       }
     });
 
@@ -1308,6 +1526,24 @@
       sectionTodayView.classList.add('hidden');
       sectionProgressView.classList.remove('hidden');
       renderProgressView();
+      triggerHaptic(8, 500);
+    });
+
+    // Focus Sub-Views (Today vs Progress Analytics)
+    subViewFocusToday.addEventListener('click', () => {
+      subViewFocusToday.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15';
+      subViewFocusProgress.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white';
+      sectionFocusTodayView.classList.remove('hidden');
+      sectionFocusProgressView.classList.add('hidden');
+      triggerHaptic(8, 500);
+    });
+
+    subViewFocusProgress.addEventListener('click', () => {
+      subViewFocusProgress.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15';
+      subViewFocusToday.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white';
+      sectionFocusTodayView.classList.add('hidden');
+      sectionFocusProgressView.classList.remove('hidden');
+      renderFocusAnalytics();
       triggerHaptic(8, 500);
     });
 
@@ -1444,6 +1680,7 @@
       saveLocalData();
       postFocusToServer();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -1452,6 +1689,7 @@
       saveLocalData();
       postFocusToServer();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(8, 480);
     });
 
@@ -1460,6 +1698,7 @@
       saveLocalData();
       postFocusToServer();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(12, 600);
       showUndoToast(`Switched to ${CURRICULUM_DAYS[focusData.currentCurriculumDay - 1].title}`, 'plan_tomorrow');
     });
@@ -1484,6 +1723,7 @@
         saveLocalData();
         postFocusToServer();
         renderFocusDashboard();
+        renderFocusAnalytics();
         triggerHaptic(8, 400);
       }
     });
@@ -1493,6 +1733,7 @@
       saveLocalData();
       postFocusToServer();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(10, 650);
       showUndoToast(`Logged 1 Application (${focusData.jobAppsCount}/10)`, 'job_app');
     });
@@ -1502,6 +1743,7 @@
       saveLocalData();
       postFocusToServer();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(15, 750);
       showUndoToast(`Logged +5 Applications (${focusData.jobAppsCount}/10)`, 'job_app_5');
     });
@@ -1513,6 +1755,7 @@
       saveLocalData();
       postFocusToServer();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(12, 600);
       showUndoToast('Logged 30m Azure Study', 'azure_30m');
     });
@@ -1523,6 +1766,7 @@
       saveLocalData();
       postFocusToServer();
       renderFocusDashboard();
+      renderFocusAnalytics();
       triggerHaptic(15, 700);
       showUndoToast('Logged 60m Azure Study', 'azure_60m');
     });
@@ -1625,6 +1869,7 @@
       modalAddTask.classList.add('hidden');
       triggerHaptic(15, 650);
       renderFocusDashboard();
+      renderFocusAnalytics();
     });
 
     // Global Utilities
@@ -1634,7 +1879,7 @@
     btnCloseModal.addEventListener('click', () => previewModal.classList.add('hidden'));
   }
 
-  // --- Adherence View ---
+  // --- Adherence View (Move Domain) ---
   function renderProgressView() {
     const todayStr = getTodayDateStr();
     const days = [];

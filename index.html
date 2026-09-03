@@ -28,7 +28,7 @@
 <body class="bg-[#080a0f] text-slate-100 antialiased min-h-screen pb-24 font-sans">
 
   <!-- Main Container -->
-  <div class="max-w-md mx-auto px-4 pt-3 sm:max-w-xl md:max-w-2xl">
+  <div class="max-w-md mx-auto px-4 pt-3 sm:max-w-xl md:max-w-3xl">
 
     <!-- Top App Header -->
     <header class="flex items-center justify-between py-3 border-b border-white/[0.06] mb-3">
@@ -306,200 +306,340 @@
     <!-- ================================================================= -->
     <div id="viewFocus" class="space-y-4 hidden">
 
-      <!-- ZONE 1: Day Navigation Bar -->
-      <section class="matte-card p-3 flex items-center justify-between">
-        <button id="btnPrevCurriculumDay" class="spring-btn p-2.5 rounded-lg text-slate-400 hover:text-white tap-target" title="Previous Curriculum Day">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <!-- Sub-Navigation Toggle: Execution vs Review -->
+      <div class="flex items-center gap-2 mb-2">
+        <button id="subViewFocusToday" class="spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15">
+          Today's Focus
         </button>
-        <div class="text-center px-2">
-          <div id="curriculumDayBadge" class="text-sm font-bold text-white tracking-wide">
-            Day 1: Angular Forms & Interceptors
+        <button id="subViewFocusProgress" class="spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white">
+          Progress & Analytics
+        </button>
+      </div>
+
+      <!-- FOCUS VIEW 1: TODAY'S EXECUTION (MINIMALIST HERO) -->
+      <div id="sectionFocusTodayView" class="space-y-4">
+        <!-- ZONE 1: Day Navigation Bar -->
+        <section class="matte-card p-3 flex items-center justify-between">
+          <button id="btnPrevCurriculumDay" class="spring-btn p-2.5 rounded-lg text-slate-400 hover:text-white tap-target" title="Previous Curriculum Day">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="text-center px-2">
+            <div id="curriculumDayBadge" class="text-sm font-bold text-white tracking-wide">
+              Day 1: Angular Forms & Interceptors
+            </div>
+            <div class="flex items-center justify-center gap-2 mt-1">
+              <span id="labelTomorrowTitle" class="text-xs text-slate-400">Tomorrow: Backend 1 (.NET & Memory)</span>
+              <button id="btnPlanTomorrow" class="text-xs text-sky-400 hover:underline font-semibold">
+                Switch
+              </button>
+            </div>
           </div>
-          <div class="flex items-center justify-center gap-2 mt-1">
-            <span id="labelTomorrowTitle" class="text-xs text-slate-400">Tomorrow: Backend 1 (.NET & Memory)</span>
-            <button id="btnPlanTomorrow" class="text-xs text-sky-400 hover:underline font-semibold">
-              Switch
+          <button id="btnNextCurriculumDay" class="spring-btn p-2.5 rounded-lg text-slate-400 hover:text-white tap-target" title="Next Curriculum Day">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </section>
+
+        <!-- ZONE 2: Hero Feynman Timebox Card -->
+        <section class="matte-card p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="eyebrow text-slate-300">Feynman Focus Timer</span>
+            <!-- Presets -->
+            <div class="flex items-center gap-1.5 text-xs font-mono">
+              <button id="preset50m" class="px-3 py-1 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20">50m</button>
+              <button id="preset30m" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white">30m</button>
+              <button id="preset60m" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white">60m</button>
+            </div>
+          </div>
+
+          <!-- Big Numeric Timer Display -->
+          <div class="text-center py-2">
+            <div id="timerDisplay" class="font-mono text-6xl sm:text-7xl font-black tabular-nums tracking-tight text-white select-none">
+              50:00
+            </div>
+            <div id="timerSubLabel" class="text-xs text-slate-400 font-mono mt-1.5">
+              50m Hard Stop · 15m Early Answer Warning
+            </div>
+          </div>
+
+          <!-- Currently Bound Task Banner -->
+          <div id="boundTaskCard" class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.08] flex items-center justify-between">
+            <div class="flex items-center gap-2.5 truncate pr-2">
+              <span class="text-sky-400 font-bold text-sm">⚡</span>
+              <span id="boundTaskTitle" class="text-xs sm:text-sm text-slate-200 font-medium truncate">Select a question below to focus</span>
+            </div>
+            <button id="btnUnbindTask" class="text-xs text-slate-400 hover:text-slate-200 font-mono hidden">Clear</button>
+          </div>
+
+          <!-- Timer Controls -->
+          <div class="grid grid-cols-3 gap-2.5">
+            <button id="btnTimerStart" class="spring-btn py-3 rounded-xl btn-action-primary text-xs font-bold tracking-wider">
+              START
+            </button>
+            <button id="btnTimerPause" class="spring-btn py-3 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
+              PAUSE
+            </button>
+            <button id="btnTimerReset" class="spring-btn py-3 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
+              RESET
             </button>
           </div>
-        </div>
-        <button id="btnNextCurriculumDay" class="spring-btn p-2.5 rounded-lg text-slate-400 hover:text-white tap-target" title="Next Curriculum Day">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
-      </section>
 
-      <!-- ZONE 2: Hero Feynman Timebox Card -->
-      <section class="matte-card p-5 space-y-4">
-        <div class="flex items-center justify-between">
-          <span class="eyebrow text-slate-300">Feynman Focus Timer</span>
-          <!-- Presets -->
-          <div class="flex items-center gap-1.5 text-xs font-mono">
-            <button id="preset50m" class="px-3 py-1 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20">50m</button>
-            <button id="preset30m" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white">30m</button>
-            <button id="preset60m" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white">60m</button>
-          </div>
-        </div>
-
-        <!-- Big Numeric Timer Display -->
-        <div class="text-center py-2">
-          <div id="timerDisplay" class="font-mono text-6xl sm:text-7xl font-black tabular-nums tracking-tight text-white select-none">
-            50:00
-          </div>
-          <div id="timerSubLabel" class="text-xs text-slate-400 font-mono mt-1.5">
-            50m Hard Stop · 15m Early Answer Warning
-          </div>
-        </div>
-
-        <!-- Currently Bound Task Banner -->
-        <div id="boundTaskCard" class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.08] flex items-center justify-between">
-          <div class="flex items-center gap-2.5 truncate pr-2">
-            <span class="text-sky-400 font-bold text-sm">⚡</span>
-            <span id="boundTaskTitle" class="text-xs sm:text-sm text-slate-200 font-medium truncate">Select a question below to focus</span>
-          </div>
-          <button id="btnUnbindTask" class="text-xs text-slate-400 hover:text-slate-200 font-mono hidden">Clear</button>
-        </div>
-
-        <!-- Timer Controls -->
-        <div class="grid grid-cols-3 gap-2.5">
-          <button id="btnTimerStart" class="spring-btn py-3 rounded-xl btn-action-primary text-xs font-bold tracking-wider">
-            START
+          <!-- Quick Complete Button -->
+          <button id="btnTimerCompleteTask" class="spring-btn w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wide shadow-sm hidden">
+            ✓ Mark Active Question Completed
           </button>
-          <button id="btnTimerPause" class="spring-btn py-3 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
-            PAUSE
-          </button>
-          <button id="btnTimerReset" class="spring-btn py-3 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
-            RESET
-          </button>
-        </div>
+        </section>
 
-        <!-- Quick Complete Button -->
-        <button id="btnTimerCompleteTask" class="spring-btn w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wide shadow-sm hidden">
-          ✓ Mark Active Question Completed
-        </button>
-      </section>
-
-      <!-- ZONE 3: Consolidated Daily Progress Card -->
-      <section class="matte-card p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="eyebrow text-slate-300">Today's Progress</span>
-          <span class="text-xs font-bold font-mono text-white" id="valOverallProgress">0 / 10 Completed (0%)</span>
-        </div>
-
-        <!-- Clean Unified Progress Track -->
-        <div class="progress-track h-2">
-          <div id="barOverall" class="progress-fill bg-sky-400" style="width: 0%"></div>
-        </div>
-
-        <!-- High-Level Breakdown Badges -->
-        <div class="grid grid-cols-4 gap-2 pt-1 text-center text-xs font-mono">
-          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
-            <span class="text-slate-400 block text-[11px]">Anchors</span>
-            <span class="font-bold text-sky-400 text-sm" id="valDeepCount">0/3</span>
+        <!-- ZONE 3: Consolidated Daily Progress Card -->
+        <section class="matte-card p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="eyebrow text-slate-300">Today's Progress</span>
+            <span class="text-xs font-bold font-mono text-white" id="valOverallProgress">0 / 10 Completed (0%)</span>
           </div>
-          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
-            <span class="text-slate-400 block text-[11px]">Spaced</span>
-            <span class="font-bold text-purple-400 text-sm" id="valSpacedCount">0/5</span>
-          </div>
-          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
-            <span class="text-slate-400 block text-[11px]">Live Code</span>
-            <span class="font-bold text-amber-400 text-sm" id="valLiveCount">0/1</span>
-          </div>
-          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
-            <span class="text-slate-400 block text-[11px]">C# DSA</span>
-            <span class="font-bold text-emerald-400 text-sm" id="valDsaCount">0/1</span>
-          </div>
-        </div>
 
-        <div class="flex justify-between items-center pt-1 border-t border-white/[0.04] text-xs font-mono">
-          <span class="text-slate-400">Total Study Time Today</span>
-          <span class="text-white font-bold" id="valTotalStudyTime">0h 00m / 5.5h Target</span>
-        </div>
-      </section>
-
-      <!-- ZONE 4: Clean Task Roster -->
-      <section class="space-y-3">
-        <div class="flex items-center justify-between px-1">
-          <div>
-            <h2 class="text-sm font-bold text-white tracking-wide">Today's Tasks</h2>
-            <p class="text-xs text-slate-400 mt-0.5">3 Deep Anchors · 1 Live Coding · 1 C# DSA</p>
+          <!-- Clean Unified Progress Track -->
+          <div class="progress-track h-2">
+            <div id="barOverall" class="progress-fill bg-sky-400" style="width: 0%"></div>
           </div>
-          <button id="btnOpenAddTaskModal" class="spring-btn tap-target px-3.5 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-sm">
-            <span>+</span> Add Task
-          </button>
-        </div>
 
-        <!-- Task List Items -->
-        <div id="taskListContainer" class="space-y-2.5"></div>
+          <!-- High-Level Breakdown Badges -->
+          <div class="grid grid-cols-4 gap-2 pt-1 text-center text-xs font-mono">
+            <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-slate-400 block text-[11px]">Anchors</span>
+              <span class="font-bold text-sky-400 text-sm" id="valDeepCount">0/3</span>
+            </div>
+            <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-slate-400 block text-[11px]">Spaced</span>
+              <span class="font-bold text-purple-400 text-sm" id="valSpacedCount">0/5</span>
+            </div>
+            <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-slate-400 block text-[11px]">Live Code</span>
+              <span class="font-bold text-amber-400 text-sm" id="valLiveCount">0/1</span>
+            </div>
+            <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-slate-400 block text-[11px]">C# DSA</span>
+              <span class="font-bold text-emerald-400 text-sm" id="valDsaCount">0/1</span>
+            </div>
+          </div>
 
-        <!-- Expandable Spaced Retrieval Drawer -->
-        <div class="matte-card overflow-hidden transition-all">
-          <button id="btnToggleSpacedDrawer" class="w-full p-3.5 flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white transition">
-            <span class="flex items-center gap-2">
-              <span id="arrowSpacedDrawer" class="text-purple-400 transition-transform">▸</span>
-              <span>5 Spaced Retrieval Checks</span>
+          <div class="flex justify-between items-center pt-1 border-t border-white/[0.04] text-xs font-mono">
+            <span class="text-slate-400">Total Study Time Today</span>
+            <span class="text-white font-bold" id="valTotalStudyTime">0h 00m / 5.5h Target</span>
+          </div>
+        </section>
+
+        <!-- ZONE 4: Clean Task Roster -->
+        <section class="space-y-3">
+          <div class="flex items-center justify-between px-1">
+            <div>
+              <h2 class="text-sm font-bold text-white tracking-wide">Today's Tasks</h2>
+              <p class="text-xs text-slate-400 mt-0.5">3 Deep Anchors · 1 Live Coding · 1 C# DSA</p>
+            </div>
+            <button id="btnOpenAddTaskModal" class="spring-btn tap-target px-3.5 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+              <span>+</span> Add Task
+            </button>
+          </div>
+
+          <!-- Task List Items -->
+          <div id="taskListContainer" class="space-y-2.5"></div>
+
+          <!-- Expandable Spaced Retrieval Drawer -->
+          <div class="matte-card overflow-hidden transition-all">
+            <button id="btnToggleSpacedDrawer" class="w-full p-3.5 flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white transition">
+              <span class="flex items-center gap-2">
+                <span id="arrowSpacedDrawer" class="text-purple-400 transition-transform">▸</span>
+                <span>5 Spaced Retrieval Checks</span>
+              </span>
+              <span class="font-mono text-purple-300 text-xs" id="valSpacedDrawerStatus">0/5 Done</span>
+            </button>
+            <div id="spacedDrawerContent" class="hidden p-3 pt-0 space-y-2 border-t border-white/[0.04]">
+              <div id="spacedTasksContainer" class="space-y-2 pt-2"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ZONE 5: Accountability Stepper & Azure AI Controller -->
+        <section class="space-y-3 pt-2">
+          <span class="eyebrow px-1">Accountability & Cloud Track</span>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Job Applications Stepper -->
+            <div class="matte-card p-3.5 flex items-center justify-between">
+              <div>
+                <h3 class="text-xs font-bold text-white">Job Applications</h3>
+                <p class="text-[11px] text-slate-400 font-mono mt-0.5">8:30 AM Golden Hr</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button id="btnDecJobApp" class="stepper-btn spring-btn tap-target">−</button>
+                <span id="valJobAppsCount" class="w-8 text-center text-sm font-extrabold text-white tabular-nums font-mono">0</span>
+                <button id="btnIncJobApp" class="stepper-btn spring-btn tap-target">+</button>
+                <button id="btnAdd5JobApps" class="px-2.5 py-1.5 rounded-lg bg-blue-950/60 border border-blue-800/50 text-blue-400 text-xs font-bold font-mono ml-1 hover:bg-blue-900/60">
+                  +5
+                </button>
+              </div>
+            </div>
+
+            <!-- Azure AI Timebox & Logger -->
+            <div class="matte-card p-3.5 flex items-center justify-between">
+              <div>
+                <h3 class="text-xs font-bold text-white">Azure AI Track</h3>
+                <p class="text-[11px] text-emerald-400 font-mono mt-0.5" id="valAzureTimeText">0 mins logged</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button id="btnLogAzure30m" class="px-2.5 py-1.5 rounded-lg bg-[#1a2233] text-slate-200 hover:text-white text-xs font-bold font-mono border border-white/10">
+                  +30m
+                </button>
+                <button id="btnLogAzure60m" class="px-2.5 py-1.5 rounded-lg bg-[#1a2233] text-slate-200 hover:text-white text-xs font-bold font-mono border border-white/10">
+                  +60m
+                </button>
+                <button id="btnFocusAzureTimer" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/50 text-emerald-400 text-xs font-bold hover:bg-emerald-900/60" title="Start 45m Azure Timebox">
+                  Timer
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Completed Tasks Feed with REVERT -->
+        <section class="space-y-2 pt-2">
+          <div class="flex items-center justify-between px-1">
+            <span class="eyebrow">Completed Today</span>
+            <span class="text-xs text-slate-400 font-mono" id="completedTaskCount">0 completed</span>
+          </div>
+          <div class="matte-card p-4 min-h-[70px]" id="completedTasksCard">
+            <div class="text-center py-3 text-slate-500 text-xs font-mono" id="emptyCompletedTasks">
+              No completed tasks recorded yet today.
+            </div>
+            <div class="space-y-2 hidden" id="completedTasksList"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- FOCUS VIEW 2: PROGRESS & ANALYTICS DASHBOARD -->
+      <div id="sectionFocusProgressView" class="space-y-5 hidden">
+        <!-- Sprint Hero Card -->
+        <section class="matte-card p-4 space-y-3" id="analyticsSprintCard">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="eyebrow text-slate-300">Sprint Analytics</span>
+              <h3 class="text-sm font-bold text-white tracking-wide mt-0.5">Week 1 Foundation Sprint</h3>
+            </div>
+            <span class="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-sky-950/60 border border-sky-800/40 text-sky-400">
+              Days 1–7
             </span>
-            <span class="font-mono text-purple-300 text-xs" id="valSpacedDrawerStatus">0/5 Done</span>
-          </button>
-          <div id="spacedDrawerContent" class="hidden p-3 pt-0 space-y-2 border-t border-white/[0.04]">
-            <div id="spacedTasksContainer" class="space-y-2 pt-2"></div>
           </div>
-        </div>
-      </section>
 
-      <!-- ZONE 5: Accountability Stepper & Azure AI Controller -->
-      <section class="space-y-3 pt-2">
-        <span class="eyebrow px-1">Accountability & Cloud Track</span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 text-center font-mono">
+            <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-[11px] text-slate-400 block">Consistency Streak</span>
+              <span class="text-sm font-extrabold text-white mt-0.5 block" id="analyticsStreakVal">1 Day</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-[11px] text-slate-400 block">Sprint Adherence</span>
+              <span class="text-sm font-extrabold text-emerald-400 mt-0.5 block" id="analyticsAdherenceVal">100%</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-[11px] text-slate-400 block">Total Study Time</span>
+              <span class="text-sm font-extrabold text-sky-400 mt-0.5 block" id="analyticsTotalStudyVal">0h 08m</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-[11px] text-slate-400 block">Total Job Apps</span>
+              <span class="text-sm font-extrabold text-blue-400 mt-0.5 block" id="analyticsTotalAppsVal">0 / 40</span>
+            </div>
+          </div>
+        </section>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- Job Applications Stepper -->
-          <div class="matte-card p-3.5 flex items-center justify-between">
+        <!-- 7-Day Consistency Matrix (The 5 Constants) -->
+        <section class="matte-card p-4 space-y-3" id="analyticsMatrixContainer">
+          <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-xs font-bold text-white">Job Applications</h3>
-              <p class="text-[11px] text-slate-400 font-mono mt-0.5">8:30 AM Golden Hr</p>
+              <span class="eyebrow text-slate-300">7-Day Consistency Matrix</span>
+              <p class="text-xs text-slate-400 mt-0.5">Core Pillars: Deep · Spaced · Live · DSA · Job Apps</p>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button id="btnDecJobApp" class="stepper-btn spring-btn tap-target">−</button>
-              <span id="valJobAppsCount" class="w-8 text-center text-sm font-extrabold text-white tabular-nums font-mono">0</span>
-              <button id="btnIncJobApp" class="stepper-btn spring-btn tap-target">+</button>
-              <button id="btnAdd5JobApps" class="px-2.5 py-1.5 rounded-lg bg-blue-950/60 border border-blue-800/50 text-blue-400 text-xs font-bold font-mono ml-1 hover:bg-blue-900/60">
-                +5
-              </button>
-            </div>
+            <span class="text-xs text-slate-400 font-mono">✓ Met · ~ Some · ✕ None</span>
           </div>
 
-          <!-- Azure AI Timebox & Logger -->
-          <div class="matte-card p-3.5 flex items-center justify-between">
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs font-mono">
+              <thead>
+                <tr class="text-slate-400 text-xs border-b border-white/[0.06]" id="analyticsMatrixHeaderRow">
+                  <th class="text-left py-2 px-1 font-semibold">Constant Track</th>
+                  <!-- Days populated by JS -->
+                </tr>
+              </thead>
+              <tbody id="analyticsMatrixBodyRows" class="divide-y divide-white/[0.04]">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Daily Study Hours Chart (Last 7 Days vs 5.5h Target) -->
+        <section class="matte-card p-4 space-y-3" id="analyticsStudyHoursChart">
+          <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-xs font-bold text-white">Azure AI Track</h3>
-              <p class="text-[11px] text-emerald-400 font-mono mt-0.5" id="valAzureTimeText">0 mins logged</p>
+              <span class="eyebrow text-slate-300">Daily Study Volume</span>
+              <p class="text-xs text-slate-400 mt-0.5">Study Hours vs 5.5h Daily Baseline</p>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button id="btnLogAzure30m" class="px-2.5 py-1.5 rounded-lg bg-[#1a2233] text-slate-200 hover:text-white text-xs font-bold font-mono border border-white/10">
-                +30m
-              </button>
-              <button id="btnLogAzure60m" class="px-2.5 py-1.5 rounded-lg bg-[#1a2233] text-slate-200 hover:text-white text-xs font-bold font-mono border border-white/10">
-                +60m
-              </button>
-              <button id="btnFocusAzureTimer" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/50 text-emerald-400 text-xs font-bold hover:bg-emerald-900/60" title="Start 45m Azure Timebox">
-                Timer
-              </button>
-            </div>
+            <span class="text-xs text-sky-400 font-mono font-semibold" id="analyticsAvgStudyVal">Avg: 0.0h / day</span>
           </div>
-        </div>
-      </section>
 
-      <!-- Completed Tasks Feed with REVERT -->
-      <section class="space-y-2 pt-2">
-        <div class="flex items-center justify-between px-1">
-          <span class="eyebrow">Completed Today</span>
-          <span class="text-xs text-slate-400 font-mono" id="completedTaskCount">0 completed</span>
-        </div>
-        <div class="matte-card p-4 min-h-[70px]" id="completedTasksCard">
-          <div class="text-center py-3 text-slate-500 text-xs font-mono" id="emptyCompletedTasks">
-            No completed tasks recorded yet today.
+          <!-- Chart Bar Container -->
+          <div class="pt-2">
+            <div class="h-36 flex items-end justify-between gap-2 sm:gap-4 px-2 border-b border-white/10 relative" id="analyticsBarsContainer">
+              <!-- Rendered via JS -->
+            </div>
+            <div class="flex justify-between items-center text-slate-400 font-mono text-xs pt-2 px-2" id="analyticsBarsDaysRow">
+              <!-- Rendered via JS -->
+            </div>
           </div>
-          <div class="space-y-2 hidden" id="completedTasksList"></div>
-        </div>
-      </section>
+        </section>
+
+        <!-- Cumulative Job Applications Funnel (Days 4–7) -->
+        <section class="matte-card p-4 space-y-3" id="analyticsJobFunnel">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="eyebrow text-slate-300">Job Application Funnel</span>
+              <p class="text-xs text-slate-400 mt-0.5">Target: 40 Submissions by Week 1 Close (10/day from Day 4)</p>
+            </div>
+            <span class="text-xs text-blue-400 font-mono font-bold" id="analyticsJobFunnelCount">0 / 40 (0%)</span>
+          </div>
+
+          <div class="progress-track h-3 bg-white/10 rounded-full overflow-hidden">
+            <div id="barJobFunnel" class="progress-fill bg-blue-400" style="width: 0%"></div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 pt-1 text-center font-mono text-xs">
+            <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-slate-400 block text-[11px]">Day 4 Goal</span>
+              <span class="text-slate-200 font-semibold mt-0.5 block">10 Apps</span>
+            </div>
+            <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-slate-400 block text-[11px]">Day 5 Goal</span>
+              <span class="text-slate-200 font-semibold mt-0.5 block">20 Apps</span>
+            </div>
+            <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-slate-400 block text-[11px]">Day 6 Goal</span>
+              <span class="text-slate-200 font-semibold mt-0.5 block">30 Apps</span>
+            </div>
+            <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+              <span class="text-slate-400 block text-[11px]">Day 7 Goal</span>
+              <span class="text-emerald-400 font-bold mt-0.5 block">40 Total</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Topic Mastery Breakdown (Curriculum Coverage) -->
+        <section class="matte-card p-4 space-y-3.5" id="analyticsCurriculumCoverage">
+          <div class="flex items-center justify-between">
+            <span class="eyebrow text-slate-300">Curriculum Coverage & Mastery</span>
+            <span class="text-xs text-slate-400 font-mono">Week 1 Foundation</span>
+          </div>
+
+          <div class="space-y-3 text-xs font-mono" id="analyticsCoverageRows">
+            <!-- Populated by JS -->
+          </div>
+        </section>
+      </div>
 
     </div>
 
