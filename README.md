@@ -28,3 +28,10 @@ This repository is architected for **autonomous multi-agent development**. Every
 * **State & Storage:** Local-first (localStorage / IndexedDB) with schema versioning $\rightarrow$ Firebase Firestore (Spark Plan) in Phase 3
 * **Mobile Ergonomics:** 48px+ touch targets, `touch-action: manipulation`, 15ms Web Vibration haptics
 * **Hosting & CI/CD:** GitHub Actions $\rightarrow$ Azure Static Web Apps (100% Free Tier)
+
+---
+
+## 💬 Antigravity 2.0 Project Conversation
+* **Active Sprint & Architecture Conversation:** [PulseSync Sprint & Phase Delivery](conversation://d69d9b22-73cb-4599-b418-955c758bd86e)
+* **Conversation ID:** `d69d9b22-73cb-4599-b418-955c758bd86e`
+* **Workspace Path:** `/Users/bharathnair/Projects/personal_projs/antigravity/pulsesync-os`
