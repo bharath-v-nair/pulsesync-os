@@ -1,10 +1,12 @@
 {
   "currentCurriculumDay": 1,
+  "jobAppsCount": 0,
+  "azureMinutes": 0,
   "tasks": [
     {
       "id": "d1_deep_1",
       "code": "NG-09",
-      "title": "[NG-09] Reactive Forms vs Template-Driven Forms (FormGroup, FormControl, basic Validators)",
+      "title": "[NG-09] Reactive Forms vs Template-Driven Forms (FormGroup, FormControl, Validators)",
       "category": "Angular",
       "bucket": "deep",
       "curriculumDay": 1,
@@ -35,7 +37,7 @@
       "completedAt": null
     },
     {
-      "id": "d1_spaced_1",
+      "id": "d1_spd_1",
       "code": "NG-01",
       "title": "[NG-01] Component vs Directive in 60 seconds",
       "category": "Angular",
@@ -46,7 +48,7 @@
       "completedAt": null
     },
     {
-      "id": "d1_spaced_2",
+      "id": "d1_spd_2",
       "code": "NG-02",
       "title": "[NG-02] Data Binding types (Interpolation vs Property vs Event)",
       "category": "Angular",
@@ -57,7 +59,7 @@
       "completedAt": null
     },
     {
-      "id": "d1_spaced_3",
+      "id": "d1_spd_3",
       "code": "NG-06",
       "title": "[NG-06] Constructor vs ngOnInit (when to initialize subscriptions)",
       "category": "Angular",
@@ -68,7 +70,7 @@
       "completedAt": null
     },
     {
-      "id": "d1_spaced_4",
+      "id": "d1_spd_4",
       "code": "NG-03",
       "title": "[NG-03] What does providedIn: 'root' mean in Angular DI?",
       "category": "Angular",
@@ -79,7 +81,7 @@
       "completedAt": null
     },
     {
-      "id": "d1_spaced_5",
+      "id": "d1_spd_5",
       "code": "NG-15",
       "title": "[NG-15] Smart vs Dumb Components (@Input, @Output communication)",
       "category": "Angular",
@@ -92,7 +94,7 @@
     {
       "id": "d1_live_1",
       "code": "LIVE-01",
-      "title": "Live Coding: Build an Angular Reactive Form with 2 fields (Email, Amount) and basic validation",
+      "title": "Live Coding: Build an Angular Reactive Form with 2 fields (Email, Amount) & basic validation",
       "category": "Angular",
       "bucket": "live",
       "curriculumDay": 1,

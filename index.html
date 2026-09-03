@@ -25,31 +25,31 @@
     }
   </script>
 </head>
-<body class="bg-[#080a0f] text-slate-100 antialiased min-h-screen pb-24">
+<body class="bg-[#080a0f] text-slate-100 antialiased min-h-screen pb-24 font-sans">
 
   <!-- Main Container -->
   <div class="max-w-md mx-auto px-4 pt-3 sm:max-w-xl md:max-w-2xl">
 
     <!-- Top App Header -->
     <header class="flex items-center justify-between py-3 border-b border-white/[0.06] mb-3">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center text-white">
-          <svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-white">
+          <svg class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
           </svg>
         </div>
         <div>
-          <div class="flex items-center gap-1.5">
-            <h1 class="text-xs font-bold tracking-widest uppercase text-white font-mono">PulseSync</h1>
-            <span id="syncIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Connected to Local Sync Server"></span>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold tracking-widest uppercase text-white font-mono">PulseSync</h1>
+            <span id="syncIndicator" class="w-2 h-2 rounded-full bg-emerald-400" title="Connected to Local Sync Server"></span>
           </div>
-          <p class="text-[11px] text-slate-400 font-mono" id="serverSyncStatus">Local Wi-Fi Synced</p>
+          <p class="text-xs text-slate-400 font-mono" id="serverSyncStatus">Local Wi-Fi Synced</p>
         </div>
       </div>
 
       <!-- Wake-Up Button -->
-      <button id="btnWakeUp" class="spring-btn tap-target px-3 py-1.5 rounded-xl bg-[#141b29] border border-white/10 text-xs font-semibold text-slate-200 hover:border-white/20 flex items-center gap-2 shadow-sm">
-        <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button id="btnWakeUp" class="spring-btn tap-target px-3.5 py-2 rounded-xl bg-[#141b29] border border-white/10 text-xs font-semibold text-slate-200 hover:border-white/20 flex items-center gap-2 shadow-sm">
+        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="4"></circle>
           <path d="M12 2v2"></path>
           <path d="M12 20v2"></path>
@@ -65,7 +65,7 @@
     </header>
 
     <!-- Historical Date Navigator -->
-    <div class="matte-card p-2 mb-4 flex items-center justify-between">
+    <div class="matte-card p-2.5 mb-4 flex items-center justify-between">
       <button id="btnPrevDay" class="spring-btn p-2 rounded-lg text-slate-400 hover:text-white flex items-center justify-center tap-target" title="Previous Day">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"></polyline>
@@ -73,8 +73,8 @@
       </button>
 
       <div class="flex items-center gap-2 cursor-pointer" id="btnDateContainer">
-        <span class="text-xs font-bold text-white font-mono tracking-wide" id="selectedDateTitle">Today</span>
-        <button id="btnJumpToday" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-slate-300 hidden">Today</button>
+        <span class="text-sm font-bold text-white font-mono tracking-wide" id="selectedDateTitle">Today</span>
+        <button id="btnJumpToday" class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-slate-300 hidden">Today</button>
         <input type="date" id="datePickerInput" class="opacity-0 w-0 h-0 absolute pointer-events-none">
       </div>
 
@@ -87,13 +87,13 @@
 
     <!-- Domain Navigation -->
     <nav class="flex items-center p-1 bg-[#101520] rounded-xl border border-white/[0.06] mb-4 text-xs font-semibold">
-      <button id="btnNavMove" class="spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm transition">
+      <button id="btnNavMove" class="spring-btn flex-1 py-2.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm transition">
         Move
       </button>
-      <button id="btnNavFocus" class="spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
+      <button id="btnNavFocus" class="spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition">
         Focus
       </button>
-      <button id="btnNavHabits" class="spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
+      <button id="btnNavHabits" class="spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition">
         Habits
       </button>
     </nav>
@@ -113,16 +113,16 @@
 
       <!-- VIEW 1: TODAY'S MOVEMENT -->
       <div id="sectionTodayView" class="space-y-5">
-        <section class="matte-card p-3.5 space-y-3.5">
+        <section class="matte-card p-4 space-y-4">
           <div class="flex items-center justify-between">
             <span class="eyebrow text-slate-300">Movement Targets</span>
-            <span class="text-[10px] text-slate-500 font-mono" id="dateContextSubtitle">Selected Day</span>
+            <span class="text-xs text-slate-400 font-mono" id="dateContextSubtitle">Selected Day</span>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 pt-1">
+          <div class="grid grid-cols-2 gap-3.5 pt-1">
             <div class="space-y-1.5">
-              <div class="flex justify-between text-[11px]">
-                <span class="text-slate-400 font-medium">Half Pull-ups</span>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-300 font-medium">Half Pull-ups</span>
                 <span class="text-white font-bold tabular-nums font-mono"><span id="metricPullups">0</span> / 20</span>
               </div>
               <div class="progress-track">
@@ -131,8 +131,8 @@
             </div>
 
             <div class="space-y-1.5">
-              <div class="flex justify-between text-[11px]">
-                <span class="text-slate-400 font-medium">Push-ups</span>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-300 font-medium">Push-ups</span>
                 <span class="text-white font-bold tabular-nums font-mono"><span id="metricPushups">0</span> / 50</span>
               </div>
               <div class="progress-track">
@@ -141,10 +141,10 @@
             </div>
 
             <div class="space-y-1.5 cursor-pointer group" id="btnToggleBarbellDrawer">
-              <div class="flex justify-between text-[11px]">
-                <span class="text-slate-300 font-medium flex items-center gap-1 group-hover:text-amber-400 transition">
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-200 font-medium flex items-center gap-1 group-hover:text-amber-400 transition">
                   Barbell Vol
-                  <svg id="arrowBarbellDrawer" class="w-3 h-3 text-slate-400 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  <svg id="arrowBarbellDrawer" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
                 <span class="text-white font-bold tabular-nums font-mono"><span id="metricTonnage">0</span> / 900kg</span>
               </div>
@@ -154,8 +154,8 @@
             </div>
 
             <div class="space-y-1.5">
-              <div class="flex justify-between text-[11px]">
-                <span class="text-slate-400 font-medium">Cardio Steps</span>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-300 font-medium">Cardio Steps</span>
                 <span class="text-white font-bold tabular-nums font-mono"><span id="metricSteps">0</span> / 8k</span>
               </div>
               <div class="progress-track">
@@ -166,7 +166,7 @@
 
           <div id="barbellBreakdownDrawer" class="expandable-drawer max-h-0 pt-0 opacity-0 border-t border-white/[0.06] transition-all">
             <div class="pt-3 space-y-2">
-              <div class="flex items-center justify-between text-[10px] uppercase tracking-wider font-bold text-slate-400 font-mono">
+              <div class="flex items-center justify-between text-xs uppercase tracking-wider font-bold text-slate-400 font-mono">
                 <span>Exercise Breakdown</span>
                 <span>Reps (Sets)</span>
               </div>
@@ -176,16 +176,16 @@
         </section>
 
         <!-- Logging Controls -->
-        <section class="space-y-2.5">
+        <section class="space-y-3">
           <div class="flex items-center justify-between px-1">
             <span class="eyebrow">Micro-Log Entry</span>
-            <span class="text-[10px] text-slate-500 font-mono">Instant Write</span>
+            <span class="text-xs text-slate-400 font-mono">1-Tap Record</span>
           </div>
 
-          <div class="matte-card p-3 flex items-center justify-between gap-3">
+          <div class="matte-card p-3.5 flex items-center justify-between gap-3">
             <div>
-              <h3 class="text-xs font-bold text-white tracking-wide">Half Pull-ups</h3>
-              <p class="text-[11px] text-slate-400 font-mono mt-0.5">Grease the Groove</p>
+              <h3 class="text-sm font-bold text-white tracking-wide">Half Pull-ups</h3>
+              <p class="text-xs text-slate-400 font-mono mt-0.5">Grease the Groove</p>
             </div>
             <div class="flex items-center gap-2">
               <button id="btnPullupDec" class="stepper-btn spring-btn tap-target">−</button>
@@ -195,10 +195,10 @@
             </div>
           </div>
 
-          <div class="matte-card p-3 flex items-center justify-between gap-3">
+          <div class="matte-card p-3.5 flex items-center justify-between gap-3">
             <div>
-              <h3 class="text-xs font-bold text-white tracking-wide">Push-ups</h3>
-              <p class="text-[11px] text-slate-400 font-mono mt-0.5">Micro-Sets</p>
+              <h3 class="text-sm font-bold text-white tracking-wide">Push-ups</h3>
+              <p class="text-xs text-slate-400 font-mono mt-0.5">Micro-Sets</p>
             </div>
             <div class="flex items-center gap-2">
               <button id="btnPushupDec" class="stepper-btn spring-btn tap-target">−</button>
@@ -208,10 +208,10 @@
             </div>
           </div>
 
-          <div class="matte-card p-3.5 space-y-3">
+          <div class="matte-card p-4 space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="text-xs font-bold text-white tracking-wide">Fixed 30 kg Barbell</h3>
-              <span class="text-[10px] text-slate-400 font-mono">30 kg Bar</span>
+              <h3 class="text-sm font-bold text-white tracking-wide">Fixed 30 kg Barbell</h3>
+              <span class="text-xs text-slate-400 font-mono">30 kg Bar</span>
             </div>
             <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="barbellPills">
               <button data-lift="Squats" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-950 shadow-sm whitespace-nowrap">Squats</button>
@@ -233,10 +233,10 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div class="matte-card p-3 flex items-center justify-between gap-3">
+            <div class="matte-card p-3.5 flex items-center justify-between gap-3">
               <div>
-                <h3 class="text-xs font-bold text-white tracking-wide">Outdoor Walk</h3>
-                <p class="text-[11px] text-slate-400 font-mono mt-0.5">Steps</p>
+                <h3 class="text-sm font-bold text-white tracking-wide">Outdoor Walk</h3>
+                <p class="text-xs text-slate-400 font-mono mt-0.5">Steps</p>
               </div>
               <div class="flex items-center gap-1.5">
                 <button id="btnStepDec" class="stepper-btn spring-btn tap-target">−</button>
@@ -246,10 +246,10 @@
               </div>
             </div>
 
-            <div class="matte-card p-3 flex items-center justify-between gap-3">
+            <div class="matte-card p-3.5 flex items-center justify-between gap-3">
               <div>
-                <h3 class="text-xs font-bold text-white tracking-wide">Elliptical</h3>
-                <p class="text-[11px] text-slate-400 font-mono mt-0.5">Home Machine</p>
+                <h3 class="text-sm font-bold text-white tracking-wide">Elliptical</h3>
+                <p class="text-xs text-slate-400 font-mono mt-0.5">Home Machine</p>
               </div>
               <div class="flex items-center gap-1.5">
                 <button id="btnEllipticalDec" class="stepper-btn spring-btn tap-target">−</button>
@@ -265,9 +265,9 @@
         <section class="space-y-2">
           <div class="flex items-center justify-between px-1">
             <span class="eyebrow">Activity Timeline</span>
-            <span class="text-[11px] text-slate-400 font-mono" id="logCount">0 sets</span>
+            <span class="text-xs text-slate-400 font-mono" id="logCount">0 sets</span>
           </div>
-          <div class="matte-card p-3.5 min-h-[120px]" id="timelineContainer">
+          <div class="matte-card p-4 min-h-[120px]" id="timelineContainer">
             <div class="text-center py-7 text-slate-500 text-xs font-mono" id="emptyTimeline">
               No workouts logged for this day.
             </div>
@@ -278,23 +278,23 @@
 
       <!-- VIEW 2: PROGRESS & ADHERENCE -->
       <div id="sectionProgressView" class="space-y-5 hidden">
-        <section class="matte-card p-3.5 space-y-3">
+        <section class="matte-card p-4 space-y-3">
           <div class="flex items-center justify-between">
             <span class="eyebrow text-slate-300">7-Day Target Adherence</span>
-            <span class="text-[10px] text-slate-400 font-mono">✓ Met · ~ Some · ✕ None</span>
+            <span class="text-xs text-slate-400 font-mono">✓ Met · ~ Some · ✕ None</span>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-xs font-mono">
-              <thead><tr class="text-slate-500 text-[10px] border-b border-white/[0.06]" id="adherenceHeaderRow"></tr></thead>
+              <thead><tr class="text-slate-500 text-xs border-b border-white/[0.06]" id="adherenceHeaderRow"></tr></thead>
               <tbody id="adherenceBodyRows" class="divide-y divide-white/[0.04]"></tbody>
             </table>
           </div>
         </section>
 
-        <section class="matte-card p-3.5 space-y-3">
+        <section class="matte-card p-4 space-y-3">
           <div class="flex items-center justify-between">
             <span class="eyebrow text-slate-300">Exercise Progression (Last 7 Days)</span>
-            <span class="text-[10px] text-slate-500 font-mono">Reps & Sets</span>
+            <span class="text-xs text-slate-400 font-mono">Reps & Sets</span>
           </div>
           <div class="space-y-2.5 text-xs font-mono" id="exerciseProgressionList"></div>
         </section>
@@ -302,202 +302,199 @@
     </div>
 
     <!-- ================================================================= -->
-    <!-- DOMAIN 2: FOCUS ENGINE (WEEK 1 FOUNDATION BOOTCAMP)               -->
+    <!-- DOMAIN 2: FOCUS ENGINE (MINIMALIST & BREATHABLE)                  -->
     <!-- ================================================================= -->
     <div id="viewFocus" class="space-y-4 hidden">
 
-      <!-- Curriculum Day Selector Header -->
+      <!-- ZONE 1: Day Navigation Bar -->
       <section class="matte-card p-3 flex items-center justify-between">
-        <button id="btnPrevCurriculumDay" class="spring-btn p-2 rounded-lg text-slate-400 hover:text-white tap-target" title="Previous Curriculum Day">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <button id="btnPrevCurriculumDay" class="spring-btn p-2.5 rounded-lg text-slate-400 hover:text-white tap-target" title="Previous Curriculum Day">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
-        <div class="text-center px-1">
-          <div id="curriculumDayBadge" class="text-xs font-bold text-white font-mono uppercase tracking-wider truncate max-w-[240px] sm:max-w-md">
-            Day 1: Frontend 1 — Angular Forms & Interceptors
+        <div class="text-center px-2">
+          <div id="curriculumDayBadge" class="text-sm font-bold text-white tracking-wide">
+            Day 1: Angular Forms & Interceptors
           </div>
-          <div id="curriculumDaySub" class="text-[10px] text-sky-400 font-mono mt-0.5">
-            3 Deep Anchors · 5 Spaced Checks · 1 Live Coding · 1 C# DSA
+          <div class="flex items-center justify-center gap-2 mt-1">
+            <span id="labelTomorrowTitle" class="text-xs text-slate-400">Tomorrow: Backend 1 (.NET & Memory)</span>
+            <button id="btnPlanTomorrow" class="text-xs text-sky-400 hover:underline font-semibold">
+              Switch
+            </button>
           </div>
         </div>
-        <button id="btnNextCurriculumDay" class="spring-btn p-2 rounded-lg text-slate-400 hover:text-white tap-target" title="Next Curriculum Day">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <button id="btnNextCurriculumDay" class="spring-btn p-2.5 rounded-lg text-slate-400 hover:text-white tap-target" title="Next Curriculum Day">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
       </section>
 
-      <!-- Tomorrow's Plan Reminder Banner -->
-      <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.06] flex items-center justify-between text-xs font-mono" id="bannerTomorrow">
-        <div class="flex items-center gap-2 truncate pr-2">
-          <span class="text-amber-400">📅</span>
-          <span id="labelTomorrowTitle" class="text-slate-300 truncate">Tomorrow: Day 2 — Backend 1 (.NET & Memory)</span>
-        </div>
-        <button id="btnPlanTomorrow" class="px-2.5 py-1 rounded-lg bg-[#1a2233] hover:bg-slate-700 text-sky-400 text-[10px] font-bold shrink-0 transition">
-          Switch to Tomorrow
-        </button>
-      </div>
-
-      <!-- The 4 Daily Core Finish Lines -->
-      <section class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-        <!-- 1. Deep Anchors -->
-        <div class="matte-card p-2.5 space-y-1.5 flex flex-col justify-between">
-          <div class="flex items-center justify-between text-[10px]">
-            <span class="text-slate-400 uppercase font-semibold">3 Anchors</span>
-            <span class="font-bold text-sky-400 tabular-nums" id="valDeepCount">0/3</span>
-          </div>
-          <div class="progress-track">
-            <div id="barDeep" class="progress-fill bg-sky-400" style="width: 0%"></div>
-          </div>
-          <div class="text-[9px] text-slate-500 font-mono truncate">50m Study + 10m Break</div>
-        </div>
-
-        <!-- 2. Spaced Checks -->
-        <div class="matte-card p-2.5 space-y-1.5 flex flex-col justify-between">
-          <div class="flex items-center justify-between text-[10px]">
-            <span class="text-slate-400 uppercase font-semibold">5 Spaced</span>
-            <span class="font-bold text-purple-400 tabular-nums" id="valSpacedCount">0/5</span>
-          </div>
-          <div class="progress-track">
-            <div id="barSpaced" class="progress-fill bg-purple-400" style="width: 0%"></div>
-          </div>
-          <div class="text-[9px] text-slate-500 font-mono truncate">30m Rapid Verbal</div>
-        </div>
-
-        <!-- 3. Live Coding -->
-        <div class="matte-card p-2.5 space-y-1.5 flex flex-col justify-between">
-          <div class="flex items-center justify-between text-[10px]">
-            <span class="text-slate-400 uppercase font-semibold">1 Live Code</span>
-            <span class="font-bold text-amber-400 tabular-nums" id="valLiveCount">0/1</span>
-          </div>
-          <div class="progress-track">
-            <div id="barLive" class="progress-fill bg-amber-400" style="width: 0%"></div>
-          </div>
-          <div class="text-[9px] text-slate-500 font-mono truncate">1h IDE Build</div>
-        </div>
-
-        <!-- 4. C# NeetCode DSA -->
-        <div class="matte-card p-2.5 space-y-1.5 flex flex-col justify-between">
-          <div class="flex items-center justify-between text-[10px]">
-            <span class="text-slate-400 uppercase font-semibold">1 C# DSA</span>
-            <span class="font-bold text-emerald-400 tabular-nums" id="valDsaCount">0/1</span>
-          </div>
-          <div class="progress-track">
-            <div id="barDsa" class="progress-fill bg-emerald-400" style="width: 0%"></div>
-          </div>
-          <div class="text-[9px] text-slate-500 font-mono truncate">1h LeetCode O(N)</div>
-        </div>
-      </section>
-
-      <!-- Secondary Tracks: Job Apps & Azure Bonus -->
-      <section class="grid grid-cols-2 gap-2 text-xs font-mono">
-        <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04] flex items-center justify-between">
-          <div>
-            <span class="text-[10px] text-slate-400 uppercase block font-semibold">Job Applications</span>
-            <span class="text-xs font-bold text-slate-200" id="valAppsStatus">Day 4 Launch (0/10)</span>
-          </div>
-          <span class="text-[10px] text-slate-500 font-mono">8:30 AM Golden Hr</span>
-        </div>
-
-        <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04] flex items-center justify-between">
-          <div>
-            <span class="text-[10px] text-slate-400 uppercase block font-semibold">Azure AI (Bonus)</span>
-            <span class="text-xs font-bold text-emerald-400" id="valAzureStatus">Optional Track</span>
-          </div>
-          <span class="text-[10px] text-slate-500 font-mono">Zero Guilt</span>
-        </div>
-      </section>
-
-      <!-- Today's Study Time Bar -->
-      <div class="flex items-center justify-between px-1 text-xs font-mono">
-        <span class="eyebrow text-slate-400">Total Study Time Today</span>
-        <span class="text-white font-bold tabular-nums text-sm font-mono" id="valTotalStudyTime">0h 00m</span>
-      </div>
-
-      <!-- 50m / 30m / 60m Feynman Timebox Engine Card -->
-      <section class="matte-card p-4 space-y-4">
+      <!-- ZONE 2: Hero Feynman Timebox Card -->
+      <section class="matte-card p-5 space-y-4">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="eyebrow text-slate-300">Feynman Timebox</span>
-            <span id="timerPhaseBadge" class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide">Deep Anchor (50m)</span>
-          </div>
-          <div class="flex items-center gap-1 text-[10px] font-mono">
-            <button id="preset50m" class="px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20">50m (Anchor)</button>
-            <button id="preset30m" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">30m (Spaced)</button>
-            <button id="preset60m" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">60m (Code/DSA)</button>
+          <span class="eyebrow text-slate-300">Feynman Focus Timer</span>
+          <!-- Presets -->
+          <div class="flex items-center gap-1.5 text-xs font-mono">
+            <button id="preset50m" class="px-3 py-1 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20">50m</button>
+            <button id="preset30m" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white">30m</button>
+            <button id="preset60m" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white">60m</button>
           </div>
         </div>
 
         <!-- Big Numeric Timer Display -->
         <div class="text-center py-2">
-          <div id="timerDisplay" class="font-mono text-5xl sm:text-6xl font-black tabular-nums tracking-tight text-white select-none">
+          <div id="timerDisplay" class="font-mono text-6xl sm:text-7xl font-black tabular-nums tracking-tight text-white select-none">
             50:00
           </div>
-          <div id="timerSubLabel" class="text-[11px] text-slate-400 font-mono mt-1">
+          <div id="timerSubLabel" class="text-xs text-slate-400 font-mono mt-1.5">
             50m Hard Stop · 15m Early Answer Warning
           </div>
         </div>
 
         <!-- Currently Bound Task Banner -->
-        <div id="boundTaskCard" class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.06] flex items-center justify-between">
-          <div class="flex items-center gap-2 truncate pr-2">
-            <span class="text-sky-400 font-bold text-xs">⚡</span>
-            <span id="boundTaskTitle" class="text-xs text-slate-200 font-semibold truncate">Select a question below to focus</span>
+        <div id="boundTaskCard" class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.08] flex items-center justify-between">
+          <div class="flex items-center gap-2.5 truncate pr-2">
+            <span class="text-sky-400 font-bold text-sm">⚡</span>
+            <span id="boundTaskTitle" class="text-xs sm:text-sm text-slate-200 font-medium truncate">Select a question below to focus</span>
           </div>
-          <button id="btnUnbindTask" class="text-[10px] text-slate-500 hover:text-slate-300 font-mono hidden">Clear</button>
+          <button id="btnUnbindTask" class="text-xs text-slate-400 hover:text-slate-200 font-mono hidden">Clear</button>
         </div>
 
         <!-- Timer Controls -->
-        <div class="grid grid-cols-3 gap-2">
-          <button id="btnTimerStart" class="spring-btn py-2.5 rounded-xl btn-action-primary text-xs font-bold tracking-wider">
+        <div class="grid grid-cols-3 gap-2.5">
+          <button id="btnTimerStart" class="spring-btn py-3 rounded-xl btn-action-primary text-xs font-bold tracking-wider">
             START
           </button>
-          <button id="btnTimerPause" class="spring-btn py-2.5 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
+          <button id="btnTimerPause" class="spring-btn py-3 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
             PAUSE
           </button>
-          <button id="btnTimerReset" class="spring-btn py-2.5 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
+          <button id="btnTimerReset" class="spring-btn py-3 rounded-xl btn-action-dark text-xs font-bold tracking-wider">
             RESET
           </button>
         </div>
 
         <!-- Quick Complete Button -->
-        <button id="btnTimerCompleteTask" class="spring-btn w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wide shadow-sm hidden">
-          ✓ Mark Active Task Completed
+        <button id="btnTimerCompleteTask" class="spring-btn w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wide shadow-sm hidden">
+          ✓ Mark Active Question Completed
         </button>
       </section>
 
-      <!-- Task Queue by Bucket -->
+      <!-- ZONE 3: Consolidated Daily Progress Card -->
+      <section class="matte-card p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="eyebrow text-slate-300">Today's Progress</span>
+          <span class="text-xs font-bold font-mono text-white" id="valOverallProgress">0 / 10 Completed (0%)</span>
+        </div>
+
+        <!-- Clean Unified Progress Track -->
+        <div class="progress-track h-2">
+          <div id="barOverall" class="progress-fill bg-sky-400" style="width: 0%"></div>
+        </div>
+
+        <!-- High-Level Breakdown Badges -->
+        <div class="grid grid-cols-4 gap-2 pt-1 text-center text-xs font-mono">
+          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-slate-400 block text-[11px]">Anchors</span>
+            <span class="font-bold text-sky-400 text-sm" id="valDeepCount">0/3</span>
+          </div>
+          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-slate-400 block text-[11px]">Spaced</span>
+            <span class="font-bold text-purple-400 text-sm" id="valSpacedCount">0/5</span>
+          </div>
+          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-slate-400 block text-[11px]">Live Code</span>
+            <span class="font-bold text-amber-400 text-sm" id="valLiveCount">0/1</span>
+          </div>
+          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-slate-400 block text-[11px]">C# DSA</span>
+            <span class="font-bold text-emerald-400 text-sm" id="valDsaCount">0/1</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-1 border-t border-white/[0.04] text-xs font-mono">
+          <span class="text-slate-400">Total Study Time Today</span>
+          <span class="text-white font-bold" id="valTotalStudyTime">0h 00m / 5.5h Target</span>
+        </div>
+      </section>
+
+      <!-- ZONE 4: Clean Task Roster -->
       <section class="space-y-3">
         <div class="flex items-center justify-between px-1">
           <div>
-            <span class="eyebrow">Today's Operating Roster</span>
-            <p class="text-[11px] text-slate-400 font-mono">3 Anchors · 5 Spaced · 1 Live · 1 DSA</p>
+            <h2 class="text-sm font-bold text-white tracking-wide">Today's Tasks</h2>
+            <p class="text-xs text-slate-400 mt-0.5">3 Deep Anchors · 1 Live Coding · 1 C# DSA</p>
           </div>
-          <button id="btnOpenAddTaskModal" class="spring-btn tap-target px-3 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <button id="btnOpenAddTaskModal" class="spring-btn tap-target px-3.5 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-sm">
             <span>+</span> Add Task
           </button>
         </div>
 
-        <!-- Bucket Filter Pills -->
-        <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="focusBucketFilters">
-          <button data-bucket="all" class="spring-btn px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-950 whitespace-nowrap">All Tasks</button>
-          <button data-bucket="deep" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">3 Anchors</button>
-          <button data-bucket="spaced" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">5 Spaced Checks</button>
-          <button data-bucket="live" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">1 Live Coding</button>
-          <button data-bucket="dsa" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">1 C# DSA</button>
-          <button data-bucket="apps" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Job Apps</button>
-          <button data-bucket="azure" class="spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Azure Bonus</button>
-        </div>
-
         <!-- Task List Items -->
-        <div id="taskListContainer" class="space-y-2"></div>
+        <div id="taskListContainer" class="space-y-2.5"></div>
+
+        <!-- Expandable Spaced Retrieval Drawer -->
+        <div class="matte-card overflow-hidden transition-all">
+          <button id="btnToggleSpacedDrawer" class="w-full p-3.5 flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white transition">
+            <span class="flex items-center gap-2">
+              <span id="arrowSpacedDrawer" class="text-purple-400 transition-transform">▸</span>
+              <span>5 Spaced Retrieval Checks</span>
+            </span>
+            <span class="font-mono text-purple-300 text-xs" id="valSpacedDrawerStatus">0/5 Done</span>
+          </button>
+          <div id="spacedDrawerContent" class="hidden p-3 pt-0 space-y-2 border-t border-white/[0.04]">
+            <div id="spacedTasksContainer" class="space-y-2 pt-2"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ZONE 5: Accountability Stepper & Azure AI Controller -->
+      <section class="space-y-3 pt-2">
+        <span class="eyebrow px-1">Accountability & Cloud Track</span>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Job Applications Stepper -->
+          <div class="matte-card p-3.5 flex items-center justify-between">
+            <div>
+              <h3 class="text-xs font-bold text-white">Job Applications</h3>
+              <p class="text-[11px] text-slate-400 font-mono mt-0.5">8:30 AM Golden Hr</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btnDecJobApp" class="stepper-btn spring-btn tap-target">−</button>
+              <span id="valJobAppsCount" class="w-8 text-center text-sm font-extrabold text-white tabular-nums font-mono">0</span>
+              <button id="btnIncJobApp" class="stepper-btn spring-btn tap-target">+</button>
+              <button id="btnAdd5JobApps" class="px-2.5 py-1.5 rounded-lg bg-blue-950/60 border border-blue-800/50 text-blue-400 text-xs font-bold font-mono ml-1 hover:bg-blue-900/60">
+                +5
+              </button>
+            </div>
+          </div>
+
+          <!-- Azure AI Timebox & Logger -->
+          <div class="matte-card p-3.5 flex items-center justify-between">
+            <div>
+              <h3 class="text-xs font-bold text-white">Azure AI Track</h3>
+              <p class="text-[11px] text-emerald-400 font-mono mt-0.5" id="valAzureTimeText">0 mins logged</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btnLogAzure30m" class="px-2.5 py-1.5 rounded-lg bg-[#1a2233] text-slate-200 hover:text-white text-xs font-bold font-mono border border-white/10">
+                +30m
+              </button>
+              <button id="btnLogAzure60m" class="px-2.5 py-1.5 rounded-lg bg-[#1a2233] text-slate-200 hover:text-white text-xs font-bold font-mono border border-white/10">
+                +60m
+              </button>
+              <button id="btnFocusAzureTimer" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/50 text-emerald-400 text-xs font-bold hover:bg-emerald-900/60" title="Start 45m Azure Timebox">
+                Timer
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Completed Tasks Feed with REVERT -->
       <section class="space-y-2 pt-2">
         <div class="flex items-center justify-between px-1">
-          <span class="eyebrow">Completed Tasks Today</span>
-          <span class="text-[11px] text-slate-400 font-mono" id="completedTaskCount">0 completed</span>
+          <span class="eyebrow">Completed Today</span>
+          <span class="text-xs text-slate-400 font-mono" id="completedTaskCount">0 completed</span>
         </div>
-        <div class="matte-card p-3.5 min-h-[90px]" id="completedTasksCard">
-          <div class="text-center py-5 text-slate-500 text-xs font-mono" id="emptyCompletedTasks">
+        <div class="matte-card p-4 min-h-[70px]" id="completedTasksCard">
+          <div class="text-center py-3 text-slate-500 text-xs font-mono" id="emptyCompletedTasks">
             No completed tasks recorded yet today.
           </div>
           <div class="space-y-2 hidden" id="completedTasksList"></div>
@@ -530,12 +527,12 @@
       <div class="w-12 h-12 rounded-2xl bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center mx-auto text-xl font-bold">
         🔔
       </div>
-      <h3 class="text-base font-extrabold text-white font-mono uppercase" id="feynmanAlarmTitle">Feynman Active Recall!</h3>
+      <h3 class="text-base font-extrabold text-white font-mono uppercase" id="feynmanAlarmTitle">Feynman Time Ceiling Reached!</h3>
       <p class="text-xs text-slate-300 leading-relaxed font-sans" id="feynmanAlarmBody">
-        Study timer finished. Close notes and explain this topic out loud in plain English.
+        Hard stop! Close notes and explain this topic out loud in plain English before your 10m break.
       </p>
       <button id="btnDismissAlarm" class="spring-btn w-full py-2.5 rounded-xl bg-white text-slate-950 text-xs font-bold hover:bg-slate-200">
-        Start Active Recall (10m)
+        Start 10m Verbal Recall
       </button>
     </div>
   </div>
@@ -544,52 +541,44 @@
   <div id="modalAddTask" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
     <div class="matte-card p-5 max-w-sm w-full space-y-4">
       <div class="flex items-center justify-between border-b border-white/[0.06] pb-2">
-        <h3 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Create Interview Task</h3>
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono">Create Interview Task</h3>
         <button id="btnCloseAddTaskModal" class="text-slate-400 hover:text-white p-1 text-xs">✕</button>
       </div>
 
       <div class="space-y-3 text-xs font-mono">
         <div>
-          <label class="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Question ID & Title</label>
-          <input type="text" id="inputTaskTitle" placeholder="e.g. [NG-09] Reactive Forms vs Template Forms" class="w-full bg-[#0d131f] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-600 focus:outline-none focus:border-sky-400">
+          <label class="text-xs text-slate-400 uppercase tracking-wide block mb-1">Question Title</label>
+          <input type="text" id="inputTaskTitle" placeholder="e.g. [NG-09] Reactive Forms vs Template Forms" class="w-full bg-[#0d131f] border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 text-sm">
         </div>
 
         <div>
-          <label class="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Interview Bucket</label>
-          <div class="grid grid-cols-2 gap-1.5" id="modalBucketPills">
-            <button data-bucket="deep" class="p-2 rounded-lg bg-sky-500 text-slate-950 font-bold text-[10px] text-left">
-              <div>Deep Anchor (50m)</div>
-              <div class="text-[8px] opacity-80">3 Core Daily Anchors</div>
+          <label class="text-xs text-slate-400 uppercase tracking-wide block mb-1">Select Bucket</label>
+          <div class="grid grid-cols-2 gap-2" id="modalBucketPills">
+            <button data-bucket="deep" class="p-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs text-left">
+              <div>Deep Anchor</div>
+              <div class="text-[10px] opacity-80">50m Study</div>
             </button>
-            <button data-bucket="spaced" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>Spaced Check (6m)</div>
-              <div class="text-[8px] opacity-70">5 Rapid Verbal Checks</div>
+            <button data-bucket="spaced" class="p-2.5 rounded-xl bg-[#1a2233] text-slate-300 text-xs text-left">
+              <div>Spaced Check</div>
+              <div class="text-[10px] opacity-70">6m Verbal Ping</div>
             </button>
-            <button data-bucket="live" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>Live Coding (1h)</div>
-              <div class="text-[8px] opacity-70">IDE Hands-on Build</div>
+            <button data-bucket="live" class="p-2.5 rounded-xl bg-[#1a2233] text-slate-300 text-xs text-left">
+              <div>Live Coding</div>
+              <div class="text-[10px] opacity-70">1h IDE Build</div>
             </button>
-            <button data-bucket="dsa" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>C# NeetCode (1h)</div>
-              <div class="text-[8px] opacity-70">LeetCode Problem O(N)</div>
-            </button>
-            <button data-bucket="apps" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>Job Application (Day 4+)</div>
-              <div class="text-[8px] opacity-70">10 Submissions Batch</div>
-            </button>
-            <button data-bucket="azure" class="p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left">
-              <div>Azure AI (Bonus)</div>
-              <div class="text-[8px] opacity-70">Optional Certification Drill</div>
+            <button data-bucket="dsa" class="p-2.5 rounded-xl bg-[#1a2233] text-slate-300 text-xs text-left">
+              <div>C# DSA</div>
+              <div class="text-[10px] opacity-70">1h NeetCode O(N)</div>
             </button>
           </div>
         </div>
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button id="btnCancelAddTask" class="spring-btn flex-1 py-2 rounded-xl btn-action-dark text-xs font-bold">
+        <button id="btnCancelAddTask" class="spring-btn flex-1 py-2.5 rounded-xl btn-action-dark text-xs font-bold">
           Cancel
         </button>
-        <button id="btnSaveTask" class="spring-btn flex-1 py-2 rounded-xl btn-action-primary text-xs font-bold">
+        <button id="btnSaveTask" class="spring-btn flex-1 py-2.5 rounded-xl btn-action-primary text-xs font-bold">
           Add Task
         </button>
       </div>
@@ -600,8 +589,8 @@
   <div id="undoToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#121826] border border-white/15 shadow-2xl rounded-2xl p-3.5 flex flex-col gap-2 z-50 hidden toast-spring w-[90%] max-w-sm overflow-hidden">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <span class="text-emerald-400 font-bold text-xs font-mono">✓</span>
-        <span class="text-xs text-slate-100 font-semibold truncate" id="undoMessage">Set logged</span>
+        <span class="text-emerald-400 font-bold text-sm font-mono">✓</span>
+        <span class="text-xs text-slate-100 font-semibold truncate" id="undoMessage">Logged</span>
       </div>
       <button id="btnUndoAction" class="spring-btn px-3 py-1 bg-white text-slate-950 text-xs font-bold rounded-lg shadow-sm">
         Undo

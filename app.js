@@ -1,11 +1,11 @@
-// PulseSync Life OS - Week 1 Foundation Bootcamp & Move Engine
+// PulseSync Life OS - Minimalist Focus Engine & Physical Training Core
 (function () {
   'use strict';
 
   // --- Storage Keys ---
   const STORAGE_KEY_LOGS = 'pulsesync_logs_v3';
   const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v3';
-  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v6';
+  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v7';
 
   const TARGETS = {
     pullups: 20,
@@ -21,51 +21,51 @@
   const CURRICULUM_DAYS = [
     {
       day: 1,
-      title: 'Day 1: Frontend 1 — Angular Forms & Interceptors',
-      subtitle: '3 Deep Anchors · 5 Spaced Checks · 1 Live Coding · 1 C# DSA',
+      title: 'Day 1: Angular Forms & Interceptors',
+      tomorrow: 'Day 2: Backend 1 (.NET & Memory)',
       category: 'Angular'
     },
     {
       day: 2,
-      title: 'Day 2: Backend 1 — C# Fundamentals & Memory',
-      subtitle: '3 Deep Anchors · 5 Spaced Checks · 1 Live Coding · 1 C# DSA',
+      title: 'Day 2: Backend 1 (.NET & Memory)',
+      tomorrow: 'Day 3: Frontend 2 (RxJS Basics)',
       category: '.NET'
     },
     {
       day: 3,
-      title: 'Day 3: Frontend 2 — RxJS Basics & Observables',
-      subtitle: '3 Deep Anchors · 5 Spaced Checks · 1 Live Coding · 1 C# DSA',
+      title: 'Day 3: Frontend 2 (RxJS Basics)',
+      tomorrow: 'Day 4: Backend 2 (Web API Basics)',
       category: 'Angular'
     },
     {
       day: 4,
-      title: 'Day 4: Backend 2 — ASP.NET Core Web API Basics 🚀',
-      subtitle: '3 Deep Anchors · 5 Spaced · 1 Live · 1 DSA · [10 Job Applications]',
+      title: 'Day 4: Backend 2 (Web API Basics)',
+      tomorrow: 'Day 5: Frontend 3 (State & Components)',
       category: '.NET'
     },
     {
       day: 5,
-      title: 'Day 5: Frontend 3 — Components & State Basics',
-      subtitle: '3 Deep Anchors · 5 Spaced · 1 Live · 1 DSA · [10 Job Applications]',
+      title: 'Day 5: Frontend 3 (State & Components)',
+      tomorrow: 'Day 6: Backend 3 (EF Core & SQL)',
       category: 'Angular'
     },
     {
       day: 6,
-      title: 'Day 6: Backend 3 — EF Core & SQL Basics',
-      subtitle: '3 Deep Anchors · 5 Spaced · 1 Live · 1 DSA · [10 Job Applications]',
+      title: 'Day 6: Backend 3 (EF Core & SQL)',
+      tomorrow: 'Day 7: Cloud & Behavioral Review',
       category: '.NET'
     },
     {
       day: 7,
-      title: 'Day 7: Cloud & Behavioral Basics (Cap & Review)',
-      subtitle: '3 Deep Anchors · 5 Spaced · Live Recap · Review DSA · Audit Applications',
+      title: 'Day 7: Cloud & Behavioral Review',
+      tomorrow: 'Week 2 Launch',
       category: 'Azure & STAR'
     }
   ];
 
   const DEFAULT_BOOTCAMP_TASKS = [
     // --- DAY 1 ---
-    { id: 'd1_deep_1', code: 'NG-09', title: '[NG-09] Reactive Forms vs Template-Driven Forms (FormGroup, FormControl, basic Validators)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
+    { id: 'd1_deep_1', code: 'NG-09', title: '[NG-09] Reactive Forms vs Template-Driven Forms (FormGroup, FormControl, Validators)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd1_deep_2', code: 'NG-08', title: '[NG-08] Route Guards (CanActivate basics) vs Resolvers (trade-offs & failure modes)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd1_deep_3', code: 'NG-11', title: '[NG-11] HTTP Interceptors (injecting Bearer token, basic 401 redirect handling)', category: 'Angular', bucket: 'deep', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd1_spd_1', code: 'NG-01', title: '[NG-01] Component vs Directive in 60 seconds', category: 'Angular', bucket: 'spaced', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
@@ -110,8 +110,7 @@
     { id: 'd4_spd_4', code: 'NG-04', title: '[NG-04] Observable vs Promise (Day 3 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd4_spd_5', code: 'NG-07', title: '[NG-07] Preventing subscription memory leaks (Day 3 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd4_live_1', code: 'LIVE-04', title: 'Live Coding: Build an API endpoint validating an incoming DTO and returning BadRequest or Ok', category: '.NET', bucket: 'live', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_dsa_1', code: 'DSA-04', title: 'C# NeetCode DSA: LeetCode Easy — Valid Parentheses (Stack O(N) time, O(N) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_apps_1', code: 'APP-01', title: 'Job Hunt: Submit 10 job applications on LinkedIn / Naukri (Golden Hour: 8:30–9:15 AM)', category: 'Career', bucket: 'apps', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null }
+    { id: 'd4_dsa_1', code: 'DSA-04', title: 'C# NeetCode DSA: LeetCode Easy — Valid Parentheses (Stack O(N) time, O(N) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null }
   ];
 
   // --- State: Move Engine ---
@@ -131,6 +130,8 @@
   // --- State: Focus Engine ---
   let focusData = {
     currentCurriculumDay: 1,
+    jobAppsCount: 0,
+    azureMinutes: 0,
     tasks: [...DEFAULT_BOOTCAMP_TASKS],
     timerState: {
       isRunning: false,
@@ -149,9 +150,9 @@
     }
   };
 
-  let activeBucketFilter = 'all';
   let modalSelectedBucket = 'deep';
   let timerInterval = null;
+  let isSpacedDrawerOpen = false;
 
   // --- DOM Elements ---
   const syncIndicator = document.getElementById('syncIndicator');
@@ -225,34 +226,18 @@
   const adherenceBodyRows = document.getElementById('adherenceBodyRows');
   const exerciseProgressionList = document.getElementById('exerciseProgressionList');
 
-  // Focus Elements
+  // Focus Elements (Zone 1 to 5)
   const btnPrevCurriculumDay = document.getElementById('btnPrevCurriculumDay');
   const btnNextCurriculumDay = document.getElementById('btnNextCurriculumDay');
   const curriculumDayBadge = document.getElementById('curriculumDayBadge');
-  const curriculumDaySub = document.getElementById('curriculumDaySub');
-
   const labelTomorrowTitle = document.getElementById('labelTomorrowTitle');
   const btnPlanTomorrow = document.getElementById('btnPlanTomorrow');
 
-  const valDeepCount = document.getElementById('valDeepCount');
-  const barDeep = document.getElementById('barDeep');
-  const valSpacedCount = document.getElementById('valSpacedCount');
-  const barSpaced = document.getElementById('barSpaced');
-  const valLiveCount = document.getElementById('valLiveCount');
-  const barLive = document.getElementById('barLive');
-  const valDsaCount = document.getElementById('valDsaCount');
-  const barDsa = document.getElementById('barDsa');
-
-  const valAppsStatus = document.getElementById('valAppsStatus');
-  const valAzureStatus = document.getElementById('valAzureStatus');
-  const valTotalStudyTime = document.getElementById('valTotalStudyTime');
-
-  const timerPhaseBadge = document.getElementById('timerPhaseBadge');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const timerSubLabel = document.getElementById('timerSubLabel');
   const preset50m = document.getElementById('preset50m');
   const preset30m = document.getElementById('preset30m');
   const preset60m = document.getElementById('preset60m');
-  const timerDisplay = document.getElementById('timerDisplay');
-  const timerSubLabel = document.getElementById('timerSubLabel');
   const boundTaskTitle = document.getElementById('boundTaskTitle');
   const btnUnbindTask = document.getElementById('btnUnbindTask');
   const btnTimerStart = document.getElementById('btnTimerStart');
@@ -260,9 +245,33 @@
   const btnTimerReset = document.getElementById('btnTimerReset');
   const btnTimerCompleteTask = document.getElementById('btnTimerCompleteTask');
 
+  const valOverallProgress = document.getElementById('valOverallProgress');
+  const barOverall = document.getElementById('barOverall');
+  const valDeepCount = document.getElementById('valDeepCount');
+  const valSpacedCount = document.getElementById('valSpacedCount');
+  const valLiveCount = document.getElementById('valLiveCount');
+  const valDsaCount = document.getElementById('valDsaCount');
+  const valTotalStudyTime = document.getElementById('valTotalStudyTime');
+
   const btnOpenAddTaskModal = document.getElementById('btnOpenAddTaskModal');
-  const focusBucketFilters = document.getElementById('focusBucketFilters');
   const taskListContainer = document.getElementById('taskListContainer');
+
+  const btnToggleSpacedDrawer = document.getElementById('btnToggleSpacedDrawer');
+  const arrowSpacedDrawer = document.getElementById('arrowSpacedDrawer');
+  const valSpacedDrawerStatus = document.getElementById('valSpacedDrawerStatus');
+  const spacedDrawerContent = document.getElementById('spacedDrawerContent');
+  const spacedTasksContainer = document.getElementById('spacedTasksContainer');
+
+  const btnDecJobApp = document.getElementById('btnDecJobApp');
+  const valJobAppsCount = document.getElementById('valJobAppsCount');
+  const btnIncJobApp = document.getElementById('btnIncJobApp');
+  const btnAdd5JobApps = document.getElementById('btnAdd5JobApps');
+
+  const valAzureTimeText = document.getElementById('valAzureTimeText');
+  const btnLogAzure30m = document.getElementById('btnLogAzure30m');
+  const btnLogAzure60m = document.getElementById('btnLogAzure60m');
+  const btnFocusAzureTimer = document.getElementById('btnFocusAzureTimer');
+
   const completedTaskCount = document.getElementById('completedTaskCount');
   const completedTasksList = document.getElementById('completedTasksList');
   const emptyCompletedTasks = document.getElementById('emptyCompletedTasks');
@@ -375,24 +384,16 @@
     playFeynmanChime();
 
     if ('vibrate' in navigator) {
-      try {
-        navigator.vibrate([250, 150, 250, 150, 500]);
-      } catch (e) {}
+      try { navigator.vibrate([250, 150, 250, 150, 500]); } catch (e) {}
     }
 
     screenFlashOverlay.classList.remove('flash-active');
     void screenFlashOverlay.offsetWidth;
     screenFlashOverlay.classList.add('flash-active');
 
-    if (focusData.timerState.phase === 'study') {
-      feynmanAlarmTitle.textContent = 'Feynman Time Ceiling Reached!';
-      feynmanAlarmBody.textContent = 'Hard stop! Close all tabs. Explain this concept out loud in plain English before taking your 10m break.';
-      btnDismissAlarm.textContent = 'Start 10m Verbal Recall';
-    } else {
-      feynmanAlarmTitle.textContent = 'Break Finished!';
-      feynmanAlarmBody.textContent = 'Time for your next question. Clear your mind and dive in.';
-      btnDismissAlarm.textContent = 'Ready for Next Question';
-    }
+    feynmanAlarmTitle.textContent = 'Feynman Time Ceiling Reached!';
+    feynmanAlarmBody.textContent = 'Hard stop! Close all tabs. Explain this concept out loud in plain English before taking your 10m break.';
+    btnDismissAlarm.textContent = 'Start 10m Verbal Recall';
     feynmanAlarmModal.classList.remove('hidden');
   }
 
@@ -494,9 +495,9 @@
       if (resFocus.ok) {
         const serverFocus = await resFocus.json();
         if (serverFocus) {
-          if (serverFocus.currentCurriculumDay) {
-            focusData.currentCurriculumDay = serverFocus.currentCurriculumDay;
-          }
+          if (serverFocus.currentCurriculumDay) focusData.currentCurriculumDay = serverFocus.currentCurriculumDay;
+          if (serverFocus.jobAppsCount !== undefined) focusData.jobAppsCount = serverFocus.jobAppsCount;
+          if (serverFocus.azureMinutes !== undefined) focusData.azureMinutes = serverFocus.azureMinutes;
 
           if (Array.isArray(serverFocus.tasks) && serverFocus.tasks.length > 0) {
             const taskMap = new Map();
@@ -514,9 +515,7 @@
             if (now < serverFocus.timerState.endTimestamp) {
               focusData.timerState = serverFocus.timerState;
               focusData.timerState.remainingSeconds = Math.max(0, Math.round((serverFocus.timerState.endTimestamp - now) / 1000));
-              if (!timerInterval) {
-                resumeTimerFromAnchor();
-              }
+              if (!timerInterval) resumeTimerFromAnchor();
             } else {
               focusData.timerState = serverFocus.timerState;
               focusData.timerState.isRunning = false;
@@ -528,10 +527,10 @@
         }
       }
 
-      syncIndicator.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      syncIndicator.className = 'w-2 h-2 rounded-full bg-emerald-400';
       serverSyncStatus.textContent = 'Wi-Fi Synced (Live)';
     } catch (err) {
-      syncIndicator.className = 'w-1.5 h-1.5 rounded-full bg-slate-500';
+      syncIndicator.className = 'w-2 h-2 rounded-full bg-slate-500';
       serverSyncStatus.textContent = 'Offline (Local Cache)';
     }
 
@@ -556,13 +555,13 @@
     if (domain === 'move') {
       viewMove.classList.remove('hidden');
       viewFocus.classList.add('hidden');
-      btnNavMove.className = 'spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
-      btnNavFocus.className = 'spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
+      btnNavMove.className = 'spring-btn flex-1 py-2.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
+      btnNavFocus.className = 'spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition';
     } else if (domain === 'focus') {
       viewMove.classList.add('hidden');
       viewFocus.classList.remove('hidden');
-      btnNavFocus.className = 'spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
-      btnNavMove.className = 'spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
+      btnNavFocus.className = 'spring-btn flex-1 py-2.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
+      btnNavMove.className = 'spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition';
       renderFocusDashboard();
     }
     triggerHaptic(10, 520);
@@ -630,7 +629,7 @@
       return `
         <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04] flex items-center justify-between">
           <span class="text-slate-300 font-medium truncate">${name}</span>
-          <span class="${textClass} font-mono">${stat.reps} <span class="text-[10px] text-slate-500">(${stat.sets}s)</span></span>
+          <span class="${textClass} font-mono">${stat.reps} <span class="text-xs text-slate-500">(${stat.sets}s)</span></span>
         </div>
       `;
     }).join('');
@@ -682,17 +681,17 @@
       }
 
       return `
-        <div class="timeline-item flex items-center justify-between p-2.5 rounded-xl bg-[#111622] border border-white/[0.06] hover:border-white/15 transition">
+        <div class="timeline-item flex items-center justify-between p-3 rounded-xl bg-[#111622] border border-white/[0.06] hover:border-white/15 transition">
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-100">${item.name}</span>
-              <span class="text-[9px] px-1.5 py-0.5 rounded border ${badgeStyle} font-mono">${item.timeFormatted}</span>
+              <span class="text-sm font-bold text-slate-100">${item.name}</span>
+              <span class="text-xs px-2 py-0.5 rounded border ${badgeStyle} font-mono">${item.timeFormatted}</span>
             </div>
-            <p class="text-[11px] text-slate-400 font-mono mt-0.5">${details}</p>
+            <p class="text-xs text-slate-400 font-mono mt-0.5">${details}</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-[10px] text-slate-500 font-mono">${getRelativeTime(item.timestamp)}</span>
-            <button data-id="${item.id}" class="btn-delete-log text-slate-500 hover:text-rose-400 p-1 rounded tap-target text-xs transition" title="Delete Log">
+            <span class="text-xs text-slate-500 font-mono">${getRelativeTime(item.timestamp)}</span>
+            <button data-id="${item.id}" class="btn-delete-log text-slate-500 hover:text-rose-400 p-1.5 rounded tap-target text-xs transition" title="Delete Log">
               ✕
             </button>
           </div>
@@ -701,10 +700,7 @@
     }).join('');
 
     document.querySelectorAll('.btn-delete-log').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-id');
-        deleteLog(id);
-      });
+      btn.addEventListener('click', () => deleteLog(btn.getAttribute('data-id')));
     });
   }
 
@@ -753,61 +749,41 @@
     renderTimeline();
   }
 
-  // --- Focus Engine Functions (Bootcamp 3 + 5 + 1 + 1 Protocol) ---
+  // --- Focus Engine Functions (Minimalist 3-Zone Architecture) ---
   function renderFocusDashboard() {
     const currentDayConfig = CURRICULUM_DAYS.find(d => d.day === focusData.currentCurriculumDay) || CURRICULUM_DAYS[0];
 
-    // 1. Header
+    // 1. Day Navigation Bar
     curriculumDayBadge.textContent = currentDayConfig.title;
-    curriculumDaySub.textContent = currentDayConfig.subtitle;
-
-    // 2. Tomorrow's Plan Reminder
-    const tomorrowDayIndex = (focusData.currentCurriculumDay % 7) + 1;
-    const tomorrowConfig = CURRICULUM_DAYS.find(d => d.day === tomorrowDayIndex);
-    if (tomorrowConfig) {
-      labelTomorrowTitle.textContent = `Tomorrow: ${tomorrowConfig.title.split('—')[1] || tomorrowConfig.title}`;
-    }
+    labelTomorrowTitle.textContent = `Tomorrow: ${currentDayConfig.tomorrow}`;
 
     // Filter tasks for this day
     const dayTasks = focusData.tasks.filter(t => t.curriculumDay === focusData.currentCurriculumDay);
     const completedTasks = dayTasks.filter(t => t.completed);
-    const pendingTasks = dayTasks.filter(t => !t.completed);
 
-    // 3. The 4 Finish Lines Calculation
+    // 2. Zone 3: Consolidated Progress
     const deepTasks = dayTasks.filter(t => t.bucket === 'deep');
     const deepCompleted = deepTasks.filter(t => t.completed).length;
     valDeepCount.textContent = `${deepCompleted}/3`;
-    barDeep.style.width = `${Math.min(100, Math.round((deepCompleted / 3) * 100))}%`;
 
     const spacedTasks = dayTasks.filter(t => t.bucket === 'spaced');
     const spacedCompleted = spacedTasks.filter(t => t.completed).length;
     valSpacedCount.textContent = `${spacedCompleted}/5`;
-    barSpaced.style.width = `${Math.min(100, Math.round((spacedCompleted / 5) * 100))}%`;
+    valSpacedDrawerStatus.textContent = `${spacedCompleted}/5 Done`;
 
     const liveTasks = dayTasks.filter(t => t.bucket === 'live');
     const liveCompleted = liveTasks.filter(t => t.completed).length;
     valLiveCount.textContent = `${liveCompleted}/1`;
-    barLive.style.width = `${Math.min(100, Math.round((liveCompleted / 1) * 100))}%`;
 
     const dsaTasks = dayTasks.filter(t => t.bucket === 'dsa');
     const dsaCompleted = dsaTasks.filter(t => t.completed).length;
     valDsaCount.textContent = `${dsaCompleted}/1`;
-    barDsa.style.width = `${Math.min(100, Math.round((dsaCompleted / 1) * 100))}%`;
 
-    // Job Apps & Azure
-    if (focusData.currentCurriculumDay >= 4) {
-      const appTasks = dayTasks.filter(t => t.bucket === 'apps');
-      const appsDone = appTasks.filter(t => t.completed).length;
-      valAppsStatus.textContent = `Active (${appsDone}/10)`;
-      valAppsStatus.className = appsDone >= 10 ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-sky-400';
-    } else {
-      valAppsStatus.textContent = 'Day 4 Launch (0/10)';
-      valAppsStatus.className = 'text-xs font-bold text-slate-400';
-    }
-
-    const azureTasks = dayTasks.filter(t => t.bucket === 'azure');
-    const azureDone = azureTasks.filter(t => t.completed).length;
-    valAzureStatus.textContent = azureDone > 0 ? `${azureDone} Drills Done` : 'Optional Track';
+    const totalCoreCompleted = deepCompleted + spacedCompleted + liveCompleted + dsaCompleted;
+    const totalCoreTarget = 10;
+    const progressPct = Math.min(100, Math.round((totalCoreCompleted / totalCoreTarget) * 100));
+    valOverallProgress.textContent = `${totalCoreCompleted} / ${totalCoreTarget} Completed (${progressPct}%)`;
+    barOverall.style.width = `${progressPct}%`;
 
     // Total Study Time Today
     const totalSec = focusData.stats.totalStudySeconds || 0;
@@ -815,12 +791,16 @@
     const mins = Math.floor((totalSec % 3600) / 60);
     valTotalStudyTime.textContent = `${hrs}h ${String(mins).padStart(2, '0')}m / 5.5h Target`;
 
+    // 3. Accountability Steppers (Job Apps & Azure)
+    valJobAppsCount.textContent = focusData.jobAppsCount || 0;
+    valAzureTimeText.textContent = `${focusData.azureMinutes || 0} mins logged`;
+
     // 4. Timer UI Update
     updateTimerDisplay();
     if (focusData.timerState.isRunning) {
-      btnTimerStart.className = 'spring-btn py-2.5 rounded-xl bg-sky-500 text-slate-950 text-xs font-bold tracking-wider';
+      btnTimerStart.className = 'spring-btn py-3 rounded-xl bg-sky-500 text-slate-950 text-xs font-bold tracking-wider';
     } else {
-      btnTimerStart.className = 'spring-btn py-2.5 rounded-xl btn-action-primary text-xs font-bold tracking-wider';
+      btnTimerStart.className = 'spring-btn py-3 rounded-xl btn-action-primary text-xs font-bold tracking-wider';
     }
 
     if (focusData.timerState.boundTaskId) {
@@ -840,61 +820,48 @@
       btnTimerCompleteTask.classList.add('hidden');
     }
 
-    // 5. Filter & Render Tasks
-    const filteredTasks = pendingTasks.filter(t => {
-      if (activeBucketFilter === 'all') return true;
-      return t.bucket === activeBucketFilter;
-    });
-
-    if (filteredTasks.length === 0) {
+    // 5. Render Core Tasks (3 Anchors + 1 Live + 1 DSA)
+    const coreTasks = dayTasks.filter(t => !t.completed && (t.bucket === 'deep' || t.bucket === 'live' || t.bucket === 'dsa'));
+    if (coreTasks.length === 0) {
       taskListContainer.innerHTML = `
-        <div class="text-center py-6 text-slate-500 text-xs font-mono matte-card p-4">
-          No pending tasks in this filter.<br>Tap <span class="text-white font-bold">+ Add Task</span> to add your next question!
+        <div class="text-center py-5 text-slate-400 text-xs font-mono matte-card p-4">
+          All core tasks completed! Tap <span class="text-white font-bold">+ Add Task</span> to add more.
         </div>
       `;
     } else {
-      taskListContainer.innerHTML = filteredTasks.map(t => {
+      taskListContainer.innerHTML = coreTasks.map(t => {
         const isBound = focusData.timerState.boundTaskId === t.id;
 
         let badgeLabel = 'Deep Anchor';
-        let badgeStyle = 'text-sky-300 bg-sky-950/50 border-sky-800/40';
+        let badgeStyle = 'text-sky-300 bg-sky-950/60 border-sky-800/50';
 
         if (t.bucket === 'deep') {
           badgeLabel = 'Deep Anchor (50m)';
-          badgeStyle = 'text-sky-300 bg-sky-950/50 border-sky-800/40';
-        } else if (t.bucket === 'spaced') {
-          badgeLabel = 'Spaced Check (6m)';
-          badgeStyle = 'text-purple-300 bg-purple-950/50 border-purple-800/40';
+          badgeStyle = 'text-sky-300 bg-sky-950/60 border-sky-800/50';
         } else if (t.bucket === 'live') {
           badgeLabel = 'Live Coding (1h)';
-          badgeStyle = 'text-amber-300 bg-amber-950/50 border-amber-800/40';
+          badgeStyle = 'text-amber-300 bg-amber-950/60 border-amber-800/50';
         } else if (t.bucket === 'dsa') {
-          badgeLabel = 'C# NeetCode DSA (1h)';
-          badgeStyle = 'text-emerald-300 bg-emerald-950/50 border-emerald-800/40';
-        } else if (t.bucket === 'apps') {
-          badgeLabel = '10 Job Apps';
-          badgeStyle = 'text-blue-300 bg-blue-950/50 border-blue-800/40';
-        } else if (t.bucket === 'azure') {
-          badgeLabel = 'Azure AI Bonus';
-          badgeStyle = 'text-teal-300 bg-teal-950/50 border-teal-800/40';
+          badgeLabel = 'C# DSA (1h)';
+          badgeStyle = 'text-emerald-300 bg-emerald-950/60 border-emerald-800/50';
         }
 
         return `
-          <div class="p-3 rounded-xl bg-[#111622] border ${isBound ? 'border-sky-400/80 shadow-lg shadow-sky-500/10' : 'border-white/[0.06]'} flex items-center justify-between gap-3 transition">
-            <div class="flex items-start gap-2.5 truncate">
-              <button data-id="${t.id}" class="btn-check-task w-5 h-5 rounded-md border border-white/20 hover:border-emerald-400 flex items-center justify-center text-transparent hover:text-emerald-400 text-xs transition mt-0.5">
+          <div class="p-3.5 rounded-xl bg-[#111622] border ${isBound ? 'border-sky-400/80 shadow-lg shadow-sky-500/10' : 'border-white/[0.06]'} flex items-center justify-between gap-3 transition">
+            <div class="flex items-start gap-3 truncate">
+              <button data-id="${t.id}" class="btn-check-task w-5 h-5 rounded-md border border-white/20 hover:border-emerald-400 flex items-center justify-center text-transparent hover:text-emerald-400 text-xs transition mt-0.5 shrink-0">
                 ✓
               </button>
               <div class="truncate">
-                <div class="text-xs font-bold text-slate-100 truncate">${t.title}</div>
-                <div class="flex items-center gap-1.5 mt-1 font-mono text-[9px]">
-                  <span class="px-1.5 py-0.5 rounded border ${badgeStyle} font-semibold">${badgeLabel}</span>
+                <div class="text-sm font-bold text-slate-100 truncate">${t.title}</div>
+                <div class="flex items-center gap-2 mt-1 font-mono text-xs">
+                  <span class="px-2 py-0.5 rounded border ${badgeStyle} font-semibold">${badgeLabel}</span>
                   <span class="text-slate-400">${t.category}</span>
                 </div>
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
-              <button data-id="${t.id}" class="btn-focus-task spring-btn px-2.5 py-1 rounded-lg text-xs font-bold ${isBound ? 'bg-sky-500 text-slate-950' : 'bg-[#1a2233] text-slate-300 hover:text-white'}">
+              <button data-id="${t.id}" class="btn-focus-task spring-btn px-3 py-1.5 rounded-lg text-xs font-bold ${isBound ? 'bg-sky-500 text-slate-950' : 'bg-[#1a2233] text-slate-200 hover:text-white border border-white/10'}">
                 ${isBound ? 'Active' : 'Focus'}
               </button>
               <button data-id="${t.id}" class="btn-delete-task text-slate-500 hover:text-rose-400 p-1.5 rounded tap-target text-xs">
@@ -906,6 +873,31 @@
       }).join('');
     }
 
+    // 6. Render Spaced Retrieval Drawer Tasks
+    const spacedPending = dayTasks.filter(t => !t.completed && t.bucket === 'spaced');
+    if (spacedPending.length === 0) {
+      spacedTasksContainer.innerHTML = `<div class="text-xs text-slate-500 font-mono py-2 text-center">All spaced checks completed!</div>`;
+    } else {
+      spacedTasksContainer.innerHTML = spacedPending.map(t => {
+        const isBound = focusData.timerState.boundTaskId === t.id;
+        return `
+          <div class="p-2.5 rounded-lg bg-[#0d131f] border ${isBound ? 'border-purple-400' : 'border-white/[0.04]'} flex items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2 truncate">
+              <button data-id="${t.id}" class="btn-check-task w-4 h-4 rounded border border-white/20 hover:border-emerald-400 flex items-center justify-center text-transparent hover:text-emerald-400 text-xs shrink-0">✓</button>
+              <span class="text-slate-200 font-medium truncate">${t.title}</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button data-id="${t.id}" class="btn-focus-task px-2 py-1 rounded bg-[#1a2233] hover:bg-slate-700 text-purple-300 font-mono font-bold text-xs">
+                ${isBound ? 'Active' : 'Focus'}
+              </button>
+              <button data-id="${t.id}" class="btn-delete-task text-slate-500 hover:text-rose-400 p-1 text-xs">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Bind event handlers for task buttons
     document.querySelectorAll('.btn-check-task').forEach(btn => {
       btn.addEventListener('click', () => completeTask(btn.getAttribute('data-id')));
     });
@@ -916,7 +908,7 @@
       btn.addEventListener('click', () => deleteTask(btn.getAttribute('data-id')));
     });
 
-    // 6. Completed Tasks Feed
+    // 7. Completed Tasks Feed
     completedTaskCount.textContent = `${completedTasks.length} completed`;
     if (completedTasks.length === 0) {
       emptyCompletedTasks.classList.remove('hidden');
@@ -933,8 +925,8 @@
               <span class="text-slate-300 truncate">${t.title}</span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <span class="text-[10px] text-slate-500 whitespace-nowrap">${t.completedAt || ''}</span>
-              <button data-id="${t.id}" class="btn-revert-task px-2 py-0.5 rounded bg-[#1a2233] hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-mono transition">
+              <span class="text-xs text-slate-500">${t.completedAt || ''}</span>
+              <button data-id="${t.id}" class="btn-revert-task px-2.5 py-1 rounded bg-[#1a2233] hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-mono transition">
                 Revert
               </button>
             </div>
@@ -944,9 +936,7 @@
     }
 
     document.querySelectorAll('.btn-revert-task').forEach(btn => {
-      btn.addEventListener('click', () => {
-        revertCompletedTask(btn.getAttribute('data-id'));
-      });
+      btn.addEventListener('click', () => revertCompletedTask(btn.getAttribute('data-id')));
     });
   }
 
@@ -1033,29 +1023,26 @@
     focusData.timerState.warningTriggered = false;
 
     if (preset === '50m') {
-      preset50m.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
-      preset30m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
-      preset60m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      preset50m.className = 'px-3 py-1 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20';
+      preset30m.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white';
+      preset60m.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white';
       focusData.timerState.totalSeconds = 50 * 60;
       focusData.timerState.remainingSeconds = 50 * 60;
-      timerPhaseBadge.textContent = 'Deep Anchor (50m)';
       timerSubLabel.textContent = '50m Hard Stop · 15m Early Answer Warning';
     } else if (preset === '30m') {
-      preset30m.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
-      preset50m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
-      preset60m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      preset30m.className = 'px-3 py-1 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20';
+      preset50m.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white';
+      preset60m.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white';
       focusData.timerState.totalSeconds = 30 * 60;
       focusData.timerState.remainingSeconds = 30 * 60;
-      timerPhaseBadge.textContent = 'Spaced Checks (30m)';
-      timerSubLabel.textContent = '5 Rapid Verbal Checks · 6m per topic';
+      timerSubLabel.textContent = '30m Rapid Verbal Checks · 6m each';
     } else {
-      preset60m.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
-      preset50m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
-      preset30m.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
+      preset60m.className = 'px-3 py-1 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20';
+      preset50m.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white';
+      preset30m.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white';
       focusData.timerState.totalSeconds = 60 * 60;
       focusData.timerState.remainingSeconds = 60 * 60;
-      timerPhaseBadge.textContent = 'Live Code / DSA (60m)';
-      timerSubLabel.textContent = '60m Hands-on Ceiling · 25m Lookup Rule';
+      timerSubLabel.textContent = '60m Hands-on Build · 25m Lookup Rule';
     }
     resetTimer();
     triggerHaptic(8, 450);
@@ -1077,7 +1064,7 @@
     focusData.timerState.remainingSeconds = remaining;
     updateTimerDisplay();
 
-    // 15-Minute Remaining Warning Alert (User Directive)
+    // 15-Minute Remaining Warning Alert
     if (focusData.timerState.totalSeconds >= 45 * 60 && remaining <= 15 * 60 && !focusData.timerState.warningTriggered) {
       focusData.timerState.warningTriggered = true;
       playWarningAlert();
@@ -1158,16 +1145,6 @@
     triggerHaptic(10, 300);
   }
 
-  function transitionToPhase(newPhase, seconds) {
-    pauseTimer();
-    focusData.timerState.phase = newPhase;
-    focusData.timerState.totalSeconds = seconds;
-    focusData.timerState.remainingSeconds = seconds;
-    focusData.timerState.warningTriggered = false;
-    updateTimerDisplay();
-    startTimer();
-  }
-
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && focusData.timerState.isRunning) {
       tickTimer();
@@ -1227,7 +1204,7 @@
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `pulsesync_full_backup_${getTodayDateStr()}.csv`);
+    link.setAttribute('download', `pulsesync_backup_${getTodayDateStr()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1269,7 +1246,7 @@
     btnNavFocus.addEventListener('click', () => switchDomain('focus'));
     btnNavHabits.addEventListener('click', () => {
       modalTitle.textContent = 'Phase 3: Habits & Peer Sync';
-      modalBody.textContent = 'Coming in Phase 3: Sleep tracking, 20m book reading, private dopamine detox clean streaks, and peer pair code.';
+      modalBody.textContent = 'Coming in Phase 3: Bedtime tracking, 20m book reading, private dopamine detox clean streaks, and peer pair code.';
       previewModal.classList.remove('hidden');
       triggerHaptic(10, 500);
     });
@@ -1487,6 +1464,91 @@
       showUndoToast(`Switched to ${CURRICULUM_DAYS[focusData.currentCurriculumDay - 1].title}`, 'plan_tomorrow');
     });
 
+    // Spaced Drawer Toggle
+    btnToggleSpacedDrawer.addEventListener('click', () => {
+      isSpacedDrawerOpen = !isSpacedDrawerOpen;
+      if (isSpacedDrawerOpen) {
+        spacedDrawerContent.classList.remove('hidden');
+        arrowSpacedDrawer.style.transform = 'rotate(90deg)';
+      } else {
+        spacedDrawerContent.classList.add('hidden');
+        arrowSpacedDrawer.style.transform = 'rotate(0deg)';
+      }
+      triggerHaptic(8, 450);
+    });
+
+    // Job Applications Stepper
+    btnDecJobApp.addEventListener('click', () => {
+      if (focusData.jobAppsCount > 0) {
+        focusData.jobAppsCount--;
+        saveLocalData();
+        postFocusToServer();
+        renderFocusDashboard();
+        triggerHaptic(8, 400);
+      }
+    });
+
+    btnIncJobApp.addEventListener('click', () => {
+      focusData.jobAppsCount = (focusData.jobAppsCount || 0) + 1;
+      saveLocalData();
+      postFocusToServer();
+      renderFocusDashboard();
+      triggerHaptic(10, 650);
+      showUndoToast(`Logged 1 Application (${focusData.jobAppsCount}/10)`, 'job_app');
+    });
+
+    btnAdd5JobApps.addEventListener('click', () => {
+      focusData.jobAppsCount = (focusData.jobAppsCount || 0) + 5;
+      saveLocalData();
+      postFocusToServer();
+      renderFocusDashboard();
+      triggerHaptic(15, 750);
+      showUndoToast(`Logged +5 Applications (${focusData.jobAppsCount}/10)`, 'job_app_5');
+    });
+
+    // Azure AI Logger
+    btnLogAzure30m.addEventListener('click', () => {
+      focusData.azureMinutes = (focusData.azureMinutes || 0) + 30;
+      focusData.stats.totalStudySeconds = (focusData.stats.totalStudySeconds || 0) + (30 * 60);
+      saveLocalData();
+      postFocusToServer();
+      renderFocusDashboard();
+      triggerHaptic(12, 600);
+      showUndoToast('Logged 30m Azure Study', 'azure_30m');
+    });
+
+    btnLogAzure60m.addEventListener('click', () => {
+      focusData.azureMinutes = (focusData.azureMinutes || 0) + 60;
+      focusData.stats.totalStudySeconds = (focusData.stats.totalStudySeconds || 0) + (60 * 60);
+      saveLocalData();
+      postFocusToServer();
+      renderFocusDashboard();
+      triggerHaptic(15, 700);
+      showUndoToast('Logged 60m Azure Study', 'azure_60m');
+    });
+
+    btnFocusAzureTimer.addEventListener('click', () => {
+      let azureTask = focusData.tasks.find(t => t.code === 'AZ-AI');
+      if (!azureTask) {
+        azureTask = {
+          id: 'task_azure_' + Date.now(),
+          code: 'AZ-AI',
+          title: 'Azure AI-102 / AI-900: Module Reading & Practice Drill',
+          category: 'Azure',
+          bucket: 'deep',
+          curriculumDay: focusData.currentCurriculumDay,
+          dateStr: selectedDateStr,
+          completed: false,
+          completedAt: null
+        };
+        focusData.tasks.unshift(azureTask);
+      }
+      bindTaskToTimer(azureTask.id);
+      setTimerPreset('50m');
+      startTimer();
+      showUndoToast('Started 50m Azure AI Focus Session', azureTask.id);
+    });
+
     // Timer Preset Buttons
     preset50m.addEventListener('click', () => setTimerPreset('50m'));
     preset30m.addEventListener('click', () => setTimerPreset('30m'));
@@ -1506,24 +1568,7 @@
     btnDismissAlarm.addEventListener('click', () => {
       feynmanAlarmModal.classList.add('hidden');
       screenFlashOverlay.classList.remove('flash-active');
-      if (focusData.timerState.phase === 'study') {
-        transitionToPhase('recall', 10 * 60);
-      } else {
-        transitionToPhase('study', 50 * 60);
-      }
-    });
-
-    // Bucket Filter Pills
-    focusBucketFilters.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        focusBucketFilters.querySelectorAll('button').forEach(b => {
-          b.className = 'spring-btn px-3 py-1 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap';
-        });
-        btn.className = 'spring-btn px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-950 whitespace-nowrap';
-        activeBucketFilter = btn.getAttribute('data-bucket');
-        renderFocusDashboard();
-        triggerHaptic(8, 480);
-      });
+      setTimerPreset('50m');
     });
 
     // Add Task Modal Controls
@@ -1540,9 +1585,9 @@
     modalBucketPills.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         modalBucketPills.querySelectorAll('button').forEach(b => {
-          b.className = 'p-2 rounded-lg bg-[#1a2233] text-slate-300 text-[10px] text-left';
+          b.className = 'p-2.5 rounded-xl bg-[#1a2233] text-slate-300 text-xs text-left';
         });
-        btn.className = 'p-2 rounded-lg bg-sky-500 text-slate-950 font-bold text-[10px] text-left';
+        btn.className = 'p-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs text-left';
         modalSelectedBucket = btn.getAttribute('data-bucket');
         triggerHaptic(6, 450);
       });
@@ -1558,8 +1603,6 @@
       const currentDayConfig = CURRICULUM_DAYS.find(d => d.day === focusData.currentCurriculumDay) || CURRICULUM_DAYS[0];
       let category = currentDayConfig.category;
       if (modalSelectedBucket === 'dsa') category = 'LeetCode';
-      if (modalSelectedBucket === 'apps') category = 'Career';
-      if (modalSelectedBucket === 'azure') category = 'Azure';
 
       const newTask = {
         id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -1616,7 +1659,7 @@
     adherenceBodyRows.innerHTML = categories.map(cat => {
       return `
         <tr>
-          <td class="py-2 px-1 font-medium text-slate-300">${cat.label}</td>
+          <td class="py-2.5 px-1 font-medium text-slate-300">${cat.label}</td>
           ${days.map(d => {
             let val = 0;
             if (cat.id === 'tasks') {
@@ -1665,14 +1708,14 @@
 
       if (totalReps === 0) return '';
       return `
-        <div class="p-2.5 rounded-xl bg-[#111622] border border-white/[0.06] flex items-center justify-between">
+        <div class="p-3 rounded-xl bg-[#111622] border border-white/[0.06] flex items-center justify-between">
           <div>
-            <div class="font-bold text-white text-xs">${name}</div>
-            <div class="text-[10px] text-slate-400 mt-0.5">${activeDaysSet.size}/7 active days · Best set: ${bestSet} reps</div>
+            <div class="font-bold text-white text-sm">${name}</div>
+            <div class="text-xs text-slate-400 mt-0.5">${activeDaysSet.size}/7 active days · Best set: ${bestSet} reps</div>
           </div>
           <div class="text-right font-mono">
-            <div class="text-xs font-bold text-sky-400">${totalReps} <span class="text-[10px] text-slate-400 font-normal">reps</span></div>
-            <div class="text-[10px] text-slate-500">${totalSets} sets</div>
+            <div class="text-sm font-bold text-sky-400">${totalReps} <span class="text-xs text-slate-400 font-normal">reps</span></div>
+            <div class="text-xs text-slate-500">${totalSets} sets</div>
           </div>
         </div>
       `;
