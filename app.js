@@ -882,6 +882,9 @@
         } else if (t.bucket === 'dsa') {
           badgeLabel = 'C# NeetCode DSA';
           badgeStyle = 'text-emerald-300 bg-emerald-950/50 border-emerald-800/40';
+        } else if (t.bucket === 'project') {
+          badgeLabel = 'Personal Project / STAR';
+          badgeStyle = 'text-indigo-300 bg-indigo-950/50 border-indigo-800/40';
         }
 
         return `
@@ -1518,7 +1521,7 @@
       }
 
       const currentDayConfig = CURRICULUM_DAYS.find(d => d.day === focusData.currentCurriculumDay) || CURRICULUM_DAYS[0];
-      const category = modalSelectedBucket === 'dsa' ? 'LeetCode' : currentDayConfig.category;
+      const category = modalSelectedBucket === 'dsa' ? 'LeetCode' : (modalSelectedBucket === 'project' ? 'Project & STAR' : currentDayConfig.category);
 
       const newTask = {
         id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
