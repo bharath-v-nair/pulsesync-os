@@ -1,7 +1,7 @@
 {
   "tasks": [
     {
-      "id": "task_init_1",
+      "id": "task_1",
       "title": "Angular Signals vs Observables & OnPush Change Detection",
       "category": "Angular",
       "priority": "Deep Dive",
@@ -10,7 +10,7 @@
       "completedAt": null
     },
     {
-      "id": "task_init_2",
+      "id": "task_2",
       "title": "C# async/await, SynchronizationContext & Deadlock scenarios",
       "category": ".NET",
       "priority": "Deep Dive",
@@ -19,7 +19,7 @@
       "completedAt": null
     },
     {
-      "id": "task_init_3",
+      "id": "task_3",
       "title": "LeetCode: Two Sum & Valid Anagram in C#",
       "category": "LeetCode",
       "priority": "Rapid Recall",
@@ -28,7 +28,16 @@
       "completedAt": null
     }
   ],
-  "sessions": [],
+  "timerState": {
+    "isRunning": false,
+    "phase": "study",
+    "preset": "45-15",
+    "totalSeconds": 2100,
+    "remainingSeconds": 2100,
+    "startTimestamp": null,
+    "endTimestamp": null,
+    "boundTaskId": null
+  },
   "stats": {
     "activeSeconds": 0,
     "breakSeconds": 0

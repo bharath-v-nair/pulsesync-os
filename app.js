@@ -1,18 +1,18 @@
-// PulseSync Life OS - Unified Move & Focus (Phase 2) Engine
+// PulseSync Life OS - Unified Move & Focus Engine with Wall-Clock Timer & Real-Time Sync
 (function () {
   'use strict';
 
   // --- Constants & Storage Keys ---
   const STORAGE_KEY_LOGS = 'pulsesync_logs_v3';
   const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v3';
-  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v2';
+  const STORAGE_KEY_FOCUS = 'pulsesync_focus_v3';
 
   const TARGETS = {
     pullups: 20,
     pushups: 50,
     tonnage: 900,
     steps: 8000,
-    tasks: 20 // Daily interview tasks goal
+    tasks: 20 // Daily interview question quota
   };
 
   const BARBELL_EXERCISES = [
@@ -64,7 +64,17 @@
         completedAt: null
       }
     ],
-    sessions: [],
+    timerState: {
+      isRunning: false,
+      phase: 'study', // 'study', 'recall', 'break'
+      preset: '45-15',
+      totalSeconds: 35 * 60,
+      remainingSeconds: 35 * 60,
+      startTimestamp: null,
+      endTimestamp: null,
+      lastTickTimestamp: null,
+      boundTaskId: null
+    },
     stats: {
       activeSeconds: 0,
       breakSeconds: 0
@@ -74,23 +84,14 @@
   let activeCategoryFilter = 'all';
   let modalSelectedCategory = 'Angular';
   let modalSelectedPriority = 'Deep Dive';
-
-  // Timer State
-  let timerPreset = '45-15'; // '45-15' or '25-5'
-  let timerPhase = 'study'; // 'study', 'recall', 'break'
-  let timerTotalSeconds = 35 * 60;
-  let timerRemaining = 35 * 60;
-  let timerRunning = false;
   let timerInterval = null;
-  let boundTaskId = null;
 
-  // --- DOM Elements: Global ---
+  // --- DOM Elements: Header & Navigation ---
   const syncIndicator = document.getElementById('syncIndicator');
   const serverSyncStatus = document.getElementById('serverSyncStatus');
   const btnWakeUp = document.getElementById('btnWakeUp');
   const wakeUpLabel = document.getElementById('wakeUpLabel');
 
-  // Domain Nav
   const btnNavMove = document.getElementById('btnNavMove');
   const btnNavFocus = document.getElementById('btnNavFocus');
   const btnNavHabits = document.getElementById('btnNavHabits');
@@ -106,13 +107,12 @@
   const datePickerInput = document.getElementById('datePickerInput');
   const dateContextSubtitle = document.getElementById('dateContextSubtitle');
 
-  // Move Sub-views
+  // Move Elements
   const subViewToday = document.getElementById('subViewToday');
   const subViewProgress = document.getElementById('subViewProgress');
   const sectionTodayView = document.getElementById('sectionTodayView');
   const sectionProgressView = document.getElementById('sectionProgressView');
 
-  // Move Metrics
   const metricPullups = document.getElementById('metricPullups');
   const barPullup = document.getElementById('barPullup');
   const metricPushups = document.getElementById('metricPushups');
@@ -126,7 +126,6 @@
   const metricSteps = document.getElementById('metricSteps');
   const barSteps = document.getElementById('barSteps');
 
-  // Move Steppers
   const valPullup = document.getElementById('valPullup');
   const btnPullupDec = document.getElementById('btnPullupDec');
   const btnPullupInc = document.getElementById('btnPullupInc');
@@ -150,18 +149,16 @@
   const btnEllipticalInc = document.getElementById('btnEllipticalInc');
   const btnEllipticalLog = document.getElementById('btnEllipticalLog');
 
-  // Move Timeline
   const timelineContainer = document.getElementById('timelineContainer');
   const timelineList = document.getElementById('timelineList');
   const emptyTimeline = document.getElementById('emptyTimeline');
   const logCount = document.getElementById('logCount');
 
-  // Adherence
   const adherenceHeaderRow = document.getElementById('adherenceHeaderRow');
   const adherenceBodyRows = document.getElementById('adherenceBodyRows');
   const exerciseProgressionList = document.getElementById('exerciseProgressionList');
 
-  // --- DOM Elements: Focus Engine ---
+  // Focus Elements
   const focusTargetRatio = document.getElementById('focusTargetRatio');
   const barFocusTasks = document.getElementById('barFocusTasks');
   const focusQuotaRemaining = document.getElementById('focusQuotaRemaining');
@@ -176,6 +173,7 @@
   const timerPhaseBadge = document.getElementById('timerPhaseBadge');
   const preset4515 = document.getElementById('preset4515');
   const preset255 = document.getElementById('preset255');
+  const btnTakeBreak = document.getElementById('btnTakeBreak');
   const timerDisplay = document.getElementById('timerDisplay');
   const timerSubLabel = document.getElementById('timerSubLabel');
   const boundTaskTitle = document.getElementById('boundTaskTitle');
@@ -242,13 +240,12 @@
     } catch (e) {}
   }
 
-  // Multi-tone Harmonic Chime for Timer Completion
   function playFeynmanChime() {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       const ctx = new AudioContext();
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 chord
+      const notes = [523.25, 659.25, 783.99, 1046.50];
 
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
@@ -256,7 +253,7 @@
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.1));
 
-        gain.gain.setValueAtTime(0.08, ctx.currentTime + (idx * 0.1));
+        gain.gain.setValueAtTime(0.09, ctx.currentTime + (idx * 0.1));
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.1) + 0.8);
 
         osc.connect(gain);
@@ -274,7 +271,6 @@
     }
   }
 
-  // Triple Alert Alarm (User Specification: Chime + Flash + Vibration)
   function triggerTripleAlarm() {
     playFeynmanChime();
 
@@ -284,24 +280,22 @@
       } catch (e) {}
     }
 
-    // Screen Flash
     screenFlashOverlay.classList.remove('flash-active');
     void screenFlashOverlay.offsetWidth;
     screenFlashOverlay.classList.add('flash-active');
 
-    // Show Alarm Modal
-    if (timerPhase === 'study') {
+    if (focusData.timerState.phase === 'study') {
       feynmanAlarmTitle.textContent = 'Feynman Active Recall Time!';
-      feynmanAlarmBody.textContent = '35 minutes deep dive complete! Close your notes and IDE. Explain the concept out loud in simple terms without looking.';
+      feynmanAlarmBody.textContent = 'Deep dive finished! Close notes and explain the core concept out loud in plain English.';
       btnDismissAlarm.textContent = 'Start Active Recall (10m)';
-    } else if (timerPhase === 'recall') {
-      feynmanAlarmTitle.textContent = 'Recall Complete!';
-      feynmanAlarmBody.textContent = 'Great explanation! Take a 5-minute physical walk or do a pull-up set to reset.';
+    } else if (focusData.timerState.phase === 'recall') {
+      feynmanAlarmTitle.textContent = 'Active Recall Complete!';
+      feynmanAlarmBody.textContent = 'Concept solidified! Take a quick 5-minute break or do a pull-up micro-set.';
       btnDismissAlarm.textContent = 'Take 5m Break';
     } else {
       feynmanAlarmTitle.textContent = 'Break Finished!';
-      feynmanAlarmBody.textContent = 'Back to your interview tasks. Select your next question and dive in.';
-      btnDismissAlarm.textContent = 'Ready to Study';
+      feynmanAlarmBody.textContent = 'Ready for your next interview question. Select your task and dive in!';
+      btnDismissAlarm.textContent = 'Ready to Focus';
     }
     feynmanAlarmModal.classList.remove('hidden');
   }
@@ -365,7 +359,10 @@
       if (storedDefaults) stickyDefaults = { ...stickyDefaults, ...JSON.parse(storedDefaults) };
 
       const storedFocus = localStorage.getItem(STORAGE_KEY_FOCUS);
-      if (storedFocus) focusData = JSON.parse(storedFocus);
+      if (storedFocus) {
+        const parsed = JSON.parse(storedFocus);
+        focusData = { ...focusData, ...parsed };
+      }
     } catch (err) {
       console.error('Error reading local storage:', err);
     }
@@ -396,12 +393,42 @@
         }
       }
 
-      // 2. Sync Focus Tasks
+      // 2. Sync Focus Tasks & Timer State
       const resFocus = await fetch('/api/focus');
       if (resFocus.ok) {
         const serverFocus = await resFocus.json();
-        if (serverFocus && Array.isArray(serverFocus.tasks)) {
-          focusData = serverFocus;
+        if (serverFocus) {
+          // Merge tasks
+          if (Array.isArray(serverFocus.tasks)) {
+            const taskMap = new Map();
+            focusData.tasks.forEach(t => taskMap.set(t.id, t));
+            serverFocus.tasks.forEach(t => taskMap.set(t.id, t));
+            focusData.tasks = Array.from(taskMap.values());
+          }
+
+          // Merge cumulative stats (take higher value)
+          if (serverFocus.stats) {
+            focusData.stats.activeSeconds = Math.max(focusData.stats.activeSeconds || 0, serverFocus.stats.activeSeconds || 0);
+            focusData.stats.breakSeconds = Math.max(focusData.stats.breakSeconds || 0, serverFocus.stats.breakSeconds || 0);
+          }
+
+          // Sync Running Timer across Phone & Desktop!
+          if (serverFocus.timerState && serverFocus.timerState.isRunning) {
+            const now = Date.now();
+            if (now < serverFocus.timerState.endTimestamp) {
+              focusData.timerState = serverFocus.timerState;
+              focusData.timerState.remainingSeconds = Math.max(0, Math.round((serverFocus.timerState.endTimestamp - now) / 1000));
+              if (!timerInterval) {
+                resumeTimerFromAnchor();
+              }
+            } else {
+              // Timer completed while offline
+              focusData.timerState = serverFocus.timerState;
+              focusData.timerState.isRunning = false;
+              focusData.timerState.remainingSeconds = 0;
+            }
+          }
+
           saveLocalData();
         }
       }
@@ -638,7 +665,7 @@
     const completedList = dayTasks.filter(t => t.completed);
     const pendingList = dayTasks.filter(t => !t.completed);
 
-    // Target Quota Calculation
+    // 1. Quota Progress
     const completedCount = completedList.length;
     focusTargetRatio.textContent = `${completedCount} / ${TARGETS.tasks} Completed`;
     const pct = Math.min(100, Math.round((completedCount / TARGETS.tasks) * 100));
@@ -646,7 +673,7 @@
     const remaining = Math.max(0, TARGETS.tasks - completedCount);
     focusQuotaRemaining.textContent = `${remaining} remaining`;
 
-    // Dual Clock Calculation
+    // 2. Dual Clock Calculation
     const activeSec = focusData.stats.activeSeconds || 0;
     const breakSec = focusData.stats.breakSeconds || 0;
     const activeHr = Math.floor(activeSec / 3600);
@@ -672,7 +699,44 @@
       labelBreakPct.textContent = '0% Break';
     }
 
-    // Filter Tasks
+    // 3. Timer State UI Update
+    updateTimerDisplay();
+    if (focusData.timerState.phase === 'study') {
+      timerPhaseBadge.textContent = 'Deep Study (Logging to Active)';
+      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide';
+    } else if (focusData.timerState.phase === 'recall') {
+      timerPhaseBadge.textContent = 'Active Recall (Logging to Active)';
+      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-950/60 text-amber-300 border border-amber-800/40 uppercase tracking-wide';
+    } else {
+      timerPhaseBadge.textContent = 'Break Mode (Logging to Break)';
+      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 uppercase tracking-wide';
+    }
+
+    if (focusData.timerState.isRunning) {
+      btnTimerStart.className = 'spring-btn py-2.5 rounded-xl bg-sky-500 text-slate-950 text-xs font-bold tracking-wider';
+    } else {
+      btnTimerStart.className = 'spring-btn py-2.5 rounded-xl btn-action-primary text-xs font-bold tracking-wider';
+    }
+
+    // Update Bound Task UI
+    if (focusData.timerState.boundTaskId) {
+      const bTask = focusData.tasks.find(t => t.id === focusData.timerState.boundTaskId);
+      if (bTask) {
+        boundTaskTitle.textContent = bTask.title;
+        btnUnbindTask.classList.remove('hidden');
+        btnTimerCompleteTask.classList.remove('hidden');
+      } else {
+        boundTaskTitle.textContent = 'Select a task below to focus';
+        btnUnbindTask.classList.add('hidden');
+        btnTimerCompleteTask.classList.add('hidden');
+      }
+    } else {
+      boundTaskTitle.textContent = focusData.timerState.phase === 'break' ? 'Break Mode Active' : 'Select a task below to focus';
+      btnUnbindTask.classList.add('hidden');
+      btnTimerCompleteTask.classList.add('hidden');
+    }
+
+    // 4. Pending Tasks List
     const filteredTasks = pendingList.filter(t => {
       if (activeCategoryFilter === 'all') return true;
       return t.category.toLowerCase().includes(activeCategoryFilter.toLowerCase());
@@ -686,7 +750,7 @@
       `;
     } else {
       taskListContainer.innerHTML = filteredTasks.map(t => {
-        const isBound = boundTaskId === t.id;
+        const isBound = focusData.timerState.boundTaskId === t.id;
         let catColor = 'text-sky-400 bg-sky-950/40 border-sky-800/40';
         if (t.category === 'Angular') catColor = 'text-red-400 bg-red-950/40 border-red-800/40';
         if (t.category === '.NET') catColor = 'text-purple-400 bg-purple-950/40 border-purple-800/40';
@@ -696,7 +760,7 @@
         const priorityColor = t.priority === 'Deep Dive' ? 'text-white bg-slate-800' : 'text-slate-400 bg-slate-900';
 
         return `
-          <div class="p-3 rounded-xl bg-[#111622] border ${isBound ? 'border-sky-400/60 shadow-lg shadow-sky-500/10' : 'border-white/[0.06]'} flex items-center justify-between gap-3 transition">
+          <div class="p-3 rounded-xl bg-[#111622] border ${isBound ? 'border-sky-400/80 shadow-lg shadow-sky-500/10' : 'border-white/[0.06]'} flex items-center justify-between gap-3 transition">
             <div class="flex items-start gap-2.5 truncate">
               <button data-id="${t.id}" class="btn-check-task w-5 h-5 rounded-md border border-white/20 hover:border-emerald-400 flex items-center justify-center text-transparent hover:text-emerald-400 text-xs transition mt-0.5">
                 ✓
@@ -722,26 +786,17 @@
       }).join('');
     }
 
-    // Attach Task Actions
     document.querySelectorAll('.btn-check-task').forEach(btn => {
-      btn.addEventListener('click', () => {
-        completeTask(btn.getAttribute('data-id'));
-      });
+      btn.addEventListener('click', () => completeTask(btn.getAttribute('data-id')));
     });
-
     document.querySelectorAll('.btn-focus-task').forEach(btn => {
-      btn.addEventListener('click', () => {
-        bindTaskToTimer(btn.getAttribute('data-id'));
-      });
+      btn.addEventListener('click', () => bindTaskToTimer(btn.getAttribute('data-id')));
     });
-
     document.querySelectorAll('.btn-delete-task').forEach(btn => {
-      btn.addEventListener('click', () => {
-        deleteTask(btn.getAttribute('data-id'));
-      });
+      btn.addEventListener('click', () => deleteTask(btn.getAttribute('data-id')));
     });
 
-    // Completed Tasks List
+    // 5. Completed Tasks Feed with REVERT Option
     completedTaskCount.textContent = `${completedList.length} completed`;
     if (completedList.length === 0) {
       emptyCompletedTasks.classList.remove('hidden');
@@ -752,35 +807,42 @@
       completedTasksList.classList.remove('hidden');
       completedTasksList.innerHTML = completedList.map(t => {
         return `
-          <div class="p-2 rounded-lg bg-[#0d131f] border border-white/[0.04] flex items-center justify-between text-xs font-mono">
+          <div class="p-2.5 rounded-lg bg-[#0d131f] border border-white/[0.04] flex items-center justify-between text-xs font-mono">
             <div class="flex items-center gap-2 truncate pr-2">
               <span class="text-emerald-400 font-bold">✓</span>
               <span class="text-slate-300 truncate">${t.title}</span>
             </div>
-            <span class="text-[10px] text-slate-500 whitespace-nowrap">${t.completedAt || ''}</span>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[10px] text-slate-500 whitespace-nowrap">${t.completedAt || ''}</span>
+              <button data-id="${t.id}" class="btn-revert-task px-2 py-0.5 rounded bg-[#1a2233] hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-mono transition" title="Restore to pending tasks">
+                Revert
+              </button>
+            </div>
           </div>
         `;
       }).join('');
     }
+
+    // Attach Revert Handler
+    document.querySelectorAll('.btn-revert-task').forEach(btn => {
+      btn.addEventListener('click', () => {
+        revertCompletedTask(btn.getAttribute('data-id'));
+      });
+    });
   }
 
   function bindTaskToTimer(taskId) {
-    boundTaskId = taskId;
-    const task = focusData.tasks.find(t => t.id === taskId);
-    if (task) {
-      boundTaskTitle.textContent = task.title;
-      btnUnbindTask.classList.remove('hidden');
-      btnTimerCompleteTask.classList.remove('hidden');
-    }
+    focusData.timerState.boundTaskId = taskId;
+    saveLocalData();
+    postFocusToServer();
     renderFocusDashboard();
     triggerHaptic(12, 600);
   }
 
   function unbindTask() {
-    boundTaskId = null;
-    boundTaskTitle.textContent = 'Select a task below to focus';
-    btnUnbindTask.classList.add('hidden');
-    btnTimerCompleteTask.classList.add('hidden');
+    focusData.timerState.boundTaskId = null;
+    saveLocalData();
+    postFocusToServer();
     renderFocusDashboard();
     triggerHaptic(8, 400);
   }
@@ -792,8 +854,8 @@
     task.completed = true;
     task.completedAt = formatTime(new Date());
 
-    if (boundTaskId === taskId) {
-      unbindTask();
+    if (focusData.timerState.boundTaskId === taskId) {
+      focusData.timerState.boundTaskId = null;
     }
 
     saveLocalData();
@@ -809,107 +871,173 @@
     });
   }
 
+  function revertCompletedTask(taskId) {
+    const task = focusData.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.completed = false;
+    task.completedAt = null;
+    saveLocalData();
+    postFocusToServer();
+    triggerHaptic(15, 500);
+    renderFocusDashboard();
+    showUndoToast(`Reverted: ${task.title}`, task.id);
+  }
+
   function deleteTask(taskId) {
     focusData.tasks = focusData.tasks.filter(t => t.id !== taskId);
-    if (boundTaskId === taskId) unbindTask();
+    if (focusData.timerState.boundTaskId === taskId) {
+      focusData.timerState.boundTaskId = null;
+    }
     saveLocalData();
     postFocusToServer();
     triggerHaptic(10, 250);
     renderFocusDashboard();
   }
 
-  // --- 45-15 Feynman Timer Functions ---
+  // --- Resilient Wall-Clock 45-15 Feynman Timer ---
   function updateTimerDisplay() {
-    const m = Math.floor(timerRemaining / 60);
-    const s = timerRemaining % 60;
+    const remaining = focusData.timerState.remainingSeconds;
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
     timerDisplay.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 
   function setTimerPreset(preset) {
-    timerPreset = preset;
+    focusData.timerState.preset = preset;
     if (preset === '45-15') {
       preset4515.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
       preset255.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
-      timerTotalSeconds = 35 * 60;
+      focusData.timerState.totalSeconds = 35 * 60;
+      focusData.timerState.remainingSeconds = 35 * 60;
       timerSubLabel.textContent = '35m Deep Dive → 10m Active Recall';
     } else {
       preset255.className = 'px-2 py-0.5 rounded bg-white/10 text-white font-bold hover:bg-white/20';
       preset4515.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white';
-      timerTotalSeconds = 25 * 60;
+      focusData.timerState.totalSeconds = 25 * 60;
+      focusData.timerState.remainingSeconds = 25 * 60;
       timerSubLabel.textContent = '25m Focus → 5m Recall & Break';
     }
     resetTimer();
     triggerHaptic(8, 450);
   }
 
-  function startTimer() {
-    if (timerRunning) return;
-    timerRunning = true;
-    btnTimerStart.className = 'spring-btn py-2.5 rounded-xl bg-sky-500 text-slate-950 text-xs font-bold tracking-wider';
+  // Wall-Clock Tick Function (Immune to Background Throttling)
+  function tickTimer() {
+    if (!focusData.timerState.isRunning) return;
 
-    timerInterval = setInterval(() => {
-      if (timerRemaining > 0) {
-        timerRemaining--;
-        updateTimerDisplay();
+    const now = Date.now();
+    const lastTick = focusData.timerState.lastTickTimestamp || now;
+    const elapsedSeconds = Math.max(0, Math.floor((now - lastTick) / 1000));
 
-        // Increment cumulative stats
-        if (timerPhase === 'break') {
-          focusData.stats.breakSeconds = (focusData.stats.breakSeconds || 0) + 1;
-        } else {
-          focusData.stats.activeSeconds = (focusData.stats.activeSeconds || 0) + 1;
-        }
-
-        // Periodic sync every 30 seconds
-        if (timerRemaining % 30 === 0) {
-          saveLocalData();
-          renderFocusDashboard();
-        }
+    if (elapsedSeconds > 0) {
+      if (focusData.timerState.phase === 'break') {
+        focusData.stats.breakSeconds = (focusData.stats.breakSeconds || 0) + elapsedSeconds;
       } else {
-        pauseTimer();
-        triggerTripleAlarm();
+        focusData.stats.activeSeconds = (focusData.stats.activeSeconds || 0) + elapsedSeconds;
       }
-    }, 1000);
+      focusData.timerState.lastTickTimestamp = now;
+    }
 
+    const remaining = Math.max(0, Math.round((focusData.timerState.endTimestamp - now) / 1000));
+    focusData.timerState.remainingSeconds = remaining;
+    updateTimerDisplay();
+
+    if (remaining <= 0) {
+      pauseTimer();
+      triggerTripleAlarm();
+    }
+  }
+
+  function startTimer() {
+    // Check: Require an active task before starting a study session!
+    if (focusData.timerState.phase !== 'break' && !focusData.timerState.boundTaskId) {
+      const pendingTasks = focusData.tasks.filter(t => !t.completed);
+      if (pendingTasks.length > 0) {
+        // Highlight first task
+        bindTaskToTimer(pendingTasks[0].id);
+        showUndoToast(`Auto-selected: ${pendingTasks[0].title}`, pendingTasks[0].id);
+      } else {
+        alert('Please add or select an interview task first before starting a study session!');
+        inputTaskTitle.value = '';
+        modalAddTask.classList.remove('hidden');
+        return;
+      }
+    }
+
+    const now = Date.now();
+    focusData.timerState.isRunning = true;
+    focusData.timerState.startTimestamp = now;
+    focusData.timerState.endTimestamp = now + (focusData.timerState.remainingSeconds * 1000);
+    focusData.timerState.lastTickTimestamp = now;
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(tickTimer, 1000);
+
+    saveLocalData();
+    postFocusToServer();
+    renderFocusDashboard();
     triggerHaptic(15, 600);
   }
 
+  function resumeTimerFromAnchor() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(tickTimer, 1000);
+    renderFocusDashboard();
+  }
+
   function pauseTimer() {
-    timerRunning = false;
+    if (!focusData.timerState.isRunning) return;
+
+    tickTimer(); // Capture last second
+    focusData.timerState.isRunning = false;
+    focusData.timerState.startTimestamp = null;
+    focusData.timerState.endTimestamp = null;
+    focusData.timerState.lastTickTimestamp = null;
+
     if (timerInterval) {
       clearInterval(timerInterval);
       timerInterval = null;
     }
-    btnTimerStart.className = 'spring-btn py-2.5 rounded-xl btn-action-primary text-xs font-bold tracking-wider';
+
     saveLocalData();
+    postFocusToServer();
     renderFocusDashboard();
     triggerHaptic(10, 400);
   }
 
   function resetTimer() {
     pauseTimer();
-    timerRemaining = timerTotalSeconds;
+    focusData.timerState.remainingSeconds = focusData.timerState.totalSeconds;
     updateTimerDisplay();
+    saveLocalData();
+    postFocusToServer();
     triggerHaptic(10, 300);
   }
 
   function transitionToPhase(newPhase, seconds) {
-    timerPhase = newPhase;
-    timerTotalSeconds = seconds;
-    timerRemaining = seconds;
+    pauseTimer();
+    focusData.timerState.phase = newPhase;
+    focusData.timerState.totalSeconds = seconds;
+    focusData.timerState.remainingSeconds = seconds;
     updateTimerDisplay();
-
-    if (newPhase === 'study') {
-      timerPhaseBadge.textContent = 'Deep Study';
-      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-sky-950/60 text-sky-400 border border-sky-800/40 uppercase tracking-wide';
-    } else if (newPhase === 'recall') {
-      timerPhaseBadge.textContent = 'Active Recall';
-      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-950/60 text-amber-300 border border-amber-800/40 uppercase tracking-wide';
-    } else {
-      timerPhaseBadge.textContent = 'Break';
-      timerPhaseBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 uppercase tracking-wide';
-    }
     startTimer();
   }
+
+  // --- Catch-up Ticker on App Wakeup / Tab Visibility Change ---
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && focusData.timerState.isRunning) {
+      tickTimer();
+      renderFocusDashboard();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    if (focusData.timerState.isRunning) {
+      tickTimer();
+      renderFocusDashboard();
+    }
+  });
 
   // --- Undo Toast System ---
   function showUndoToast(msg, id, onUndoCallback) {
@@ -1198,18 +1326,23 @@
     preset4515.addEventListener('click', () => setTimerPreset('45-15'));
     preset255.addEventListener('click', () => setTimerPreset('25-5'));
 
+    btnTakeBreak.addEventListener('click', () => {
+      transitionToPhase('break', 5 * 60);
+      triggerHaptic(12, 500);
+    });
+
     btnUnbindTask.addEventListener('click', unbindTask);
     btnTimerCompleteTask.addEventListener('click', () => {
-      if (boundTaskId) completeTask(boundTaskId);
+      if (focusData.timerState.boundTaskId) completeTask(focusData.timerState.boundTaskId);
     });
 
     // Feynman Alarm Dismissal
     btnDismissAlarm.addEventListener('click', () => {
       feynmanAlarmModal.classList.add('hidden');
       screenFlashOverlay.classList.remove('flash-active');
-      if (timerPhase === 'study') {
+      if (focusData.timerState.phase === 'study') {
         transitionToPhase('recall', 10 * 60); // 10m Active recall
-      } else if (timerPhase === 'recall') {
+      } else if (focusData.timerState.phase === 'recall') {
         transitionToPhase('break', 5 * 60);  // 5m Break
       } else {
         transitionToPhase('study', 35 * 60); // Back to 35m study
@@ -1280,6 +1413,11 @@
       };
 
       focusData.tasks.unshift(newTask);
+      // Auto-bind this new task if no task is currently bound!
+      if (!focusData.timerState.boundTaskId) {
+        focusData.timerState.boundTaskId = newTask.id;
+      }
+
       saveLocalData();
       postFocusToServer();
       modalAddTask.classList.add('hidden');
@@ -1402,7 +1540,7 @@
     registerServiceWorker();
 
     syncWithServer();
-    setInterval(syncWithServer, 15000);
+    setInterval(syncWithServer, 5000); // 5-second real-time sync polling
   }
 
   init();
