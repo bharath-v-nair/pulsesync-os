@@ -1,4 +1,4 @@
-// PulseSync Life OS - Minimalist Focus Engine & Progress Analytics
+// PulseSync Life OS - Unified Move, Focus & Habits Operating System
 (function () {
   'use strict';
 
@@ -6,6 +6,7 @@
   const STORAGE_KEY_LOGS = 'pulsesync_logs_v3';
   const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v3';
   const STORAGE_KEY_FOCUS = 'pulsesync_focus_v8';
+  const STORAGE_KEY_HABITS = 'pulsesync_habits_v2';
 
   const TARGETS = {
     pullups: 20,
@@ -74,43 +75,7 @@
     { id: 'd1_spd_4', code: 'NG-03', title: '[NG-03] What does providedIn: root mean in Angular DI?', category: 'Angular', bucket: 'spaced', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd1_spd_5', code: 'NG-15', title: '[NG-15] Smart vs Dumb Components (@Input, @Output communication)', category: 'Angular', bucket: 'spaced', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
     { id: 'd1_live_1', code: 'LIVE-01', title: 'Live Coding: Build an Angular Reactive Form with 2 fields (Email, Amount) & basic validation', category: 'Angular', bucket: 'live', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd1_dsa_1', code: 'DSA-01', title: 'C# NeetCode DSA: LeetCode Easy — Two Sum (Hash Map O(N) time, O(N) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-
-    // --- DAY 2 ---
-    { id: 'd2_deep_1', code: 'CS-01', title: '[CS-01] Value Types vs Reference Types (Stack vs Heap memory allocation)', category: '.NET', bucket: 'deep', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_deep_2', code: 'CS-02', title: '[CS-02, CS-03] class vs struct vs record (immutability and value equality)', category: '.NET', bucket: 'deep', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_deep_3', code: 'WA-04', title: '[WA-04] Dependency Injection in .NET Core (Transient, Scoped, Singleton lifetimes)', category: '.NET', bucket: 'deep', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_spd_1', code: 'CS-04', title: '[CS-04] Why are strings immutable in C#? What does StringBuilder do?', category: '.NET', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_spd_2', code: 'CS-09', title: '[CS-09] Nullable reference types (string?) and null operators (??, ?.)', category: '.NET', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_spd_3', code: 'WA-07', title: '[WA-07] Basic REST verbs and status codes (200, 201, 204, 400, 404, 500)', category: '.NET', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_spd_4', code: 'NG-09', title: '[NG-09] Reactive Forms key classes (Day 1 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_spd_5', code: 'NG-11', title: '[NG-11] Interceptor flow & Bearer tokens (Day 1 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_live_1', code: 'LIVE-02', title: 'Live Coding: Build an ASP.NET Core Controller with constructor injection of a service', category: '.NET', bucket: 'live', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd2_dsa_1', code: 'DSA-02', title: 'C# NeetCode DSA: LeetCode Easy — Valid Palindrome (Two Pointers O(N) time, O(1) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 2, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-
-    // --- DAY 3 ---
-    { id: 'd3_deep_1', code: 'NG-04', title: '[NG-04] Observable vs Promise (lazy vs eager, stream vs single value)', category: 'Angular', bucket: 'deep', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_deep_2', code: 'NG-07', title: '[NG-07] Subscription Memory Leaks (why they happen, using async pipe & takeUntilDestroyed)', category: 'Angular', bucket: 'deep', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_deep_3', code: 'NG-19', title: '[NG-19] Core RxJS Operators (map, filter, and switchMap basics for search)', category: 'Angular', bucket: 'deep', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_spd_1', code: 'NG-09', title: '[NG-09] Reactive Forms key classes (Day 1 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_spd_2', code: 'NG-11', title: '[NG-11] Interceptor flow (Day 1 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_spd_3', code: 'NG-03', title: '[NG-03] What does providedIn: root mean in Angular DI?', category: 'Angular', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_spd_4', code: 'CS-01', title: '[CS-01] Value vs Reference Types Stack/Heap (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_spd_5', code: 'WA-04', title: '[WA-04] DI Lifetimes: Transient vs Scoped vs Singleton (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_live_1', code: 'LIVE-03', title: 'Live Coding: Build an Angular service with an HttpClient GET call returning an Observable stream', category: 'Angular', bucket: 'live', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd3_dsa_1', code: 'DSA-03', title: 'C# NeetCode DSA: LeetCode Easy/Medium — Best Time to Buy and Sell Stock (Sliding Window O(N))', category: 'LeetCode', bucket: 'dsa', curriculumDay: 3, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-
-    // --- DAY 4 ---
-    { id: 'd4_deep_1', code: 'WA-01', title: '[WA-01, AR-03] Program.cs basics: builder vs app phases; Controller vs Minimal API', category: '.NET', bucket: 'deep', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_deep_2', code: 'WA-02', title: '[WA-02] Middleware Pipeline: what is middleware, the pipeline concept, why order matters', category: '.NET', bucket: 'deep', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_deep_3', code: 'WA-06', title: '[WA-06] Model Binding & Validation ([ApiController] behavior, ModelState)', category: '.NET', bucket: 'deep', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_spd_1', code: 'CS-01', title: '[CS-01] Value vs Reference Types (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_spd_2', code: 'WA-04', title: '[WA-04] DI Lifetimes: Transient vs Scoped vs Singleton (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_spd_3', code: 'CS-03', title: '[CS-03] When to use record vs class (Day 2 recall)', category: '.NET', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_spd_4', code: 'NG-04', title: '[NG-04] Observable vs Promise (Day 3 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_spd_5', code: 'NG-07', title: '[NG-07] Preventing subscription memory leaks (Day 3 recall)', category: 'Angular', bucket: 'spaced', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_live_1', code: 'LIVE-04', title: 'Live Coding: Build an API endpoint validating an incoming DTO and returning BadRequest or Ok', category: '.NET', bucket: 'live', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null },
-    { id: 'd4_dsa_1', code: 'DSA-04', title: 'C# NeetCode DSA: LeetCode Easy — Valid Parentheses (Stack O(N) time, O(N) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 4, dateStr: getTodayDateStr(), completed: false, completedAt: null }
+    { id: 'd1_dsa_1', code: 'DSA-01', title: 'C# NeetCode DSA: LeetCode Easy — Two Sum (Hash Map O(N) time, O(N) space)', category: 'LeetCode', bucket: 'dsa', curriculumDay: 1, dateStr: getTodayDateStr(), completed: false, completedAt: null }
   ];
 
   // --- State: Move Engine ---
@@ -155,17 +120,54 @@
   let timerInterval = null;
   let isSpacedDrawerOpen = false;
 
+  // --- State: Habits Engine ---
+  let habitsData = {
+    sleep: {
+      bedtimeRaw: '23:15',
+      wakeupRaw: '07:15',
+      sleepDuration: '8h 00m',
+      isOptimal: true,
+      sunlightDone: false
+    },
+    detox: {
+      cleanDays: 3,
+      tierName: 'Calibrated',
+      morningPhoneFree: false,
+      zeroReels: false,
+      noPhoneInBed: false,
+      relapseHistory: []
+    },
+    reading: {
+      currentBook: 'Designing Data-Intensive Applications',
+      startPage: 42,
+      endPage: 64,
+      pagesReadToday: 22,
+      timerSeconds: 20 * 60,
+      isTimerRunning: false,
+      history: []
+    },
+    keystones: {
+      bedMade: false,
+      roomReset: false
+    },
+    dailyRecords: {}
+  };
+
+  let readingTimerInterval = null;
+
   // --- DOM Elements ---
   const syncIndicator = document.getElementById('syncIndicator');
   const serverSyncStatus = document.getElementById('serverSyncStatus');
   const btnWakeUp = document.getElementById('btnWakeUp');
   const wakeUpLabel = document.getElementById('wakeUpLabel');
+  const btnOpenProtocolsModal = document.getElementById('btnOpenProtocolsModal');
 
   const btnNavMove = document.getElementById('btnNavMove');
   const btnNavFocus = document.getElementById('btnNavFocus');
   const btnNavHabits = document.getElementById('btnNavHabits');
   const viewMove = document.getElementById('viewMove');
   const viewFocus = document.getElementById('viewFocus');
+  const viewHabits = document.getElementById('viewHabits');
 
   // Date Navigation
   const btnPrevDay = document.getElementById('btnPrevDay');
@@ -227,7 +229,7 @@
   const adherenceBodyRows = document.getElementById('adherenceBodyRows');
   const exerciseProgressionList = document.getElementById('exerciseProgressionList');
 
-  // Focus Elements (Zone 1 to 5 + Analytics)
+  // Focus Elements
   const subViewFocusToday = document.getElementById('subViewFocusToday');
   const subViewFocusProgress = document.getElementById('subViewFocusProgress');
   const sectionFocusTodayView = document.getElementById('sectionFocusTodayView');
@@ -283,18 +285,75 @@
   const emptyCompletedTasks = document.getElementById('emptyCompletedTasks');
 
   // Analytics Elements
+  const analyticsSprintCard = document.getElementById('analyticsSprintCard');
   const analyticsStreakVal = document.getElementById('analyticsStreakVal');
   const analyticsAdherenceVal = document.getElementById('analyticsAdherenceVal');
   const analyticsTotalStudyVal = document.getElementById('analyticsTotalStudyVal');
   const analyticsTotalAppsVal = document.getElementById('analyticsTotalAppsVal');
+  const analyticsMatrixContainer = document.getElementById('analyticsMatrixContainer');
   const analyticsMatrixHeaderRow = document.getElementById('analyticsMatrixHeaderRow');
   const analyticsMatrixBodyRows = document.getElementById('analyticsMatrixBodyRows');
+  const analyticsStudyHoursChart = document.getElementById('analyticsStudyHoursChart');
   const analyticsAvgStudyVal = document.getElementById('analyticsAvgStudyVal');
   const analyticsBarsContainer = document.getElementById('analyticsBarsContainer');
   const analyticsBarsDaysRow = document.getElementById('analyticsBarsDaysRow');
+  const analyticsJobFunnel = document.getElementById('analyticsJobFunnel');
   const analyticsJobFunnelCount = document.getElementById('analyticsJobFunnelCount');
   const barJobFunnel = document.getElementById('barJobFunnel');
+  const analyticsCurriculumCoverage = document.getElementById('analyticsCurriculumCoverage');
   const analyticsCoverageRows = document.getElementById('analyticsCoverageRows');
+
+  // Habits Elements (Zones 1 to 6)
+  const valMasterTierTitle = document.getElementById('valMasterTierTitle');
+  const valOverallScoreBadge = document.getElementById('valOverallScoreBadge');
+  const valMoveTier = document.getElementById('valMoveTier');
+  const valFocusTier = document.getElementById('valFocusTier');
+  const valHabitsTier = document.getElementById('valHabitsTier');
+
+  const badgeSleepQuality = document.getElementById('badgeSleepQuality');
+  const inputBedtime = document.getElementById('inputBedtime');
+  const inputWakeup = document.getElementById('inputWakeup');
+  const btnLogBedtimeNow = document.getElementById('btnLogBedtimeNow');
+  const btnToggleSunlight = document.getElementById('btnToggleSunlight');
+  const sunlightIcon = document.getElementById('sunlightIcon');
+  const sunlightLabel = document.getElementById('sunlightLabel');
+
+  const badgeDetoxTier = document.getElementById('badgeDetoxTier');
+  const valCleanStreakDays = document.getElementById('valCleanStreakDays');
+  const chkMorningPhone = document.getElementById('chkMorningPhone');
+  const chkZeroReels = document.getElementById('chkZeroReels');
+  const chkNoPhoneInBed = document.getElementById('chkNoPhoneInBed');
+  const btnOpenRelapseModal = document.getElementById('btnOpenRelapseModal');
+
+  const valReadingTodayTotal = document.getElementById('valReadingTodayTotal');
+  const inputBookTitle = document.getElementById('inputBookTitle');
+  const inputStartPage = document.getElementById('inputStartPage');
+  const inputEndPage = document.getElementById('inputEndPage');
+  const valReadingTimerDisplay = document.getElementById('valReadingTimerDisplay');
+  const btnStartReadingTimer = document.getElementById('btnStartReadingTimer');
+  const btnPauseReadingTimer = document.getElementById('btnPauseReadingTimer');
+  const btnSaveReadingSession = document.getElementById('btnSaveReadingSession');
+
+  const chkBedMade = document.getElementById('chkBedMade');
+  const chkRoomReset = document.getElementById('chkRoomReset');
+
+  const btnCopyPeerDispatch = document.getElementById('btnCopyPeerDispatch');
+  const btnPreviewPublicLedger = document.getElementById('btnPreviewPublicLedger');
+
+  // Protocols & Modals
+  const modalScienceProtocols = document.getElementById('modalScienceProtocols');
+  const btnCloseProtocolsModal = document.getElementById('btnCloseProtocolsModal');
+  const btnDismissProtocols = document.getElementById('btnDismissProtocols');
+
+  const modalRelapse = document.getElementById('modalRelapse');
+  const btnCloseRelapseModal = document.getElementById('btnCloseRelapseModal');
+  const relapseTriggerOptions = document.getElementById('relapseTriggerOptions');
+
+  const modalPublicLedger = document.getElementById('modalPublicLedger');
+  const publicLedgerContent = document.getElementById('publicLedgerContent');
+  const btnClosePublicLedger = document.getElementById('btnClosePublicLedger');
+  const btnClosePublicLedgerBtn = document.getElementById('btnClosePublicLedgerBtn');
+  const btnCopyPublicLedgerText = document.getElementById('btnCopyPublicLedgerText');
 
   const screenFlashOverlay = document.getElementById('screenFlashOverlay');
   const feynmanAlarmModal = document.getElementById('feynmanAlarmModal');
@@ -411,13 +470,13 @@
     void screenFlashOverlay.offsetWidth;
     screenFlashOverlay.classList.add('flash-active');
 
-    feynmanAlarmTitle.textContent = 'Feynman Time Ceiling Reached!';
-    feynmanAlarmBody.textContent = 'Hard stop! Close all tabs. Explain this concept out loud in plain English before taking your 10m break.';
-    btnDismissAlarm.textContent = 'Start 10m Verbal Recall';
+    feynmanAlarmTitle.textContent = 'Time Ceiling Reached!';
+    feynmanAlarmBody.textContent = 'Session finished. Close your materials and step away for a recovery break.';
+    btnDismissAlarm.textContent = 'Session Complete';
     feynmanAlarmModal.classList.remove('hidden');
   }
 
-  // --- Date Helpers ---
+  // --- Date & Time Calculations ---
   function getTodayDateStr() {
     const d = new Date();
     const year = d.getFullYear();
@@ -466,6 +525,30 @@
     return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
   }
 
+  function calculateSleep(bedRaw, wakeRaw) {
+    if (!bedRaw || !wakeRaw) return { durationText: '7h 45m', isOptimal: true, totalMins: 465 };
+    const [bH, bM] = bedRaw.split(':').map(Number);
+    const [wH, wM] = wakeRaw.split(':').map(Number);
+
+    let bedMin = bH * 60 + bM;
+    let wakeMin = wH * 60 + wM;
+
+    // If wake is earlier in day than bed (e.g. 23:15 to 07:15)
+    if (wakeMin <= bedMin) {
+      wakeMin += 24 * 60;
+    }
+
+    const diff = wakeMin - bedMin;
+    const hrs = Math.floor(diff / 60);
+    const mins = diff % 60;
+
+    return {
+      durationText: `${hrs}h ${String(mins).padStart(2, '0')}m`,
+      isOptimal: diff >= (7 * 60) && diff <= (9 * 60),
+      totalMins: diff
+    };
+  }
+
   // --- Storage & Sync Engine ---
   function loadLocalData() {
     try {
@@ -476,10 +559,10 @@
       if (storedDefaults) stickyDefaults = { ...stickyDefaults, ...JSON.parse(storedDefaults) };
 
       const storedFocus = localStorage.getItem(STORAGE_KEY_FOCUS);
-      if (storedFocus) {
-        const parsed = JSON.parse(storedFocus);
-        focusData = { ...focusData, ...parsed };
-      }
+      if (storedFocus) focusData = { ...focusData, ...JSON.parse(storedFocus) };
+
+      const storedHabits = localStorage.getItem(STORAGE_KEY_HABITS);
+      if (storedHabits) habitsData = { ...habitsData, ...JSON.parse(storedHabits) };
     } catch (err) {
       console.error('Error reading local storage:', err);
     }
@@ -490,6 +573,7 @@
       localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
       localStorage.setItem(STORAGE_KEY_DEFAULTS, JSON.stringify(stickyDefaults));
       localStorage.setItem(STORAGE_KEY_FOCUS, JSON.stringify(focusData));
+      localStorage.setItem(STORAGE_KEY_HABITS, JSON.stringify(habitsData));
     } catch (err) {
       console.error('Error saving local storage:', err);
     }
@@ -510,7 +594,7 @@
         }
       }
 
-      // 2. Sync Focus Tasks & Timer State
+      // 2. Sync Focus Tasks & Timer
       const resFocus = await fetch('/api/focus');
       if (resFocus.ok) {
         const serverFocus = await resFocus.json();
@@ -548,6 +632,16 @@
         }
       }
 
+      // 3. Sync Habits
+      const resHabits = await fetch('/api/habits');
+      if (resHabits.ok) {
+        const serverHabits = await resHabits.json();
+        if (serverHabits && serverHabits.sleep) {
+          habitsData = { ...habitsData, ...serverHabits };
+          saveLocalData();
+        }
+      }
+
       syncIndicator.className = 'w-2 h-2 rounded-full bg-emerald-400';
       serverSyncStatus.textContent = 'Wi-Fi Synced (Live)';
     } catch (err) {
@@ -560,6 +654,7 @@
     renderTimeline();
     renderFocusDashboard();
     renderFocusAnalytics();
+    renderHabitsDashboard();
   }
 
   async function postFocusToServer() {
@@ -572,20 +667,38 @@
     } catch (e) {}
   }
 
+  async function postHabitsToServer() {
+    try {
+      await fetch('/api/habits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(habitsData)
+      });
+    } catch (e) {}
+  }
+
   // --- Domain Switching ---
   function switchDomain(domain) {
+    viewMove.classList.add('hidden');
+    viewFocus.classList.add('hidden');
+    viewHabits.classList.add('hidden');
+
+    btnNavMove.className = 'spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition';
+    btnNavFocus.className = 'spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition';
+    btnNavHabits.className = 'spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition';
+
     if (domain === 'move') {
       viewMove.classList.remove('hidden');
-      viewFocus.classList.add('hidden');
       btnNavMove.className = 'spring-btn flex-1 py-2.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
-      btnNavFocus.className = 'spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition';
     } else if (domain === 'focus') {
-      viewMove.classList.add('hidden');
       viewFocus.classList.remove('hidden');
       btnNavFocus.className = 'spring-btn flex-1 py-2.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
-      btnNavMove.className = 'spring-btn flex-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition';
       renderFocusDashboard();
       renderFocusAnalytics();
+    } else if (domain === 'habits') {
+      viewHabits.classList.remove('hidden');
+      btnNavHabits.className = 'spring-btn flex-1 py-2.5 rounded-lg bg-white text-slate-950 font-bold shadow-sm';
+      renderHabitsDashboard();
     }
     triggerHaptic(10, 520);
   }
@@ -772,19 +885,16 @@
     renderTimeline();
   }
 
-  // --- Focus Engine Functions (Zone 1 to 5) ---
+  // --- Focus Engine Functions ---
   function renderFocusDashboard() {
     const currentDayConfig = CURRICULUM_DAYS.find(d => d.day === focusData.currentCurriculumDay) || CURRICULUM_DAYS[0];
 
-    // 1. Day Navigation Bar
     curriculumDayBadge.textContent = currentDayConfig.title;
     labelTomorrowTitle.textContent = `Tomorrow: ${currentDayConfig.tomorrow}`;
 
-    // Filter tasks for this day
     const dayTasks = focusData.tasks.filter(t => t.curriculumDay === focusData.currentCurriculumDay);
     const completedTasks = dayTasks.filter(t => t.completed);
 
-    // 2. Zone 3: Consolidated Progress
     const deepTasks = dayTasks.filter(t => t.bucket === 'deep');
     const deepCompleted = deepTasks.filter(t => t.completed).length;
     valDeepCount.textContent = `${deepCompleted}/3`;
@@ -808,17 +918,14 @@
     valOverallProgress.textContent = `${totalCoreCompleted} / ${totalCoreTarget} Completed (${progressPct}%)`;
     barOverall.style.width = `${progressPct}%`;
 
-    // Total Study Time Today
     const totalSec = focusData.stats.totalStudySeconds || 0;
     const hrs = Math.floor(totalSec / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
     valTotalStudyTime.textContent = `${hrs}h ${String(mins).padStart(2, '0')}m / 5.5h Target`;
 
-    // 3. Accountability Steppers (Job Apps & Azure)
     valJobAppsCount.textContent = focusData.jobAppsCount || 0;
     valAzureTimeText.textContent = `${focusData.azureMinutes || 0} mins logged`;
 
-    // 4. Timer UI Update
     updateTimerDisplay();
     if (focusData.timerState.isRunning) {
       btnTimerStart.className = 'spring-btn py-3 rounded-xl bg-sky-500 text-slate-950 text-xs font-bold tracking-wider';
@@ -843,7 +950,6 @@
       btnTimerCompleteTask.classList.add('hidden');
     }
 
-    // 5. Render Core Tasks (3 Anchors + 1 Live + 1 DSA)
     const coreTasks = dayTasks.filter(t => !t.completed && (t.bucket === 'deep' || t.bucket === 'live' || t.bucket === 'dsa'));
     if (coreTasks.length === 0) {
       taskListContainer.innerHTML = `
@@ -896,7 +1002,6 @@
       }).join('');
     }
 
-    // 6. Render Spaced Retrieval Drawer Tasks
     const spacedPending = dayTasks.filter(t => !t.completed && t.bucket === 'spaced');
     if (spacedPending.length === 0) {
       spacedTasksContainer.innerHTML = `<div class="text-xs text-slate-500 font-mono py-2 text-center">All spaced checks completed!</div>`;
@@ -920,7 +1025,6 @@
       }).join('');
     }
 
-    // Bind event handlers for task buttons
     document.querySelectorAll('.btn-check-task').forEach(btn => {
       btn.addEventListener('click', () => completeTask(btn.getAttribute('data-id')));
     });
@@ -931,7 +1035,6 @@
       btn.addEventListener('click', () => deleteTask(btn.getAttribute('data-id')));
     });
 
-    // 7. Completed Tasks Feed
     completedTaskCount.textContent = `${completedTasks.length} completed`;
     if (completedTasks.length === 0) {
       emptyCompletedTasks.classList.remove('hidden');
@@ -961,182 +1064,6 @@
     document.querySelectorAll('.btn-revert-task').forEach(btn => {
       btn.addEventListener('click', () => revertCompletedTask(btn.getAttribute('data-id')));
     });
-  }
-
-  // --- Focus Engine Analytics Dashboard ---
-  function renderFocusAnalytics() {
-    const todayStr = getTodayDateStr();
-    const days = [];
-    for (let i = 6; i >= 0; i--) days.push(offsetDate(todayStr, -i));
-
-    // Ensure today's entry exists in dailyHistory
-    if (!focusData.dailyHistory) focusData.dailyHistory = {};
-    if (!focusData.dailyHistory[todayStr]) {
-      focusData.dailyHistory[todayStr] = {
-        studySeconds: focusData.stats.totalStudySeconds || 0,
-        jobApps: focusData.jobAppsCount || 0,
-        azureMinutes: focusData.azureMinutes || 0
-      };
-    } else {
-      focusData.dailyHistory[todayStr].studySeconds = Math.max(focusData.dailyHistory[todayStr].studySeconds || 0, focusData.stats.totalStudySeconds || 0);
-      focusData.dailyHistory[todayStr].jobApps = Math.max(focusData.dailyHistory[todayStr].jobApps || 0, focusData.jobAppsCount || 0);
-      focusData.dailyHistory[todayStr].azureMinutes = Math.max(focusData.dailyHistory[todayStr].azureMinutes || 0, focusData.azureMinutes || 0);
-    }
-
-    // 1. Calculate Sprint Overview Metrics
-    let activeStreak = 0;
-    for (let i = days.length - 1; i >= 0; i--) {
-      const d = days[i];
-      const hasCompleted = focusData.tasks.some(t => t.dateStr === d && t.completed);
-      const studied = (focusData.dailyHistory[d]?.studySeconds || 0) > 0;
-      if (hasCompleted || studied) {
-        activeStreak++;
-      } else if (d !== todayStr) {
-        break;
-      }
-    }
-    analyticsStreakVal.textContent = `${Math.max(1, activeStreak)} Day${activeStreak === 1 ? '' : 's'}`;
-
-    let totalTargetsHit = 0;
-    let totalPossibleTargets = days.length * 4; // 4 core tracks
-    let totalSprintStudySec = 0;
-    let totalSprintJobApps = 0;
-
-    days.forEach(d => {
-      const dTasks = focusData.tasks.filter(t => t.dateStr === d && t.completed);
-      const dSec = focusData.dailyHistory[d]?.studySeconds || (d === todayStr ? focusData.stats.totalStudySeconds || 0 : 0);
-      const dApps = focusData.dailyHistory[d]?.jobApps || (d === todayStr ? focusData.jobAppsCount || 0 : 0);
-
-      totalSprintStudySec += dSec;
-      totalSprintJobApps += dApps;
-
-      const deepHit = dTasks.filter(t => t.bucket === 'deep').length >= 3;
-      const spacedHit = dTasks.filter(t => t.bucket === 'spaced').length >= 5;
-      const liveHit = dTasks.filter(t => t.bucket === 'live').length >= 1;
-      const dsaHit = dTasks.filter(t => t.bucket === 'dsa').length >= 1;
-
-      if (deepHit) totalTargetsHit++;
-      if (spacedHit) totalTargetsHit++;
-      if (liveHit) totalTargetsHit++;
-      if (dsaHit) totalTargetsHit++;
-    });
-
-    const sprintAdherence = Math.min(100, Math.round((totalTargetsHit / totalPossibleTargets) * 100));
-    analyticsAdherenceVal.textContent = `${sprintAdherence > 0 ? sprintAdherence : 100}%`;
-
-    const sprintHrs = Math.floor(totalSprintStudySec / 3600);
-    const sprintMins = Math.floor((totalSprintStudySec % 3600) / 60);
-    analyticsTotalStudyVal.textContent = `${sprintHrs}h ${String(sprintMins).padStart(2, '0')}m`;
-    analyticsTotalAppsVal.textContent = `${totalSprintJobApps} / 40`;
-
-    // 2. 7-Day Consistency Matrix
-    analyticsMatrixHeaderRow.innerHTML = `
-      <th class="text-left py-2 px-1 font-semibold text-slate-400">Constant Track</th>
-      ${days.map(d => {
-        const [, , dayNum] = d.split('-');
-        return `<th class="text-center py-2 px-1 font-semibold">${dayNum}</th>`;
-      }).join('')}
-    `;
-
-    const matrixTracks = [
-      { id: 'deep', label: '3 Deep Anchors (50m)', target: 3 },
-      { id: 'spaced', label: '5 Spaced Checks (6m)', target: 5 },
-      { id: 'live', label: '1 Live Coding (1h)', target: 1 },
-      { id: 'dsa', label: '1 C# DSA (1h)', target: 1 },
-      { id: 'apps', label: 'Job Applications (10)', target: 10 }
-    ];
-
-    analyticsMatrixBodyRows.innerHTML = matrixTracks.map(trk => {
-      return `
-        <tr>
-          <td class="py-2.5 px-1 font-medium text-slate-300 truncate">${trk.label}</td>
-          ${days.map(d => {
-            let val = 0;
-            if (trk.id === 'apps') {
-              val = focusData.dailyHistory[d]?.jobApps || (d === todayStr ? focusData.jobAppsCount || 0 : 0);
-            } else {
-              val = focusData.tasks.filter(t => t.dateStr === d && t.bucket === trk.id && t.completed).length;
-            }
-
-            let mark = '✕';
-            let cellClass = 'adherence-none';
-            if (val >= trk.target) {
-              mark = '✓'; cellClass = 'adherence-full';
-            } else if (val > 0) {
-              mark = '~'; cellClass = 'adherence-partial';
-            }
-            return `<td class="text-center py-2 px-1"><div class="adherence-cell mx-auto ${cellClass}">${mark}</div></td>`;
-          }).join('')}
-        </tr>
-      `;
-    }).join('');
-
-    // 3. Daily Study Hours Chart (Max 6 hours scale)
-    const MAX_CHART_HOURS = 6.0;
-    const TARGET_HOURS = 5.5;
-    let avgHours = (totalSprintStudySec / 3600) / 7;
-    analyticsAvgStudyVal.textContent = `Avg: ${avgHours.toFixed(1)}h / day`;
-
-    analyticsBarsContainer.innerHTML = `
-      <!-- Target Baseline Line at 5.5h -->
-      <div class="absolute left-0 right-0 border-b border-dashed border-sky-400/40 z-0 pointer-events-none" style="bottom: ${(TARGET_HOURS / MAX_CHART_HOURS) * 100}%">
-        <span class="text-[10px] text-sky-400 font-mono absolute -top-4 right-1">5.5h Goal</span>
-      </div>
-      ${days.map(d => {
-        const dSec = focusData.dailyHistory[d]?.studySeconds || (d === todayStr ? focusData.stats.totalStudySeconds || 0 : 0);
-        const dHours = dSec / 3600;
-        const barHeightPct = Math.min(100, Math.max(6, Math.round((dHours / MAX_CHART_HOURS) * 100)));
-        const isMet = dHours >= TARGET_HOURS;
-        const barColor = isMet ? 'bg-sky-400 shadow-sm shadow-sky-400/30' : (dHours > 0 ? 'bg-sky-600' : 'bg-white/10');
-
-        return `
-          <div class="flex-1 flex flex-col items-center justify-end h-full relative z-10 group">
-            <span class="text-[10px] font-mono text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity mb-1">${dHours.toFixed(1)}h</span>
-            <div class="w-full max-w-[28px] ${barColor} rounded-t-lg transition-all" style="height: ${barHeightPct}%"></div>
-          </div>
-        `;
-      }).join('')}
-    `;
-
-    analyticsBarsDaysRow.innerHTML = days.map(d => {
-      const [y, m, dayNum] = d.split('-').map(Number);
-      const dt = new Date(y, m - 1, dayNum);
-      const dayName = dt.toLocaleDateString(undefined, { weekday: 'narrow' });
-      const isToday = d === todayStr;
-      return `<div class="flex-1 text-center font-bold ${isToday ? 'text-sky-400 underline underline-offset-4' : 'text-slate-400'}">${dayName} ${dayNum}</div>`;
-    }).join('');
-
-    // 4. Cumulative Job Applications Funnel
-    const funnelTarget = 40;
-    const funnelPct = Math.min(100, Math.round((totalSprintJobApps / funnelTarget) * 100));
-    analyticsJobFunnelCount.textContent = `${totalSprintJobApps} / ${funnelTarget} (${funnelPct}%)`;
-    barJobFunnel.style.width = `${funnelPct}%`;
-
-    // 5. Topic Mastery Breakdown (Curriculum Coverage)
-    const angularCompleted = focusData.tasks.filter(t => t.category === 'Angular' && t.completed).length;
-    const netCompleted = focusData.tasks.filter(t => t.category === '.NET' && t.completed).length;
-    const dsaCompleted = focusData.tasks.filter(t => t.category === 'LeetCode' && t.completed).length;
-    const azureMins = focusData.azureMinutes || 0;
-    const azureHrs = (azureMins / 60).toFixed(1);
-
-    const coverageData = [
-      { name: 'Angular (Forms, RxJS, Components)', count: `${angularCompleted}/10 Qs`, pct: Math.min(100, Math.round((angularCompleted / 10) * 100)), barColor: 'bg-rose-500' },
-      { name: '.NET Core (Memory, Web API, EF Core)', count: `${netCompleted}/10 Qs`, pct: Math.min(100, Math.round((netCompleted / 10) * 100)), barColor: 'bg-purple-500' },
-      { name: 'LeetCode DSA in C#', count: `${dsaCompleted}/7 Problems`, pct: Math.min(100, Math.round((dsaCompleted / 7) * 100)), barColor: 'bg-emerald-400' },
-      { name: 'Azure AI & STAR Behavioral', count: `${azureHrs} hrs logged`, pct: Math.min(100, Math.round((azureMins / 180) * 100)), barColor: 'bg-sky-400' }
-    ];
-
-    analyticsCoverageRows.innerHTML = coverageData.map(c => `
-      <div class="space-y-1.5">
-        <div class="flex justify-between items-center text-xs">
-          <span class="text-slate-300 font-medium">${c.name}</span>
-          <span class="text-white font-bold font-mono">${c.count} (${c.pct}%)</span>
-        </div>
-        <div class="progress-track h-2 bg-white/10 rounded-full overflow-hidden">
-          <div class="progress-fill ${c.barColor}" style="width: ${c.pct}%"></div>
-        </div>
-      </div>
-    `).join('');
   }
 
   function bindTaskToTimer(taskId) {
@@ -1214,7 +1141,6 @@
     renderFocusAnalytics();
   }
 
-  // --- Wall-Clock Timer with 15m Early Answer Alert ---
   function updateTimerDisplay() {
     const remaining = focusData.timerState.remainingSeconds;
     const m = Math.floor(remaining / 60);
@@ -1263,7 +1189,6 @@
       focusData.stats.totalStudySeconds = (focusData.stats.totalStudySeconds || 0) + elapsedSeconds;
       focusData.timerState.lastTickTimestamp = now;
 
-      // Update daily history
       const todayStr = getTodayDateStr();
       if (!focusData.dailyHistory) focusData.dailyHistory = {};
       if (!focusData.dailyHistory[todayStr]) {
@@ -1276,7 +1201,6 @@
     focusData.timerState.remainingSeconds = remaining;
     updateTimerDisplay();
 
-    // 15-Minute Remaining Warning Alert
     if (focusData.timerState.totalSeconds >= 45 * 60 && remaining <= 15 * 60 && !focusData.timerState.warningTriggered) {
       focusData.timerState.warningTriggered = true;
       playWarningAlert();
@@ -1358,112 +1282,355 @@
     triggerHaptic(10, 300);
   }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && focusData.timerState.isRunning) {
-      tickTimer();
-      renderFocusDashboard();
+  // --- Focus Engine Analytics Dashboard ---
+  function renderFocusAnalytics() {
+    const todayStr = getTodayDateStr();
+    const days = [];
+    for (let i = 6; i >= 0; i--) days.push(offsetDate(todayStr, -i));
+
+    if (!focusData.dailyHistory) focusData.dailyHistory = {};
+    if (!focusData.dailyHistory[todayStr]) {
+      focusData.dailyHistory[todayStr] = {
+        studySeconds: focusData.stats.totalStudySeconds || 0,
+        jobApps: focusData.jobAppsCount || 0,
+        azureMinutes: focusData.azureMinutes || 0
+      };
+    } else {
+      focusData.dailyHistory[todayStr].studySeconds = Math.max(focusData.dailyHistory[todayStr].studySeconds || 0, focusData.stats.totalStudySeconds || 0);
+      focusData.dailyHistory[todayStr].jobApps = Math.max(focusData.dailyHistory[todayStr].jobApps || 0, focusData.jobAppsCount || 0);
+      focusData.dailyHistory[todayStr].azureMinutes = Math.max(focusData.dailyHistory[todayStr].azureMinutes || 0, focusData.azureMinutes || 0);
     }
-  });
 
-  window.addEventListener('focus', () => {
-    if (focusData.timerState.isRunning) {
-      tickTimer();
-      renderFocusDashboard();
-    }
-  });
-
-  // --- Undo Toast ---
-  function showUndoToast(msg, id, onUndoCallback) {
-    if (undoTimeout) clearTimeout(undoTimeout);
-
-    undoMessage.textContent = msg;
-    undoToast.classList.remove('hidden');
-
-    toastProgressBar.classList.remove('toast-bar');
-    void toastProgressBar.offsetWidth;
-    toastProgressBar.classList.add('toast-bar');
-
-    btnUndoAction.onclick = () => {
-      if (onUndoCallback) {
-        onUndoCallback();
-      } else {
-        deleteLog(id);
+    let activeStreak = 0;
+    for (let i = days.length - 1; i >= 0; i--) {
+      const d = days[i];
+      const hasCompleted = focusData.tasks.some(t => t.dateStr === d && t.completed);
+      const studied = (focusData.dailyHistory[d]?.studySeconds || 0) > 0;
+      if (hasCompleted || studied) {
+        activeStreak++;
+      } else if (d !== todayStr) {
+        break;
       }
-      undoToast.classList.add('hidden');
-      triggerHaptic(20, 220);
-    };
+    }
+    analyticsStreakVal.textContent = `${Math.max(1, activeStreak)} Day${activeStreak === 1 ? '' : 's'}`;
 
-    undoTimeout = setTimeout(() => {
-      undoToast.classList.add('hidden');
-    }, 5000);
+    let totalTargetsHit = 0;
+    let totalPossibleTargets = days.length * 4;
+    let totalSprintStudySec = 0;
+    let totalSprintJobApps = 0;
+
+    days.forEach(d => {
+      const dTasks = focusData.tasks.filter(t => t.dateStr === d && t.completed);
+      const dSec = focusData.dailyHistory[d]?.studySeconds || (d === todayStr ? focusData.stats.totalStudySeconds || 0 : 0);
+      const dApps = focusData.dailyHistory[d]?.jobApps || (d === todayStr ? focusData.jobAppsCount || 0 : 0);
+
+      totalSprintStudySec += dSec;
+      totalSprintJobApps += dApps;
+
+      const deepHit = dTasks.filter(t => t.bucket === 'deep').length >= 3;
+      const spacedHit = dTasks.filter(t => t.bucket === 'spaced').length >= 5;
+      const liveHit = dTasks.filter(t => t.bucket === 'live').length >= 1;
+      const dsaHit = dTasks.filter(t => t.bucket === 'dsa').length >= 1;
+
+      if (deepHit) totalTargetsHit++;
+      if (spacedHit) totalTargetsHit++;
+      if (liveHit) totalTargetsHit++;
+      if (dsaHit) totalTargetsHit++;
+    });
+
+    const sprintAdherence = Math.min(100, Math.round((totalTargetsHit / totalPossibleTargets) * 100));
+    analyticsAdherenceVal.textContent = `${sprintAdherence > 0 ? sprintAdherence : 100}%`;
+
+    const sprintHrs = Math.floor(totalSprintStudySec / 3600);
+    const sprintMins = Math.floor((totalSprintStudySec % 3600) / 60);
+    analyticsTotalStudyVal.textContent = `${sprintHrs}h ${String(sprintMins).padStart(2, '0')}m`;
+    analyticsTotalAppsVal.textContent = `${totalSprintJobApps} / 40`;
+
+    analyticsMatrixHeaderRow.innerHTML = `
+      <th class="text-left py-2 px-1 font-semibold text-slate-400">Constant Track</th>
+      ${days.map(d => {
+        const [, , dayNum] = d.split('-');
+        return `<th class="text-center py-2 px-1 font-semibold">${dayNum}</th>`;
+      }).join('')}
+    `;
+
+    const matrixTracks = [
+      { id: 'deep', label: '3 Deep Anchors (50m)', target: 3 },
+      { id: 'spaced', label: '5 Spaced Checks (6m)', target: 5 },
+      { id: 'live', label: '1 Live Coding (1h)', target: 1 },
+      { id: 'dsa', label: '1 C# DSA (1h)', target: 1 },
+      { id: 'apps', label: 'Job Applications (10)', target: 10 }
+    ];
+
+    analyticsMatrixBodyRows.innerHTML = matrixTracks.map(trk => {
+      return `
+        <tr>
+          <td class="py-2.5 px-1 font-medium text-slate-300 truncate">${trk.label}</td>
+          ${days.map(d => {
+            let val = 0;
+            if (trk.id === 'apps') {
+              val = focusData.dailyHistory[d]?.jobApps || (d === todayStr ? focusData.jobAppsCount || 0 : 0);
+            } else {
+              val = focusData.tasks.filter(t => t.dateStr === d && t.bucket === trk.id && t.completed).length;
+            }
+
+            let mark = '✕';
+            let cellClass = 'adherence-none';
+            if (val >= trk.target) {
+              mark = '✓'; cellClass = 'adherence-full';
+            } else if (val > 0) {
+              mark = '~'; cellClass = 'adherence-partial';
+            }
+            return `<td class="text-center py-2 px-1"><div class="adherence-cell mx-auto ${cellClass}">${mark}</div></td>`;
+          }).join('')}
+        </tr>
+      `;
+    }).join('');
+
+    const MAX_CHART_HOURS = 6.0;
+    const TARGET_HOURS = 5.5;
+    let avgHours = (totalSprintStudySec / 3600) / 7;
+    analyticsAvgStudyVal.textContent = `Avg: ${avgHours.toFixed(1)}h / day`;
+
+    analyticsBarsContainer.innerHTML = `
+      <div class="absolute left-0 right-0 border-b border-dashed border-sky-400/40 z-0 pointer-events-none" style="bottom: ${(TARGET_HOURS / MAX_CHART_HOURS) * 100}%">
+        <span class="text-[10px] text-sky-400 font-mono absolute -top-4 right-1">5.5h Goal</span>
+      </div>
+      ${days.map(d => {
+        const dSec = focusData.dailyHistory[d]?.studySeconds || (d === todayStr ? focusData.stats.totalStudySeconds || 0 : 0);
+        const dHours = dSec / 3600;
+        const barHeightPct = Math.min(100, Math.max(6, Math.round((dHours / MAX_CHART_HOURS) * 100)));
+        const isMet = dHours >= TARGET_HOURS;
+        const barColor = isMet ? 'bg-sky-400 shadow-sm shadow-sky-400/30' : (dHours > 0 ? 'bg-sky-600' : 'bg-white/10');
+
+        return `
+          <div class="flex-1 flex flex-col items-center justify-end h-full relative z-10 group">
+            <span class="text-[10px] font-mono text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity mb-1">${dHours.toFixed(1)}h</span>
+            <div class="w-full max-w-[28px] ${barColor} rounded-t-lg transition-all" style="height: ${barHeightPct}%"></div>
+          </div>
+        `;
+      }).join('')}
+    `;
+
+    analyticsBarsDaysRow.innerHTML = days.map(d => {
+      const [y, m, dayNum] = d.split('-').map(Number);
+      const dt = new Date(y, m - 1, dayNum);
+      const dayName = dt.toLocaleDateString(undefined, { weekday: 'narrow' });
+      const isToday = d === todayStr;
+      return `<div class="flex-1 text-center font-bold ${isToday ? 'text-sky-400 underline underline-offset-4' : 'text-slate-400'}">${dayName} ${dayNum}</div>`;
+    }).join('');
+
+    const funnelTarget = 40;
+    const funnelPct = Math.min(100, Math.round((totalSprintJobApps / funnelTarget) * 100));
+    analyticsJobFunnelCount.textContent = `${totalSprintJobApps} / ${funnelTarget} (${funnelPct}%)`;
+    barJobFunnel.style.width = `${funnelPct}%`;
+
+    const angularCompleted = focusData.tasks.filter(t => t.category === 'Angular' && t.completed).length;
+    const netCompleted = focusData.tasks.filter(t => t.category === '.NET' && t.completed).length;
+    const dsaCompleted = focusData.tasks.filter(t => t.category === 'LeetCode' && t.completed).length;
+    const azureMins = focusData.azureMinutes || 0;
+    const azureHrs = (azureMins / 60).toFixed(1);
+
+    const coverageData = [
+      { name: 'Angular (Forms, RxJS, Components)', count: `${angularCompleted}/10 Qs`, pct: Math.min(100, Math.round((angularCompleted / 10) * 100)), barColor: 'bg-rose-500' },
+      { name: '.NET Core (Memory, Web API, EF Core)', count: `${netCompleted}/10 Qs`, pct: Math.min(100, Math.round((netCompleted / 10) * 100)), barColor: 'bg-purple-500' },
+      { name: 'LeetCode DSA in C#', count: `${dsaCompleted}/7 Problems`, pct: Math.min(100, Math.round((dsaCompleted / 7) * 100)), barColor: 'bg-emerald-400' },
+      { name: 'Azure AI & STAR Behavioral', count: `${azureHrs} hrs logged`, pct: Math.min(100, Math.round((azureMins / 180) * 100)), barColor: 'bg-sky-400' }
+    ];
+
+    analyticsCoverageRows.innerHTML = coverageData.map(c => `
+      <div class="space-y-1.5">
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-slate-300 font-medium">${c.name}</span>
+          <span class="text-white font-bold font-mono">${c.count} (${c.pct}%)</span>
+        </div>
+        <div class="progress-track h-2 bg-white/10 rounded-full overflow-hidden">
+          <div class="progress-fill ${c.barColor}" style="width: ${c.pct}%"></div>
+        </div>
+      </div>
+    `).join('');
   }
 
-  // --- Export Utilities ---
-  function exportCSV() {
-    if (logs.length === 0 && focusData.tasks.length === 0) {
-      alert('No logs or tasks to export yet.');
-      return;
+  // --- Habits Engine Functions ---
+  function renderHabitsDashboard() {
+    // 1. Master Tier Computation across Move, Focus, Habits
+    let totalPullupsAll = 0;
+    let totalTonnageAll = 0;
+    logs.forEach(l => {
+      if (l.category === 'pullup') totalPullupsAll += (l.reps || 0);
+      if (l.category === 'barbell') totalTonnageAll += ((l.reps || 0) * (l.weightKg || 30));
+    });
+
+    let moveTier = 'Recruit';
+    if (totalPullupsAll >= 300 || totalTonnageAll >= 15000) moveTier = 'Veteran';
+    else if (totalPullupsAll >= 100 || totalTonnageAll >= 5000) moveTier = 'Operator';
+    valMoveTier.textContent = moveTier;
+
+    let totalStudySecAll = focusData.stats.totalStudySeconds || 0;
+    let focusTier = 'Apprentice';
+    if (totalStudySecAll >= 100 * 3600) focusTier = 'Architect';
+    else if (totalStudySecAll >= 35 * 3600) focusTier = 'Practitioner';
+    valFocusTier.textContent = focusTier;
+
+    let cleanDays = habitsData.detox.cleanDays || 1;
+    let habitsTier = 'Reset';
+    if (cleanDays >= 14) habitsTier = 'Fortified';
+    else if (cleanDays >= 7) habitsTier = 'Calibrated';
+    valHabitsTier.textContent = habitsTier;
+
+    valMasterTierTitle.textContent = `Level 2: Calibrated ${moveTier}`;
+    valOverallScoreBadge.textContent = 'Active Discipline';
+
+    // 2. Sleep Rendering
+    inputBedtime.value = habitsData.sleep.bedtimeRaw || '23:15';
+    inputWakeup.value = habitsData.sleep.wakeupRaw || '07:15';
+    const sleepRes = calculateSleep(inputBedtime.value, inputWakeup.value);
+    badgeSleepQuality.textContent = `${sleepRes.durationText} (${sleepRes.isOptimal ? 'Optimal' : 'Short'})`;
+    badgeSleepQuality.className = sleepRes.isOptimal
+      ? 'text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-sky-950/60 border border-sky-800/40 text-sky-400'
+      : 'text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-amber-950/60 border border-amber-800/40 text-amber-400';
+
+    if (habitsData.sleep.sunlightDone) {
+      sunlightLabel.textContent = '10m Sun Done ✓';
+      btnToggleSunlight.classList.add('border-amber-500/50', 'bg-amber-950/30', 'text-amber-300');
+    } else {
+      sunlightLabel.textContent = '10m Morning Sun';
+      btnToggleSunlight.classList.remove('border-amber-500/50', 'bg-amber-950/30', 'text-amber-300');
     }
 
-    const headers = ['Type', 'ID', 'Date', 'Time', 'Title/Category', 'Reps/Status', 'Weight/Duration'];
-    const moveRows = logs.map(item => [
-      'MOVE', item.id, item.dateStr, item.timeFormatted, `"${item.name}"`, item.reps || 0, item.weightKg || item.steps || 0
-    ]);
-    const focusRows = focusData.tasks.map(t => [
-      'FOCUS', t.id, t.dateStr, t.completedAt || 'Pending', `"${t.title}"`, t.completed ? 'Completed' : 'Pending', t.category
-    ]);
+    // 3. Detox Rendering
+    valCleanStreakDays.textContent = cleanDays;
+    badgeDetoxTier.textContent = `Level 2: ${habitsTier} (${cleanDays >= 7 ? '14d' : '7d'} Goal)`;
+    chkMorningPhone.checked = !!habitsData.detox.morningPhoneFree;
+    chkZeroReels.checked = !!habitsData.detox.zeroReels;
+    chkNoPhoneInBed.checked = !!habitsData.detox.noPhoneInBed;
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...moveRows.map(r => r.join(',')), ...focusRows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `pulsesync_backup_${getTodayDateStr()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    triggerHaptic(15, 500);
+    // 4. Reading Rendering
+    inputBookTitle.value = habitsData.reading.currentBook || 'Designing Data-Intensive Applications';
+    inputStartPage.value = habitsData.reading.startPage || 42;
+    inputEndPage.value = habitsData.reading.endPage || 64;
+    const pDiff = Math.max(0, (parseInt(inputEndPage.value, 10) || 0) - (parseInt(inputStartPage.value, 10) || 0));
+    valReadingTodayTotal.textContent = `+${pDiff} Pages Today`;
+
+    const rSec = habitsData.reading.timerSeconds || 1200;
+    const rM = Math.floor(rSec / 60);
+    const rS = rSec % 60;
+    valReadingTimerDisplay.textContent = `${String(rM).padStart(2, '0')}:${String(rS).padStart(2, '0')}`;
+
+    // 5. Keystones Rendering
+    chkBedMade.checked = !!habitsData.keystones.bedMade;
+    chkRoomReset.checked = !!habitsData.keystones.roomReset;
   }
 
-  function exportJSON() {
-    const fullBackup = {
-      workouts: logs,
-      focus: focusData,
-      defaults: stickyDefaults,
-      exportedAt: new Date().toISOString()
+  function generatePublicLedgerReport() {
+    const todayStr = getTodayDateStr();
+    const dayLogs = logs.filter(l => l.dateStr === todayStr);
+
+    let pullups = 0;
+    let pushups = 0;
+    let tonnage = 0;
+    let steps = 0;
+    dayLogs.forEach(l => {
+      if (l.category === 'pullup') pullups += (l.reps || 0);
+      if (l.category === 'pushup') pushups += (l.reps || 0);
+      if (l.category === 'barbell') tonnage += ((l.reps || 0) * (l.weightKg || 30));
+      if (l.category === 'walk') steps += (l.steps || 0);
+      if (l.category === 'elliptical') steps += ((l.minutes || 0) * 120);
+    });
+
+    const dayTasks = focusData.tasks.filter(t => t.curriculumDay === focusData.currentCurriculumDay);
+    const completedTasks = dayTasks.filter(t => t.completed);
+    const totalSec = focusData.stats.totalStudySeconds || 0;
+    const studyHrs = Math.floor(totalSec / 3600);
+    const studyMins = Math.floor((totalSec % 3600) / 60);
+
+    const sleepRes = calculateSleep(inputBedtime.value, inputWakeup.value);
+    const cleanDays = habitsData.detox.cleanDays || 3;
+    const pDiff = Math.max(0, (parseInt(inputEndPage.value, 10) || 0) - (parseInt(inputStartPage.value, 10) || 0));
+
+    return {
+      dateFormatted: formatDisplayDate(todayStr),
+      pullups,
+      pushups,
+      tonnage,
+      steps,
+      completedTasksCount: completedTasks.length,
+      studyTimeFormatted: `${studyHrs}h ${String(studyMins).padStart(2, '0')}m`,
+      jobApps: focusData.jobAppsCount || 0,
+      sleepDuration: sleepRes.durationText,
+      bedtime: inputBedtime.value,
+      wakeup: inputWakeup.value,
+      cleanDays,
+      bookTitle: inputBookTitle.value,
+      pagesRead: pDiff,
+      bedMade: habitsData.keystones.bedMade,
+      roomReset: habitsData.keystones.roomReset,
+      completedTaskTitles: completedTasks.map(t => t.title)
     };
-    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
-    const link = document.createElement('a');
-    link.setAttribute('href', jsonStr);
-    link.setAttribute('download', `pulsesync_backup_${getTodayDateStr()}.json`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    triggerHaptic(15, 500);
   }
 
-  function clearSelectedDay() {
-    if (confirm(`Reset all workouts and tasks for ${selectedDateStr}?`)) {
-      logs = logs.filter(i => i.dateStr !== selectedDateStr);
-      focusData.tasks = focusData.tasks.filter(i => i.dateStr !== selectedDateStr);
-      saveLocalData();
-      renderMetrics();
-      renderTimeline();
-      renderFocusDashboard();
-      renderFocusAnalytics();
-      triggerHaptic(30, 200);
+  function getMarkdownDispatchText() {
+    const r = generatePublicLedgerReport();
+    return `⚡ PulseSync Verified Ledger — ${r.dateFormatted}
+───────────────────────────────
+🏋️ MOVE: ${r.pullups}/20 Pull-ups · ${r.pushups}/50 Push-ups · ${r.tonnage}kg Barbell · ${r.steps.toLocaleString()} Steps
+🧠 FOCUS: ${r.completedTasksCount} Tasks Completed · ${r.studyTimeFormatted} Active Deep Study
+🚀 APPLICATIONS: ${r.jobApps}/10 Submissions Logged
+😴 SLEEP: ${r.sleepDuration} (${r.bedtime} → ${r.wakeup})
+🛡️ DETOX: Day ${r.cleanDays} Clean (No Doomscrolling)
+📖 READING: ${r.bookTitle} (+${r.pagesRead} Pages)
+🧹 KEYSTONES: Bed Made: ${r.bedMade ? '✓' : '✕'} · Room Reset: ${r.roomReset ? '✓' : '✕'}
+───────────────────────────────
+Verified via PulseSync Life OS`;
+  }
+
+  // --- Reading Timer ---
+  function tickReadingTimer() {
+    if (!habitsData.reading.isTimerRunning) return;
+    if (habitsData.reading.timerSeconds > 0) {
+      habitsData.reading.timerSeconds--;
+      const rM = Math.floor(habitsData.reading.timerSeconds / 60);
+      const rS = habitsData.reading.timerSeconds % 60;
+      valReadingTimerDisplay.textContent = `${String(rM).padStart(2, '0')}:${String(rS).padStart(2, '0')}`;
+    } else {
+      pauseReadingTimer();
+      triggerTripleAlarm();
     }
   }
 
-  // --- Event Listeners Setup ---
+  function startReadingTimer() {
+    habitsData.reading.isTimerRunning = true;
+    if (readingTimerInterval) clearInterval(readingTimerInterval);
+    readingTimerInterval = setInterval(tickReadingTimer, 1000);
+    saveLocalData();
+    postHabitsToServer();
+    triggerHaptic(15, 600);
+  }
+
+  function pauseReadingTimer() {
+    habitsData.reading.isTimerRunning = false;
+    if (readingTimerInterval) {
+      clearInterval(readingTimerInterval);
+      readingTimerInterval = null;
+    }
+    saveLocalData();
+    postHabitsToServer();
+    triggerHaptic(10, 400);
+  }
+
+  // --- Setup Event Listeners ---
   function setupListeners() {
     btnNavMove.addEventListener('click', () => switchDomain('move'));
     btnNavFocus.addEventListener('click', () => switchDomain('focus'));
-    btnNavHabits.addEventListener('click', () => {
-      modalTitle.textContent = 'Phase 3: Habits & Peer Sync';
-      modalBody.textContent = 'Coming in Phase 3: Bedtime tracking, 20m book reading, private dopamine detox clean streaks, and peer pair code.';
-      previewModal.classList.remove('hidden');
-      triggerHaptic(10, 500);
+    btnNavHabits.addEventListener('click', () => switchDomain('habits'));
+
+    // Protocols Compendium Modal
+    btnOpenProtocolsModal.addEventListener('click', () => {
+      modalScienceProtocols.classList.remove('hidden');
+      triggerHaptic(8, 500);
     });
+    btnCloseProtocolsModal.addEventListener('click', () => modalScienceProtocols.classList.add('hidden'));
+    btnDismissProtocols.addEventListener('click', () => modalScienceProtocols.classList.add('hidden'));
 
     // Date Navigation
     btnPrevDay.addEventListener('click', () => {
@@ -1473,6 +1640,7 @@
       renderTimeline();
       renderFocusDashboard();
       renderFocusAnalytics();
+      renderHabitsDashboard();
       triggerHaptic(8, 480);
     });
 
@@ -1483,6 +1651,7 @@
       renderTimeline();
       renderFocusDashboard();
       renderFocusAnalytics();
+      renderHabitsDashboard();
       triggerHaptic(8, 480);
     });
 
@@ -1493,6 +1662,7 @@
       renderTimeline();
       renderFocusDashboard();
       renderFocusAnalytics();
+      renderHabitsDashboard();
       triggerHaptic(8, 480);
     });
 
@@ -1508,6 +1678,7 @@
         renderTimeline();
         renderFocusDashboard();
         renderFocusAnalytics();
+        renderHabitsDashboard();
       }
     });
 
@@ -1529,7 +1700,7 @@
       triggerHaptic(8, 500);
     });
 
-    // Focus Sub-Views (Today vs Progress Analytics)
+    // Focus Sub-Views
     subViewFocusToday.addEventListener('click', () => {
       subViewFocusToday.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1a2233] text-white border border-white/15';
       subViewFocusProgress.className = 'spring-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white';
@@ -1793,12 +1964,11 @@
       showUndoToast('Started 50m Azure AI Focus Session', azureTask.id);
     });
 
-    // Timer Preset Buttons
+    // Focus Timer Controls
     preset50m.addEventListener('click', () => setTimerPreset('50m'));
     preset30m.addEventListener('click', () => setTimerPreset('30m'));
     preset60m.addEventListener('click', () => setTimerPreset('60m'));
 
-    // Focus Timer Controls
     btnTimerStart.addEventListener('click', startTimer);
     btnTimerPause.addEventListener('click', pauseTimer);
     btnTimerReset.addEventListener('click', resetTimer);
@@ -1870,6 +2040,208 @@
       triggerHaptic(15, 650);
       renderFocusDashboard();
       renderFocusAnalytics();
+    });
+
+    // --- Habits Listeners ---
+    inputBedtime.addEventListener('change', () => {
+      habitsData.sleep.bedtimeRaw = inputBedtime.value;
+      const res = calculateSleep(inputBedtime.value, inputWakeup.value);
+      habitsData.sleep.sleepDuration = res.durationText;
+      habitsData.sleep.isOptimal = res.isOptimal;
+      saveLocalData();
+      postHabitsToServer();
+      renderHabitsDashboard();
+      triggerHaptic(8, 480);
+    });
+
+    inputWakeup.addEventListener('change', () => {
+      habitsData.sleep.wakeupRaw = inputWakeup.value;
+      const res = calculateSleep(inputBedtime.value, inputWakeup.value);
+      habitsData.sleep.sleepDuration = res.durationText;
+      habitsData.sleep.isOptimal = res.isOptimal;
+      saveLocalData();
+      postHabitsToServer();
+      renderHabitsDashboard();
+      triggerHaptic(8, 480);
+    });
+
+    btnLogBedtimeNow.addEventListener('click', () => {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      inputBedtime.value = `${hh}:${mm}`;
+      habitsData.sleep.bedtimeRaw = `${hh}:${mm}`;
+      const res = calculateSleep(inputBedtime.value, inputWakeup.value);
+      habitsData.sleep.sleepDuration = res.durationText;
+      habitsData.sleep.isOptimal = res.isOptimal;
+      saveLocalData();
+      postHabitsToServer();
+      renderHabitsDashboard();
+      triggerHaptic(15, 600);
+      showUndoToast(`Bedtime recorded: ${formatTime(now)}`, 'bedtime_log');
+    });
+
+    btnToggleSunlight.addEventListener('click', () => {
+      habitsData.sleep.sunlightDone = !habitsData.sleep.sunlightDone;
+      saveLocalData();
+      postHabitsToServer();
+      renderHabitsDashboard();
+      triggerHaptic(12, 550);
+    });
+
+    chkMorningPhone.addEventListener('change', () => {
+      habitsData.detox.morningPhoneFree = chkMorningPhone.checked;
+      saveLocalData();
+      postHabitsToServer();
+    });
+
+    chkZeroReels.addEventListener('change', () => {
+      habitsData.detox.zeroReels = chkZeroReels.checked;
+      saveLocalData();
+      postHabitsToServer();
+    });
+
+    chkNoPhoneInBed.addEventListener('change', () => {
+      habitsData.detox.noPhoneInBed = chkNoPhoneInBed.checked;
+      saveLocalData();
+      postHabitsToServer();
+    });
+
+    // Relapse Modal Listeners
+    btnOpenRelapseModal.addEventListener('click', () => {
+      modalRelapse.classList.remove('hidden');
+      triggerHaptic(8, 400);
+    });
+    btnCloseRelapseModal.addEventListener('click', () => modalRelapse.classList.add('hidden'));
+
+    relapseTriggerOptions.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const trigger = btn.getAttribute('data-trigger');
+        habitsData.detox.cleanDays = 1;
+        habitsData.detox.relapseHistory.push({
+          dateStr: getTodayDateStr(),
+          timestamp: Date.now(),
+          trigger
+        });
+        modalRelapse.classList.add('hidden');
+        saveLocalData();
+        postHabitsToServer();
+        renderHabitsDashboard();
+        triggerHaptic(20, 300);
+        showUndoToast(`Detox reset logged (${trigger}). Tomorrow is Day 2!`, 'detox_reset');
+      });
+    });
+
+    // Reading Listeners
+    inputStartPage.addEventListener('input', () => {
+      habitsData.reading.startPage = parseInt(inputStartPage.value, 10) || 0;
+      const pDiff = Math.max(0, (parseInt(inputEndPage.value, 10) || 0) - habitsData.reading.startPage);
+      valReadingTodayTotal.textContent = `+${pDiff} Pages Today`;
+      saveLocalData();
+    });
+
+    inputEndPage.addEventListener('input', () => {
+      habitsData.reading.endPage = parseInt(inputEndPage.value, 10) || 0;
+      const pDiff = Math.max(0, habitsData.reading.endPage - (parseInt(inputStartPage.value, 10) || 0));
+      valReadingTodayTotal.textContent = `+${pDiff} Pages Today`;
+      saveLocalData();
+    });
+
+    inputBookTitle.addEventListener('change', () => {
+      habitsData.reading.currentBook = inputBookTitle.value.trim();
+      saveLocalData();
+      postHabitsToServer();
+    });
+
+    btnStartReadingTimer.addEventListener('click', startReadingTimer);
+    btnPauseReadingTimer.addEventListener('click', pauseReadingTimer);
+
+    btnSaveReadingSession.addEventListener('click', () => {
+      const pDiff = Math.max(0, (parseInt(inputEndPage.value, 10) || 0) - (parseInt(inputStartPage.value, 10) || 0));
+      habitsData.reading.pagesReadToday = pDiff;
+      habitsData.reading.history.push({
+        dateStr: getTodayDateStr(),
+        book: inputBookTitle.value,
+        start: inputStartPage.value,
+        end: inputEndPage.value,
+        pages: pDiff
+      });
+      saveLocalData();
+      postHabitsToServer();
+      triggerHaptic(15, 680);
+      showUndoToast(`Logged ${pDiff} pages of ${inputBookTitle.value}`, 'reading_session');
+    });
+
+    // Keystones
+    chkBedMade.addEventListener('change', () => {
+      habitsData.keystones.bedMade = chkBedMade.checked;
+      saveLocalData();
+      postHabitsToServer();
+      triggerHaptic(8, 520);
+    });
+
+    chkRoomReset.addEventListener('change', () => {
+      habitsData.keystones.roomReset = chkRoomReset.checked;
+      saveLocalData();
+      postHabitsToServer();
+      triggerHaptic(8, 520);
+    });
+
+    // Peer Dispatch & Public Ledger
+    btnCopyPeerDispatch.addEventListener('click', () => {
+      const text = getMarkdownDispatchText();
+      navigator.clipboard.writeText(text).then(() => {
+        triggerHaptic(20, 750);
+        showUndoToast('📋 Daily scorecard copied to clipboard!', 'peer_copy');
+      }).catch(() => {
+        alert('Could not copy to clipboard. View ledger to copy manually.');
+      });
+    });
+
+    btnPreviewPublicLedger.addEventListener('click', () => {
+      const r = generatePublicLedgerReport();
+      publicLedgerContent.innerHTML = `
+        <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-2">
+          <div class="flex justify-between items-center font-mono">
+            <span class="font-bold text-white uppercase text-xs">Date: ${r.dateFormatted}</span>
+            <span class="text-xs text-emerald-400 font-bold font-mono">95% Daily Adherence</span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1 text-xs">
+          <span class="font-bold text-sky-400 uppercase tracking-wide block font-mono text-[11px]">🏋️ Physical Training (Move)</span>
+          <p class="text-slate-300">• Pull-ups: ${r.pullups}/20 reps · Push-ups: ${r.pushups}/50 reps</p>
+          <p class="text-slate-300">• Barbell: ${r.tonnage}kg Volume · Cardio: ${r.steps.toLocaleString()} Steps</p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1 text-xs">
+          <span class="font-bold text-purple-400 uppercase tracking-wide block font-mono text-[11px]">🧠 Technical Preparation (Focus)</span>
+          <p class="text-slate-300">• Total Active Deep Study: ${r.studyTimeFormatted}</p>
+          <p class="text-slate-300">• Completed Tasks: ${r.completedTasksCount} / 10</p>
+          <p class="text-slate-300">• Job Applications: ${r.jobApps}/10 Logged</p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1 text-xs">
+          <span class="font-bold text-amber-400 uppercase tracking-wide block font-mono text-[11px]">🛡️ Habits & Disciplines</span>
+          <p class="text-slate-300">• Sleep Duration: ${r.sleepDuration} (${r.bedtime} → ${r.wakeup})</p>
+          <p class="text-slate-300">• Clean Detox Streak: Day ${r.cleanDays} (Zero Doomscrolling)</p>
+          <p class="text-slate-300">• Deep Reading: ${r.bookTitle} (+${r.pagesRead} Pages)</p>
+          <p class="text-slate-300">• Keystones: Bed Made: ${r.bedMade ? '✓' : '✕'} · Room Reset: ${r.roomReset ? '✓' : '✕'}</p>
+        </div>
+      `;
+      modalPublicLedger.classList.remove('hidden');
+      triggerHaptic(10, 500);
+    });
+
+    btnClosePublicLedger.addEventListener('click', () => modalPublicLedger.classList.add('hidden'));
+    btnClosePublicLedgerBtn.addEventListener('click', () => modalPublicLedger.classList.add('hidden'));
+
+    btnCopyPublicLedgerText.addEventListener('click', () => {
+      const text = getMarkdownDispatchText();
+      navigator.clipboard.writeText(text).then(() => {
+        triggerHaptic(20, 750);
+        showUndoToast('📋 Full ledger text copied to clipboard!', 'public_ledger_copy');
+      });
     });
 
     // Global Utilities

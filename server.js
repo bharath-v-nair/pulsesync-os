@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 8080;
 const DATA_DIR = path.join(__dirname, 'data');
 const WORKOUTS_FILE = path.join(DATA_DIR, 'workouts.json');
 const FOCUS_FILE = path.join(DATA_DIR, 'focus.json');
+const HABITS_FILE = path.join(DATA_DIR, 'habits.json');
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -19,7 +20,11 @@ if (!fs.existsSync(WORKOUTS_FILE)) {
 }
 
 if (!fs.existsSync(FOCUS_FILE)) {
-  fs.writeFileSync(FOCUS_FILE, JSON.stringify({ tasks: [], sessions: [], stats: { activeSeconds: 0, breakSeconds: 0 } }, null, 2));
+  fs.writeFileSync(FOCUS_FILE, JSON.stringify({ tasks: [], stats: { totalStudySeconds: 0 } }, null, 2));
+}
+
+if (!fs.existsSync(HABITS_FILE)) {
+  fs.writeFileSync(HABITS_FILE, JSON.stringify({}, null, 2));
 }
 
 const MIME_TYPES = {
@@ -131,6 +136,33 @@ const server = http.createServer((req, res) => {
       try {
         const payload = JSON.parse(body);
         writeJsonFile(FOCUS_FILE, payload);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON payload' }));
+      }
+    });
+    return;
+  }
+
+  // --- HABITS API ROUTES ---
+  // GET /api/habits
+  if (pathname === '/api/habits' && req.method === 'GET') {
+    const habitsData = readJsonFile(HABITS_FILE, {});
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(habitsData));
+    return;
+  }
+
+  // POST /api/habits
+  if (pathname === '/api/habits' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body);
+        writeJsonFile(HABITS_FILE, payload);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true }));
       } catch (err) {

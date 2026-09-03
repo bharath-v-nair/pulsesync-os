@@ -1,0 +1,33 @@
+{
+  "sleep": {
+    "bedtimeFormatted": "11:15 PM",
+    "wakeupFormatted": "07:15 AM",
+    "bedtimeRaw": "23:15",
+    "wakeupRaw": "07:15",
+    "sleepDuration": "8h 00m",
+    "isOptimal": true,
+    "sunlightDone": false
+  },
+  "detox": {
+    "cleanDays": 3,
+    "tierName": "Calibrated",
+    "morningPhoneFree": false,
+    "zeroReels": false,
+    "noPhoneInBed": false,
+    "relapseHistory": []
+  },
+  "reading": {
+    "currentBook": "Designing Data-Intensive Applications",
+    "startPage": 42,
+    "endPage": 64,
+    "pagesReadToday": 22,
+    "timerSeconds": 1200,
+    "isTimerRunning": false,
+    "history": []
+  },
+  "keystones": {
+    "bedMade": false,
+    "roomReset": false
+  },
+  "dailyRecords": {}
+}

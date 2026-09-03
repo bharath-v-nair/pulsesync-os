@@ -47,21 +47,29 @@
         </div>
       </div>
 
-      <!-- Wake-Up Button -->
-      <button id="btnWakeUp" class="spring-btn tap-target px-3.5 py-2 rounded-xl bg-[#141b29] border border-white/10 text-xs font-semibold text-slate-200 hover:border-white/20 flex items-center gap-2 shadow-sm">
-        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4"></circle>
-          <path d="M12 2v2"></path>
-          <path d="M12 20v2"></path>
-          <path d="m4.93 4.93 1.41 1.41"></path>
-          <path d="m17.66 17.66 1.41 1.41"></path>
-          <path d="M2 12h2"></path>
-          <path d="M20 12h2"></path>
-          <path d="m6.34 17.66-1.41 1.41"></path>
-          <path d="m19.07 4.93-1.41 1.41"></path>
-        </svg>
-        <span id="wakeUpLabel">Woke Up</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <!-- Science & Protocols Button -->
+        <button id="btnOpenProtocolsModal" class="spring-btn px-2.5 py-1.5 rounded-xl bg-[#141b29] border border-white/10 text-xs font-semibold text-sky-400 hover:border-white/20 flex items-center gap-1.5 shadow-sm" title="View Science & Protocols Behind PulseSync">
+          <span>🧪</span>
+          <span class="hidden sm:inline font-mono">Protocols</span>
+        </button>
+
+        <!-- Wake-Up Button -->
+        <button id="btnWakeUp" class="spring-btn tap-target px-3.5 py-1.5 rounded-xl bg-[#141b29] border border-white/10 text-xs font-semibold text-slate-200 hover:border-white/20 flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+          <span id="wakeUpLabel">Woke Up</span>
+        </button>
+      </div>
     </header>
 
     <!-- Historical Date Navigator -->
@@ -563,12 +571,9 @@
               <thead>
                 <tr class="text-slate-400 text-xs border-b border-white/[0.06]" id="analyticsMatrixHeaderRow">
                   <th class="text-left py-2 px-1 font-semibold">Constant Track</th>
-                  <!-- Days populated by JS -->
                 </tr>
               </thead>
-              <tbody id="analyticsMatrixBodyRows" class="divide-y divide-white/[0.04]">
-                <!-- Populated by JS -->
-              </tbody>
+              <tbody id="analyticsMatrixBodyRows" class="divide-y divide-white/[0.04]"></tbody>
             </table>
           </div>
         </section>
@@ -585,12 +590,8 @@
 
           <!-- Chart Bar Container -->
           <div class="pt-2">
-            <div class="h-36 flex items-end justify-between gap-2 sm:gap-4 px-2 border-b border-white/10 relative" id="analyticsBarsContainer">
-              <!-- Rendered via JS -->
-            </div>
-            <div class="flex justify-between items-center text-slate-400 font-mono text-xs pt-2 px-2" id="analyticsBarsDaysRow">
-              <!-- Rendered via JS -->
-            </div>
+            <div class="h-36 flex items-end justify-between gap-2 sm:gap-4 px-2 border-b border-white/10 relative" id="analyticsBarsContainer"></div>
+            <div class="flex justify-between items-center text-slate-400 font-mono text-xs pt-2 px-2" id="analyticsBarsDaysRow"></div>
           </div>
         </section>
 
@@ -634,12 +635,224 @@
             <span class="eyebrow text-slate-300">Curriculum Coverage & Mastery</span>
             <span class="text-xs text-slate-400 font-mono">Week 1 Foundation</span>
           </div>
-
-          <div class="space-y-3 text-xs font-mono" id="analyticsCoverageRows">
-            <!-- Populated by JS -->
-          </div>
+          <div class="space-y-3 text-xs font-mono" id="analyticsCoverageRows"></div>
         </section>
       </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- DOMAIN 3: HABITS ENGINE (CIRCADIAN, DETOX, READING & DISCIPLINE)  -->
+    <!-- ================================================================= -->
+    <div id="viewHabits" class="space-y-5 hidden">
+
+      <!-- ZONE 1: Master Progression Level Card -->
+      <section class="matte-card p-4 space-y-3.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="eyebrow text-slate-300">Master Progression Tier</span>
+            <h2 class="text-base font-bold text-white tracking-wide mt-0.5" id="valMasterTierTitle">Level 2: Calibrated Operator</h2>
+          </div>
+          <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-800/40 text-emerald-400" id="valOverallScoreBadge">
+            85% Mastery
+          </span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+          <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-slate-400 block text-[11px]">Move Tier</span>
+            <span class="font-bold text-sky-400 text-xs mt-1 block" id="valMoveTier">Operator</span>
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Pullups & Vol</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-slate-400 block text-[11px]">Focus Tier</span>
+            <span class="font-bold text-purple-400 text-xs mt-1 block" id="valFocusTier">Apprentice</span>
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Study Hours</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04]">
+            <span class="text-slate-400 block text-[11px]">Habits Tier</span>
+            <span class="font-bold text-emerald-400 text-xs mt-1 block" id="valHabitsTier">Calibrated</span>
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Clean Streak</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ZONE 2: Sleep & Circadian Recovery -->
+      <section class="matte-card p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🌙</span>
+            <span class="eyebrow text-slate-300">Sleep & Circadian Clock</span>
+          </div>
+          <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-sky-950/60 border border-sky-800/40 text-sky-400" id="badgeSleepQuality">
+            8h 00m (Optimal)
+          </span>
+        </div>
+
+        <!-- Editable Pickers for Bedtime & Wakeup -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1">
+            <div class="flex justify-between items-center text-xs text-slate-400">
+              <span>Bedtime</span>
+              <span class="text-[10px] text-slate-500">Editable ✎</span>
+            </div>
+            <input type="time" id="inputBedtime" value="23:15" class="w-full bg-transparent text-white font-mono font-bold text-sm focus:outline-none focus:text-sky-400">
+          </div>
+
+          <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1">
+            <div class="flex justify-between items-center text-xs text-slate-400">
+              <span>Wake-up</span>
+              <span class="text-[10px] text-slate-500">Editable ✎</span>
+            </div>
+            <input type="time" id="inputWakeup" value="07:15" class="w-full bg-transparent text-white font-mono font-bold text-sm focus:outline-none focus:text-sky-400">
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button id="btnLogBedtimeNow" class="spring-btn flex-1 py-2.5 rounded-xl btn-action-primary text-xs font-bold flex items-center justify-center gap-1.5">
+            <span>🛌</span> Going to Bed (Now)
+          </button>
+          <button id="btnToggleSunlight" class="spring-btn flex-1 py-2.5 rounded-xl btn-action-dark text-xs font-bold flex items-center justify-center gap-1.5 border border-white/10">
+            <span id="sunlightIcon">☀️</span> <span id="sunlightLabel">10m Morning Sun</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ZONE 3: Digital Clarity & Clean Streak (Dopamine Detox) -->
+      <section class="matte-card p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🛡️</span>
+            <span class="eyebrow text-slate-300">Dopamine Detox & Digital Hygiene</span>
+          </div>
+          <span class="text-xs font-mono font-bold text-emerald-400" id="badgeDetoxTier">Level 2: Calibrated</span>
+        </div>
+
+        <!-- Big Streak Display -->
+        <div class="text-center py-2">
+          <div class="font-mono text-5xl sm:text-6xl font-black text-white tracking-tight tabular-nums" id="valCleanStreakDays">
+            3
+          </div>
+          <div class="text-xs text-slate-400 font-mono mt-1">
+            Days Clean · No Doomscrolling · No Gaming Slump
+          </div>
+        </div>
+
+        <!-- Digital Hygiene Checkboxes -->
+        <div class="space-y-2 text-xs font-medium">
+          <label class="flex items-center gap-3 p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04] cursor-pointer hover:border-white/10 transition">
+            <input type="checkbox" id="chkMorningPhone" class="w-4 h-4 rounded border-white/20 text-sky-500 focus:ring-0">
+            <span class="text-slate-200">No morning phone in bed (&lt;09:00 AM)</span>
+          </label>
+          <label class="flex items-center gap-3 p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04] cursor-pointer hover:border-white/10 transition">
+            <input type="checkbox" id="chkZeroReels" class="w-4 h-4 rounded border-white/20 text-sky-500 focus:ring-0">
+            <span class="text-slate-200">Zero short-form reels / doomscroll feeds today</span>
+          </label>
+          <label class="flex items-center gap-3 p-2.5 rounded-xl bg-[#0d131f] border border-white/[0.04] cursor-pointer hover:border-white/10 transition">
+            <input type="checkbox" id="chkNoPhoneInBed" class="w-4 h-4 rounded border-white/20 text-sky-500 focus:ring-0">
+            <span class="text-slate-200">Phone charging away from bed at night</span>
+          </label>
+        </div>
+
+        <!-- Reset Button -->
+        <button id="btnOpenRelapseModal" class="w-full text-center text-xs text-slate-500 hover:text-rose-400 font-mono pt-1 transition">
+          Slipped up? Tap to log trigger and restart clean streak
+        </button>
+      </section>
+
+      <!-- ZONE 4: Deep Offline Reading with Page Intervals -->
+      <section class="matte-card p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">📖</span>
+            <span class="eyebrow text-slate-300">20-Minute Deep Reading</span>
+          </div>
+          <span class="text-xs font-mono text-amber-400 font-bold" id="valReadingTodayTotal">+22 Pages Today</span>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs text-slate-400 uppercase tracking-wide block mb-1 font-mono">Current Book Title</label>
+            <input type="text" id="inputBookTitle" value="Designing Data-Intensive Applications" class="w-full bg-[#0d131f] border border-white/10 rounded-xl px-3.5 py-2 text-white font-medium text-xs focus:outline-none focus:border-amber-400">
+          </div>
+
+          <!-- Page Interval Inputs -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-slate-400 uppercase tracking-wide block mb-1 font-mono">Start Page</label>
+              <input type="number" id="inputStartPage" value="42" class="w-full bg-[#0d131f] border border-white/10 rounded-xl px-3.5 py-2 text-white font-mono font-bold text-sm focus:outline-none focus:border-amber-400">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 uppercase tracking-wide block mb-1 font-mono">End Page</label>
+              <input type="number" id="inputEndPage" value="64" class="w-full bg-[#0d131f] border border-white/10 rounded-xl px-3.5 py-2 text-white font-mono font-bold text-sm focus:outline-none focus:border-amber-400">
+            </div>
+          </div>
+        </div>
+
+        <!-- 20m Reading Timer & Actions -->
+        <div class="p-3 rounded-xl bg-[#0d131f] border border-white/[0.06] flex items-center justify-between">
+          <div>
+            <span class="text-xs text-slate-400 font-mono block">Reading Focus Clock</span>
+            <span class="font-mono text-2xl font-black text-white" id="valReadingTimerDisplay">20:00</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="btnStartReadingTimer" class="spring-btn px-3 py-1.5 rounded-lg btn-action-primary text-xs font-bold">START</button>
+            <button id="btnPauseReadingTimer" class="spring-btn px-3 py-1.5 rounded-lg btn-action-dark text-xs font-bold">PAUSE</button>
+            <button id="btnSaveReadingSession" class="spring-btn px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold ml-1">
+              LOG PAGES
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ZONE 5: Keystone Domestic Disciplines -->
+      <section class="matte-card p-4 space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="text-base">🧹</span>
+          <span class="eyebrow text-slate-300">Keystone Domestic Disciplines</span>
+        </div>
+
+        <div class="space-y-2 text-xs font-medium">
+          <label class="flex items-center gap-3 p-3 rounded-xl bg-[#0d131f] border border-white/[0.04] cursor-pointer hover:border-white/10 transition">
+            <input type="checkbox" id="chkBedMade" class="w-4 h-4 rounded border-white/20 text-emerald-500 focus:ring-0">
+            <div class="truncate">
+              <span class="text-slate-100 font-bold block">Made bed first thing in the morning</span>
+              <span class="text-[11px] text-slate-400 font-normal">McRaven First Victory: Order over domestic entropy</span>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl bg-[#0d131f] border border-white/[0.04] cursor-pointer hover:border-white/10 transition">
+            <input type="checkbox" id="chkRoomReset" class="w-4 h-4 rounded border-white/20 text-emerald-500 focus:ring-0">
+            <div class="truncate">
+              <span class="text-slate-100 font-bold block">2-minute room & workstation sweep</span>
+              <span class="text-[11px] text-slate-400 font-normal">Evening reset: Clear desk before sleep</span>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- ZONE 6: Public Proof-of-Work Ledger & Peer Dispatch -->
+      <section class="matte-card p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🤝</span>
+            <span class="eyebrow text-slate-300">Public Accountability & Peer Dispatch</span>
+          </div>
+          <span class="text-xs text-emerald-400 font-mono font-bold">Live</span>
+        </div>
+
+        <p class="text-xs text-slate-400">
+          Share your daily receipts with your accountability partner or mentor in 1 tap.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          <button id="btnCopyPeerDispatch" class="spring-btn py-2.5 px-3 rounded-xl btn-action-primary text-xs font-bold flex items-center justify-center gap-2">
+            <span>📋</span> Copy Daily Scorecard
+          </button>
+          <button id="btnPreviewPublicLedger" class="spring-btn py-2.5 px-3 rounded-xl btn-action-dark text-xs font-bold flex items-center justify-center gap-2 border border-white/10">
+            <span>👁️</span> Preview Partner Ledger
+          </button>
+        </div>
+      </section>
 
     </div>
 
@@ -674,6 +887,122 @@
       <button id="btnDismissAlarm" class="spring-btn w-full py-2.5 rounded-xl bg-white text-slate-950 text-xs font-bold hover:bg-slate-200">
         Start 10m Verbal Recall
       </button>
+    </div>
+  </div>
+
+  <!-- Science & Protocols Compendium Modal -->
+  <div id="modalScienceProtocols" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[120] hidden">
+    <div class="matte-card p-5 max-w-md w-full max-h-[85vh] overflow-y-auto space-y-4 text-xs font-sans scrollbar-none">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">🧪</span>
+          <h2 class="text-sm font-bold text-white font-mono uppercase tracking-wider">The Science Behind PulseSync</h2>
+        </div>
+        <button id="btnCloseProtocolsModal" class="text-slate-400 hover:text-white p-1 text-sm">✕</button>
+      </div>
+
+      <!-- Protocol 1: Move -->
+      <div class="p-3.5 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1.5">
+        <div class="flex justify-between items-center font-mono">
+          <span class="font-bold text-sky-400 uppercase text-xs">Pavel Tsatsouline: Grease the Groove</span>
+          <span class="text-[10px] text-slate-500">Move Engine</span>
+        </div>
+        <p class="text-slate-300 leading-relaxed text-xs">
+          Sub-maximal strength sets (4 pullups, 10 pushups) performed repeatedly without muscle failure optimize motor-unit recruitment without lactic acid buildup or next-day soreness.
+        </p>
+      </div>
+
+      <!-- Protocol 2: Focus -->
+      <div class="p-3.5 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1.5">
+        <div class="flex justify-between items-center font-mono">
+          <span class="font-bold text-purple-400 uppercase text-xs">Richard Feynman & 50m Hard Ceiling</span>
+          <span class="text-[10px] text-slate-500">Focus Engine</span>
+        </div>
+        <p class="text-slate-300 leading-relaxed text-xs">
+          Active out-loud vocal synthesis reveals true comprehension gaps. A strict 50m timer prevents working-memory depletion and kills the 4-hour rabbit-hole trap.
+        </p>
+      </div>
+
+      <!-- Protocol 3: Habits & Sleep -->
+      <div class="p-3.5 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1.5">
+        <div class="flex justify-between items-center font-mono">
+          <span class="font-bold text-amber-400 uppercase text-xs">Huberman & Walker: Circadian Clock</span>
+          <span class="text-[10px] text-slate-500">Habits Engine</span>
+        </div>
+        <p class="text-slate-300 leading-relaxed text-xs">
+          Consistent wake-up times and 10m morning sunlight anchor adenosine breakdown and cortisol timing, ensuring deep restorative stage 3/4 slow-wave sleep.
+        </p>
+      </div>
+
+      <!-- Protocol 4: Dopamine -->
+      <div class="p-3.5 rounded-xl bg-[#0d131f] border border-white/[0.06] space-y-1.5">
+        <div class="flex justify-between items-center font-mono">
+          <span class="font-bold text-emerald-400 uppercase text-xs">Dr. Anna Lembke: Dopamine Homeostasis</span>
+          <span class="text-[10px] text-slate-500">Detox Protocol</span>
+        </div>
+        <p class="text-slate-300 leading-relaxed text-xs">
+          Eliminating supernormal short-form video stimuli restores D2 receptor sensitivity in the striatum, making complex code reading and algorithms feel engaging again.
+        </p>
+      </div>
+
+      <button id="btnDismissProtocols" class="spring-btn w-full py-2.5 rounded-xl bg-white text-slate-950 font-bold text-xs">
+        Understood
+      </button>
+    </div>
+  </div>
+
+  <!-- Relapse / Trigger Reset Modal -->
+  <div id="modalRelapse" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-[115] hidden">
+    <div class="matte-card p-5 max-w-sm w-full space-y-4">
+      <div class="flex items-center justify-between border-b border-white/[0.06] pb-2">
+        <h3 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Clean Streak Reset</h3>
+        <button id="btnCloseRelapseModal" class="text-slate-400 hover:text-white p-1 text-xs">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-300">
+        Slips happen. What triggered the lapse? Logging this without guilt keeps your awareness sharp.
+      </p>
+
+      <div class="space-y-1.5 text-xs font-mono" id="relapseTriggerOptions">
+        <button data-trigger="Boredom / Procrastination" class="w-full text-left p-2.5 rounded-lg bg-[#0d131f] text-slate-300 hover:text-white hover:bg-slate-800 transition">
+          🥱 Boredom / Avoiding Difficult Task
+        </button>
+        <button data-trigger="Late Night Phone in Bed" class="w-full text-left p-2.5 rounded-lg bg-[#0d131f] text-slate-300 hover:text-white hover:bg-slate-800 transition">
+          📱 Late Night Phone in Bed
+        </button>
+        <button data-trigger="Brain Fried / Mental Fatigue" class="w-full text-left p-2.5 rounded-lg bg-[#0d131f] text-slate-300 hover:text-white hover:bg-slate-800 transition">
+          🧠 Brain Fried / Mental Fatigue
+        </button>
+        <button data-trigger="Anxiety / Stress" class="w-full text-left p-2.5 rounded-lg bg-[#0d131f] text-slate-300 hover:text-white hover:bg-slate-800 transition">
+          ⚡ Stress or Restlessness
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Public Partner Ledger Modal (Read-Only) -->
+  <div id="modalPublicLedger" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[125] hidden">
+    <div class="matte-card p-6 max-w-md w-full max-h-[85vh] overflow-y-auto space-y-4 text-xs font-mono scrollbar-none">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <div>
+          <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest block">Public Verified Receipt</span>
+          <h2 class="text-sm font-bold text-white mt-0.5">Bharath Nair — Daily Ledger</h2>
+        </div>
+        <button id="btnClosePublicLedger" class="text-slate-400 hover:text-white p-1 text-sm">✕</button>
+      </div>
+
+      <div id="publicLedgerContent" class="space-y-3.5 text-slate-300 font-sans text-xs">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button id="btnCopyPublicLedgerText" class="spring-btn flex-1 py-2.5 rounded-xl btn-action-primary text-xs font-bold">
+          Copy Text Report
+        </button>
+        <button id="btnClosePublicLedgerBtn" class="spring-btn flex-1 py-2.5 rounded-xl btn-action-dark text-xs font-bold">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 
