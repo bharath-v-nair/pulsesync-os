@@ -1,4 +1,4 @@
-/* PulseSync Life OS - Bespoke Matte Industrial Design System */
+/* PulseSync Life OS - Matte Industrial Design System (v2.1) */
 :root {
   --bg-primary: #080a0f;
   --bg-surface: #101520;
@@ -11,6 +11,7 @@
   --accent-cyan: #38bdf8;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
+  --accent-purple: #c084fc;
   --accent-rose: #f43f5e;
 }
 
@@ -33,7 +34,7 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* Tabular Numerals (Strict invariant: no layout jitter) */
+/* Tabular Numerals (Strict invariant: zero layout jitter on numbers) */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
@@ -53,7 +54,7 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .matte-card:hover {
@@ -102,7 +103,7 @@ body {
   border-color: rgba(255, 255, 255, 0.14);
 }
 
-/* High-Contrast Action Buttons (Solid Matte, Zero AI Slop Neon) */
+/* High-Contrast Action Buttons */
 .btn-action-primary {
   background-color: #ffffff;
   color: #090d16;
@@ -128,10 +129,10 @@ body {
   border-color: rgba(255, 255, 255, 0.18);
 }
 
-/* Progress Bar Tracking */
+/* Progress Track and Fill */
 .progress-track {
   background-color: #1a2233;
-  height: 5px;
+  height: 6px;
   border-radius: 999px;
   overflow: hidden;
 }
@@ -140,6 +141,37 @@ body {
   height: 100%;
   border-radius: 999px;
   transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Adherence Matrix Table */
+.adherence-cell {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.adherence-full {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.adherence-partial {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.adherence-none {
+  background-color: #121824;
+  color: #475569;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Floating Toast with Spring Entry */
@@ -186,7 +218,13 @@ body {
   animation: itemEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Custom Minimalist Scrollbar */
+/* Drawer Expansion Animation */
+.expandable-drawer {
+  transition: max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  overflow: hidden;
+}
+
+/* Minimalist Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
