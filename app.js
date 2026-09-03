@@ -56,6 +56,7 @@
   const undoToast = document.getElementById('undoToast');
   const undoMessage = document.getElementById('undoMessage');
   const btnUndoAction = document.getElementById('btnUndoAction');
+  const toastProgressBar = document.getElementById('toastProgressBar');
 
   const btnExportCSV = document.getElementById('btnExportCSV');
   const btnExportJSON = document.getElementById('btnExportJSON');
@@ -69,14 +70,38 @@
   const modalBody = document.getElementById('modalBody');
   const btnCloseModal = document.getElementById('btnCloseModal');
 
-  // --- Haptics Utility ---
-  function triggerHaptic(duration = 15) {
+  // --- Audio / Haptics Sensory Feedback ---
+  function playClickAudio(freq = 600, duration = 0.03) {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + duration);
+
+      gain.gain.setValueAtTime(0.04, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch (e) {
+      // Audio autoplay policy fallback
+    }
+  }
+
+  function triggerHaptic(duration = 15, audioFreq = 600) {
+    playClickAudio(audioFreq);
     if ('vibrate' in navigator) {
       try {
         navigator.vibrate(duration);
-      } catch (e) {
-        // Silently ignore if permission restricted
-      }
+      } catch (e) {}
     }
   }
 
@@ -120,7 +145,7 @@
         stickyDefaults = { ...stickyDefaults, ...JSON.parse(storedDefaults) };
       }
     } catch (err) {
-      console.error('Error loading data from localStorage', err);
+      console.error('Error reading localStorage', err);
       logs = [];
     }
   }
@@ -130,7 +155,7 @@
       localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
       localStorage.setItem(STORAGE_KEY_DEFAULTS, JSON.stringify(stickyDefaults));
     } catch (err) {
-      console.error('Error saving data to localStorage', err);
+      console.error('Error writing to localStorage', err);
     }
   }
 
@@ -174,27 +199,27 @@
     // Update Walk Buttons Status
     if (morningWalkDone) {
       statusWalkMorning.textContent = 'Completed ✅';
-      statusWalkMorning.className = 'text-[10px] text-emerald-400 font-semibold';
+      statusWalkMorning.className = 'text-[10px] text-emerald-400 font-bold';
     } else {
-      statusWalkMorning.textContent = 'Tap to complete';
+      statusWalkMorning.textContent = 'Tap to log';
       statusWalkMorning.className = 'text-[10px] text-slate-400';
     }
 
     if (eveningWalkDone) {
       statusWalkEvening.textContent = 'Completed ✅';
-      statusWalkEvening.className = 'text-[10px] text-emerald-400 font-semibold';
+      statusWalkEvening.className = 'text-[10px] text-emerald-400 font-bold';
     } else {
-      statusWalkEvening.textContent = 'Tap to complete';
+      statusWalkEvening.textContent = 'Tap to log';
       statusWalkEvening.className = 'text-[10px] text-slate-400';
     }
 
     // Update Wake-Up Button
     if (wokeUpTime) {
       wakeUpLabel.textContent = `Woke ${wokeUpTime}`;
-      btnWakeUp.classList.add('border-amber-500/50', 'bg-amber-950/30');
+      btnWakeUp.classList.add('border-amber-500/50', 'bg-amber-950/40');
     } else {
       wakeUpLabel.textContent = 'Woke Up';
-      btnWakeUp.classList.remove('border-amber-500/50', 'bg-amber-950/30');
+      btnWakeUp.classList.remove('border-amber-500/50', 'bg-amber-950/40');
     }
   }
 
@@ -204,7 +229,7 @@
       .filter(item => item.dateStr === todayStr)
       .sort((a, b) => b.timestamp - a.timestamp);
 
-    logCount.textContent = `${todayLogs.length} set${todayLogs.length === 1 ? '' : 's'} logged`;
+    logCount.textContent = `${todayLogs.length} set${todayLogs.length === 1 ? '' : 's'}`;
 
     if (todayLogs.length === 0) {
       emptyTimeline.classList.remove('hidden');
@@ -218,41 +243,41 @@
 
     timelineList.innerHTML = todayLogs.map(item => {
       let icon = '💪';
-      let badgeBg = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      let badgeStyle = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       let details = `${item.reps} reps`;
 
       if (item.category === 'pushup') {
         icon = '🤸';
-        badgeBg = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        badgeStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
       } else if (item.category === 'barbell') {
         icon = '🏋️';
-        badgeBg = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        badgeStyle = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
         details = `${item.reps} reps @ 30kg (${item.reps * 30}kg vol)`;
       } else if (item.category === 'walk') {
         icon = '🚶';
-        badgeBg = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+        badgeStyle = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
         details = `${item.distanceKm} km completed`;
       } else if (item.category === 'wake_up') {
         icon = '☀️';
-        badgeBg = 'bg-amber-500/10 text-amber-300 border-amber-500/20';
-        details = 'Day start recorded';
+        badgeStyle = 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+        details = 'Day anchor logged';
       }
 
       return `
-        <div class="timeline-item flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition">
-          <div class="flex items-center gap-2.5">
-            <span class="text-base">${icon}</span>
+        <div class="timeline-item flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700 transition">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">${icon}</span>
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-slate-200">${item.name}</span>
-                <span class="text-[10px] px-1.5 py-0.5 rounded border ${badgeBg} font-mono">${item.timeFormatted}</span>
+                <span class="text-xs font-bold text-slate-100">${item.name}</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded border ${badgeStyle} font-mono">${item.timeFormatted}</span>
               </div>
               <p class="text-[11px] text-slate-400 mt-0.5">${details}</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-[10px] text-slate-500 font-mono">${getRelativeTime(item.timestamp)}</span>
-            <button data-id="${item.id}" class="btn-delete-log text-slate-500 hover:text-rose-400 p-1 rounded tap-target text-xs transition">
+            <button data-id="${item.id}" class="btn-delete-log text-slate-500 hover:text-rose-400 p-1.5 rounded-lg tap-target text-xs transition">
               ✕
             </button>
           </div>
@@ -260,9 +285,9 @@
       `;
     }).join('');
 
-    // Attach delete listeners
+    // Delete buttons
     document.querySelectorAll('.btn-delete-log').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
         deleteLog(id);
       });
@@ -295,7 +320,7 @@
 
     logs.push(newLog);
     saveData();
-    triggerHaptic(15);
+    triggerHaptic(15, 750);
     renderMetrics();
     renderTimeline();
 
@@ -306,7 +331,7 @@
   function deleteLog(id) {
     logs = logs.filter(item => item.id !== id);
     saveData();
-    triggerHaptic(10);
+    triggerHaptic(10, 300);
     renderMetrics();
     renderTimeline();
   }
@@ -318,10 +343,15 @@
     undoMessage.textContent = msg;
     undoToast.classList.remove('hidden');
 
+    // Reset countdown bar animation
+    toastProgressBar.classList.remove('toast-bar');
+    void toastProgressBar.offsetWidth; // Force reflow
+    toastProgressBar.classList.add('toast-bar');
+
     btnUndoAction.onclick = () => {
       deleteLog(logId);
       undoToast.classList.add('hidden');
-      triggerHaptic(20);
+      triggerHaptic(20, 250);
     };
 
     undoTimeout = setTimeout(() => {
@@ -332,7 +362,7 @@
   // --- Export Utilities ---
   function exportCSV() {
     if (logs.length === 0) {
-      alert('No logs available to export yet!');
+      alert('No workout logs to export yet.');
       return;
     }
 
@@ -356,12 +386,12 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    triggerHaptic(15);
+    triggerHaptic(15, 500);
   }
 
   function exportJSON() {
     if (logs.length === 0) {
-      alert('No logs available to export yet!');
+      alert('No workout logs to export yet.');
       return;
     }
 
@@ -372,27 +402,27 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    triggerHaptic(15);
+    triggerHaptic(15, 500);
   }
 
   function clearToday() {
     const todayStr = getTodayDateStr();
     const count = logs.filter(i => i.dateStr === todayStr).length;
     if (count === 0) {
-      alert('No logs to reset for today.');
+      alert('No logs to reset today.');
       return;
     }
 
-    if (confirm(`Are you sure you want to reset all ${count} workouts for today?`)) {
+    if (confirm(`Reset all ${count} workouts for today?`)) {
       logs = logs.filter(i => i.dateStr !== todayStr);
       saveData();
-      triggerHaptic(30);
+      triggerHaptic(30, 200);
       renderMetrics();
       renderTimeline();
     }
   }
 
-  // --- Event Listeners Setup ---
+  // --- Event Listeners ---
   function setupListeners() {
     // Half Pull-ups Stepper
     btnPullupDec.addEventListener('click', () => {
@@ -400,7 +430,7 @@
         stickyDefaults.pullupReps--;
         saveData();
         updateStepperDisplays();
-        triggerHaptic(8);
+        triggerHaptic(8, 450);
       }
     });
 
@@ -408,7 +438,7 @@
       stickyDefaults.pullupReps++;
       saveData();
       updateStepperDisplays();
-      triggerHaptic(8);
+      triggerHaptic(8, 650);
     });
 
     btnPullupLog.addEventListener('click', () => {
@@ -426,7 +456,7 @@
         stickyDefaults.pushupReps = Math.max(1, stickyDefaults.pushupReps - 2);
         saveData();
         updateStepperDisplays();
-        triggerHaptic(8);
+        triggerHaptic(8, 450);
       }
     });
 
@@ -434,7 +464,7 @@
       stickyDefaults.pushupReps += 2;
       saveData();
       updateStepperDisplays();
-      triggerHaptic(8);
+      triggerHaptic(8, 650);
     });
 
     btnPushupLog.addEventListener('click', () => {
@@ -450,13 +480,13 @@
     barbellPills.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         barbellPills.querySelectorAll('button').forEach(b => {
-          b.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap';
+          b.className = 'spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/90 text-slate-300 hover:bg-slate-700 whitespace-nowrap';
         });
-        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 shadow transition whitespace-nowrap';
+        btn.className = 'spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 whitespace-nowrap';
         stickyDefaults.selectedLift = btn.getAttribute('data-lift');
         saveData();
         updateStepperDisplays();
-        triggerHaptic(10);
+        triggerHaptic(10, 550);
       });
     });
 
@@ -466,7 +496,7 @@
         stickyDefaults.barbellReps = Math.max(1, stickyDefaults.barbellReps - 2);
         saveData();
         updateStepperDisplays();
-        triggerHaptic(8);
+        triggerHaptic(8, 450);
       }
     });
 
@@ -474,7 +504,7 @@
       stickyDefaults.barbellReps += 2;
       saveData();
       updateStepperDisplays();
-      triggerHaptic(8);
+      triggerHaptic(8, 650);
     });
 
     btnBarbellLog.addEventListener('click', () => {
@@ -486,7 +516,7 @@
       });
     });
 
-    // Walks
+    // Cardio Walks
     btnWalkMorning.addEventListener('click', () => {
       addLog({
         category: 'walk',
@@ -517,7 +547,7 @@
       });
     });
 
-    // Exports & Reset
+    // Exports & Clear
     btnExportCSV.addEventListener('click', exportCSV);
     btnExportJSON.addEventListener('click', exportJSON);
     btnClearToday.addEventListener('click', clearToday);
@@ -525,25 +555,25 @@
     // Modal Previews for Phase 2 & Phase 3
     tabFocus.addEventListener('click', () => {
       modalIcon.textContent = '🧠';
-      modalTitle.textContent = 'Phase 2: Focus & Interview Engine';
-      modalBody.textContent = 'Coming in Phase 2: 7-Day Rotating Curriculum (Angular -> .NET -> Full Stack -> SysDesign), Daily 20-Question Queue, Active vs Break Split timer, and the 45-15 Feynman countdown protocol.';
+      modalTitle.textContent = 'Phase 2: Focus Engine';
+      modalBody.textContent = 'Upcoming in Phase 2: 7-Day Rotating Curriculum (Angular -> .NET -> Full Stack -> SysDesign), Daily 20-Question Queue, Active vs Break Split state machine, and the 45-15 Feynman timebox.';
       previewModal.classList.remove('hidden');
-      triggerHaptic(10);
+      triggerHaptic(10, 500);
     });
 
     tabHabits.addEventListener('click', () => {
       modalIcon.textContent = '🛡️';
-      modalTitle.textContent = 'Phase 3: Habits & Partner Sync';
-      modalBody.textContent = 'Coming in Phase 3: Sleep/wake duration tracking, 20m book reading, private dopamine detox clean streaks (anti-porn, anti-media bingeing) with relapse trigger logging, and shared buddy view link.';
+      modalTitle.textContent = 'Phase 3: Habits & Peer Sync';
+      modalBody.textContent = 'Upcoming in Phase 3: Sleep/wake duration, 20m book reading, private dopamine detox clean streaks (anti-porn, anti-media bingeing) with relapse trigger logging, and lean peer pair code.';
       previewModal.classList.remove('hidden');
-      triggerHaptic(10);
+      triggerHaptic(10, 500);
     });
 
     btnCloseModal.addEventListener('click', () => {
       previewModal.classList.add('hidden');
     });
 
-    // App Shortcuts URL Handling (e.g. ?quick=pullup)
+    // App Shortcuts URL Handling
     const urlParams = new URLSearchParams(window.location.search);
     const quick = urlParams.get('quick');
     if (quick === 'pullup') {
@@ -581,16 +611,16 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
           .then(reg => {
-            console.log('PulseSync Service Worker registered:', reg.scope);
+            console.log('PulseSync SW registered:', reg.scope);
           })
           .catch(err => {
-            console.log('Service Worker registration skipped or error:', err);
+            console.log('SW registration note:', err);
           });
       });
     }
   }
 
-  // --- App Initialization ---
+  // --- Initialization ---
   function init() {
     loadData();
     renderHeaderDate();
@@ -600,7 +630,6 @@
     setupListeners();
     registerServiceWorker();
 
-    // Refresh relative times every 60s
     setInterval(() => {
       renderTimeline();
     }, 60000);
