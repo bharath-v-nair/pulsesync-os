@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#070a10">
+  <meta name="theme-color" content="#080a0f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>PulseSync Life OS</title>
@@ -16,126 +16,157 @@
       theme: {
         extend: {
           colors: {
-            obsidian: '#070a10',
-            cardBg: '#0f172a',
-            cardBorder: 'rgba(255, 255, 255, 0.08)',
+            obsidian: '#080a0f',
+            surface: '#101520',
+            surfaceElevated: '#161d2c',
           }
         }
       }
     }
   </script>
 </head>
-<body class="bg-[#070a10] text-slate-100 antialiased min-h-screen pb-24 selection:bg-blue-500 selection:text-white">
+<body class="bg-[#080a0f] text-slate-100 antialiased min-h-screen pb-24">
 
   <!-- Main Container -->
-  <div class="max-w-md mx-auto px-4 pt-3 sm:max-w-xl">
+  <div class="max-w-md mx-auto px-4 pt-3 sm:max-w-lg">
 
-    <!-- Top App Header -->
-    <header class="flex items-center justify-between py-3 border-b border-slate-800/60 mb-4">
-      <div class="flex items-center gap-3">
-        <div class="relative w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-600/30">
-          <span>⚡</span>
-          <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 border-2 border-[#070a10] rounded-full animate-pulse"></span>
+    <!-- Top App Header (Clean Industrial Typography, Zero Emojis) -->
+    <header class="flex items-center justify-between py-3 border-b border-white/[0.06] mb-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center text-white">
+          <svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
         </div>
         <div>
           <div class="flex items-center gap-1.5">
-            <h1 class="text-sm font-extrabold tracking-tight text-white">PulseSync</h1>
-            <span class="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-md">Move MVP</span>
+            <h1 class="text-xs font-bold tracking-widest uppercase text-white font-mono">PulseSync</h1>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
           </div>
-          <p class="text-[11px] text-slate-400 font-medium" id="currentDateDisplay">Loading...</p>
+          <p class="text-[11px] text-slate-400 font-mono" id="currentDateDisplay">Loading...</p>
         </div>
       </div>
 
       <!-- Wake-Up Button -->
-      <button id="btnWakeUp" class="spring-btn tap-target px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-semibold text-amber-300 hover:border-slate-700 flex items-center gap-1.5 shadow-sm">
-        <span>☀️</span>
+      <button id="btnWakeUp" class="spring-btn tap-target px-3 py-1.5 rounded-xl bg-[#141b29] border border-white/10 text-xs font-semibold text-slate-200 hover:border-white/20 flex items-center gap-2 shadow-sm">
+        <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2"></path>
+          <path d="M12 20v2"></path>
+          <path d="m4.93 4.93 1.41 1.41"></path>
+          <path d="m17.66 17.66 1.41 1.41"></path>
+          <path d="M2 12h2"></path>
+          <path d="M20 12h2"></path>
+          <path d="m6.34 17.66-1.41 1.41"></path>
+          <path d="m19.07 4.93-1.41 1.41"></path>
+        </svg>
         <span id="wakeUpLabel">Woke Up</span>
       </button>
     </header>
 
     <!-- Navigation Tabs -->
-    <nav class="flex items-center p-1 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800/80 mb-5 text-xs font-bold">
-      <button class="spring-btn flex-1 py-2 rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/30 flex items-center justify-center gap-1.5">
-        <span>🏋️</span> Move
+    <nav class="flex items-center p-1 bg-[#101520] rounded-xl border border-white/[0.06] mb-5 text-xs font-semibold">
+      <button class="spring-btn flex-1 py-2 rounded-lg bg-white text-slate-950 font-bold shadow-sm flex items-center justify-center gap-1.5">
+        Move
       </button>
-      <button id="tabFocus" class="spring-btn flex-1 py-2 rounded-xl text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5">
-        <span>🧠</span> Focus <span class="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-blue-400 font-mono">P2</span>
+      <button id="tabFocus" class="spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition">
+        Focus
       </button>
-      <button id="tabHabits" class="spring-btn flex-1 py-2 rounded-xl text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5">
-        <span>🛡️</span> Habits <span class="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400 font-mono">P3</span>
+      <button id="tabHabits" class="spring-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition">
+        Habits
       </button>
     </nav>
 
-    <!-- Metric Scorecards -->
-    <section class="grid grid-cols-4 gap-2.5 mb-5">
-      <div class="studio-card p-2.5 text-center flex flex-col justify-center">
-        <span class="eyebrow text-blue-400">Pull-ups</span>
-        <span class="text-2xl font-black text-white mt-1 tabular-nums" id="metricPullups">0</span>
-        <span class="text-[10px] text-slate-400 font-medium">reps</span>
+    <!-- Daily Targets & Progress Dashboard (Moderate Goals for 90kg Profile) -->
+    <section class="matte-card p-3.5 mb-5 space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="eyebrow text-slate-300">Daily Volume Targets</span>
+        <span class="text-[10px] font-mono text-slate-400" id="overallProgressText">0% Completed</span>
       </div>
-      <div class="studio-card p-2.5 text-center flex flex-col justify-center">
-        <span class="eyebrow text-emerald-400">Push-ups</span>
-        <span class="text-2xl font-black text-white mt-1 tabular-nums" id="metricPushups">0</span>
-        <span class="text-[10px] text-slate-400 font-medium">reps</span>
-      </div>
-      <div class="studio-card p-2.5 text-center flex flex-col justify-center">
-        <span class="eyebrow text-amber-400">Barbell</span>
-        <span class="text-2xl font-black text-white mt-1 tabular-nums" id="metricTonnage">0</span>
-        <span class="text-[10px] text-slate-400 font-medium">kg vol</span>
-      </div>
-      <div class="studio-card p-2.5 text-center flex flex-col justify-center">
-        <span class="eyebrow text-purple-400">Cardio</span>
-        <span class="text-2xl font-black text-white mt-1 tabular-nums" id="metricWalks">0</span>
-        <span class="text-[10px] text-slate-400 font-medium">km walk</span>
+
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <!-- Pull-ups Target -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-[11px]">
+            <span class="text-slate-400 font-medium">Half Pull-ups</span>
+            <span class="text-white font-bold tabular-nums font-mono"><span id="metricPullups">0</span> / 20</span>
+          </div>
+          <div class="progress-track">
+            <div id="barPullup" class="progress-fill bg-sky-400" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Push-ups Target -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-[11px]">
+            <span class="text-slate-400 font-medium">Push-ups</span>
+            <span class="text-white font-bold tabular-nums font-mono"><span id="metricPushups">0</span> / 50</span>
+          </div>
+          <div class="progress-track">
+            <div id="barPushup" class="progress-fill bg-emerald-400" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- 30kg Barbell Target -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-[11px]">
+            <span class="text-slate-400 font-medium">Barbell Vol</span>
+            <span class="text-white font-bold tabular-nums font-mono"><span id="metricTonnage">0</span> / 900kg</span>
+          </div>
+          <div class="progress-track">
+            <div id="barTonnage" class="progress-fill bg-amber-400" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Steps Target -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-[11px]">
+            <span class="text-slate-400 font-medium">Cardio Steps</span>
+            <span class="text-white font-bold tabular-nums font-mono"><span id="metricSteps">0</span> / 8k</span>
+          </div>
+          <div class="progress-track">
+            <div id="barSteps" class="progress-fill bg-purple-400" style="width: 0%"></div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- Section 1: Bodyweight Grease-the-Groove Steppers -->
-    <section class="mb-5 space-y-3">
+    <section class="mb-5 space-y-2.5">
       <div class="flex items-center justify-between px-1">
         <span class="eyebrow">Bodyweight Micro-Sets (GTG)</span>
-        <span class="text-[11px] text-slate-500 font-medium">Sub-2s Logging</span>
+        <span class="text-[10px] text-slate-500 font-mono">1-Tap Fast Entry</span>
       </div>
 
       <!-- Half Pull-ups Stepper Card -->
-      <div class="studio-card p-3.5 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-lg">
-            💪
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-white leading-tight">Half Pull-ups</h3>
-            <p class="text-[11px] text-slate-400">Grease the Groove</p>
-          </div>
+      <div class="matte-card p-3 flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-xs font-bold text-white tracking-wide">Half Pull-ups</h3>
+          <p class="text-[11px] text-slate-400 font-mono mt-0.5">Grease the Groove</p>
         </div>
 
         <div class="flex items-center gap-2">
           <button id="btnPullupDec" class="stepper-btn spring-btn tap-target">−</button>
-          <span id="valPullup" class="w-8 text-center text-lg font-black text-white tabular-nums">4</span>
+          <span id="valPullup" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">4</span>
           <button id="btnPullupInc" class="stepper-btn spring-btn tap-target">+</button>
-          <button id="btnPullupLog" class="btn-log-blue spring-btn tap-target px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide ml-1">
+          <button id="btnPullupLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">
             LOG
           </button>
         </div>
       </div>
 
       <!-- Push-ups Stepper Card -->
-      <div class="studio-card p-3.5 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-lg">
-            🤸
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-white leading-tight">Push-ups</h3>
-            <p class="text-[11px] text-slate-400">Micro-Sets</p>
-          </div>
+      <div class="matte-card p-3 flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-xs font-bold text-white tracking-wide">Push-ups</h3>
+          <p class="text-[11px] text-slate-400 font-mono mt-0.5">Micro-Sets</p>
         </div>
 
         <div class="flex items-center gap-2">
           <button id="btnPushupDec" class="stepper-btn spring-btn tap-target">−</button>
-          <span id="valPushup" class="w-8 text-center text-lg font-black text-white tabular-nums">10</span>
+          <span id="valPushup" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">10</span>
           <button id="btnPushupInc" class="stepper-btn spring-btn tap-target">+</button>
-          <button id="btnPushupLog" class="btn-log-emerald spring-btn tap-target px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide ml-1">
+          <button id="btnPushupLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">
             LOG
           </button>
         </div>
@@ -146,28 +177,28 @@
     <section class="mb-5">
       <div class="flex items-center justify-between px-1 mb-2">
         <span class="eyebrow">Fixed 30 kg Barbell</span>
-        <span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-md font-bold">Fixed 30 kg Bar</span>
+        <span class="text-[10px] text-slate-400 font-mono">30 kg Bar</span>
       </div>
 
-      <div class="studio-card p-3.5 space-y-3.5">
+      <div class="matte-card p-3.5 space-y-3">
         <!-- Exercise Pills Selector -->
         <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="barbellPills">
-          <button data-lift="Squats" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 whitespace-nowrap">Squats</button>
-          <button data-lift="Overhead Press" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/90 text-slate-300 hover:bg-slate-700 whitespace-nowrap">Overhead Press</button>
-          <button data-lift="Bicep Curls" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/90 text-slate-300 hover:bg-slate-700 whitespace-nowrap">Bicep Curls</button>
-          <button data-lift="Bent Rows" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/90 text-slate-300 hover:bg-slate-700 whitespace-nowrap">Bent Rows</button>
-          <button data-lift="RDLs" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/90 text-slate-300 hover:bg-slate-700 whitespace-nowrap">RDLs</button>
-          <button data-lift="Deadlifts" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/90 text-slate-300 hover:bg-slate-700 whitespace-nowrap">Deadlifts</button>
+          <button data-lift="Squats" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-950 shadow-sm whitespace-nowrap">Squats</button>
+          <button data-lift="Overhead Press" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Overhead Press</button>
+          <button data-lift="Bicep Curls" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Bicep Curls</button>
+          <button data-lift="Bent Rows" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Bent Rows</button>
+          <button data-lift="RDLs" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">RDLs</button>
+          <button data-lift="Deadlifts" class="spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap">Deadlifts</button>
         </div>
 
         <!-- Barbell Stepper Row -->
-        <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800/60">
-          <span class="text-xs text-slate-300 font-bold" id="selectedLiftName">Squats:</span>
+        <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
+          <span class="text-xs text-slate-200 font-bold" id="selectedLiftName">Squats:</span>
           <div class="flex items-center gap-2">
             <button id="btnBarbellDec" class="stepper-btn spring-btn tap-target">−</button>
-            <span id="valBarbell" class="w-8 text-center text-lg font-black text-white tabular-nums">10</span>
+            <span id="valBarbell" class="w-8 text-center text-lg font-extrabold text-white tabular-nums font-mono">10</span>
             <button id="btnBarbellInc" class="stepper-btn spring-btn tap-target">+</button>
-            <button id="btnBarbellLog" class="btn-log-amber spring-btn tap-target px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide ml-1">
+            <button id="btnBarbellLog" class="btn-action-primary spring-btn tap-target px-4 py-2 text-xs font-bold tracking-wider ml-1">
               LOG (300kg)
             </button>
           </div>
@@ -175,27 +206,45 @@
       </div>
     </section>
 
-    <!-- Section 3: Cardio 5k Walks -->
-    <section class="mb-5">
-      <div class="flex items-center justify-between px-1 mb-2">
-        <span class="eyebrow">Cardio Anchors</span>
-        <span class="text-[11px] text-purple-400 font-semibold">Goal: 2x 5k</span>
+    <!-- Section 3: Cardio (Steps & Home Elliptical / Cycle) -->
+    <section class="mb-5 space-y-2.5">
+      <div class="flex items-center justify-between px-1">
+        <span class="eyebrow">Cardio & Active Recovery</span>
+        <span class="text-[10px] text-slate-500 font-mono">Home Elliptical & Steps</span>
       </div>
-      <div class="grid grid-cols-2 gap-3">
-        <button id="btnWalkMorning" class="studio-card spring-btn p-3.5 flex items-center justify-between text-left group">
-          <div>
-            <div class="text-xs font-bold text-white group-hover:text-purple-300 transition">Morning 5k</div>
-            <div class="text-[10px] text-slate-400 mt-0.5" id="statusWalkMorning">Tap to log</div>
-          </div>
-          <span class="text-2xl">🌅</span>
-        </button>
-        <button id="btnWalkEvening" class="studio-card spring-btn p-3.5 flex items-center justify-between text-left group">
-          <div>
-            <div class="text-xs font-bold text-white group-hover:text-purple-300 transition">Evening 5k</div>
-            <div class="text-[10px] text-slate-400 mt-0.5" id="statusWalkEvening">Tap to log</div>
-          </div>
-          <span class="text-2xl">🌆</span>
-        </button>
+
+      <!-- Steps Stepper Card -->
+      <div class="matte-card p-3 flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-xs font-bold text-white tracking-wide">Outdoor Walk</h3>
+          <p class="text-[11px] text-slate-400 font-mono mt-0.5">Log Walk Steps</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnStepDec" class="stepper-btn spring-btn tap-target">−</button>
+          <span id="valSteps" class="w-14 text-center text-base font-extrabold text-white tabular-nums font-mono">2500</span>
+          <button id="btnStepInc" class="stepper-btn spring-btn tap-target">+</button>
+          <button id="btnStepLog" class="btn-action-primary spring-btn tap-target px-3.5 py-2 text-xs font-bold tracking-wider ml-1">
+            LOG
+          </button>
+        </div>
+      </div>
+
+      <!-- Elliptical / Indoor Cycle Card -->
+      <div class="matte-card p-3 flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-xs font-bold text-white tracking-wide">Elliptical / Cycle</h3>
+          <p class="text-[11px] text-slate-400 font-mono mt-0.5">Home Machine</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnEllipticalDec" class="stepper-btn spring-btn tap-target">−</button>
+          <span id="valElliptical" class="w-14 text-center text-base font-extrabold text-white tabular-nums font-mono">15m</span>
+          <button id="btnEllipticalInc" class="stepper-btn spring-btn tap-target">+</button>
+          <button id="btnEllipticalLog" class="btn-action-primary spring-btn tap-target px-3.5 py-2 text-xs font-bold tracking-wider ml-1">
+            LOG
+          </button>
+        </div>
       </div>
     </section>
 
@@ -206,25 +255,25 @@
         <span class="text-[11px] text-slate-400 font-mono" id="logCount">0 sets</span>
       </div>
 
-      <div class="studio-card p-3.5 min-h-[140px]" id="timelineContainer">
+      <div class="matte-card p-3.5 min-h-[120px]" id="timelineContainer">
         <!-- Empty State -->
-        <div class="text-center py-8 text-slate-500 text-xs" id="emptyTimeline">
-          No workouts logged yet today.<br>Walk past that pull-up bar and bang out 4 reps! 💪
+        <div class="text-center py-7 text-slate-500 text-xs font-mono" id="emptyTimeline">
+          No workouts logged yet today.<br>Hit the pull-up bar or log your walk steps!
         </div>
         <!-- Dynamic Items -->
-        <div class="space-y-2.5 hidden" id="timelineList"></div>
+        <div class="space-y-2 hidden" id="timelineList"></div>
       </div>
     </section>
 
     <!-- Footer Action Bar -->
-    <footer class="flex items-center justify-between pt-3 border-t border-slate-800/60 text-xs font-medium">
-      <button id="btnExportCSV" class="text-slate-400 hover:text-blue-400 flex items-center gap-1.5 transition py-2">
-        <span>📥</span> Export CSV
+    <footer class="flex items-center justify-between pt-3 border-t border-white/[0.06] text-xs font-mono">
+      <button id="btnExportCSV" class="text-slate-400 hover:text-white flex items-center gap-1.5 transition py-1.5">
+        Export CSV
       </button>
-      <button id="btnExportJSON" class="text-slate-400 hover:text-emerald-400 flex items-center gap-1.5 transition py-2">
-        <span>💾</span> Backup JSON
+      <button id="btnExportJSON" class="text-slate-400 hover:text-white flex items-center gap-1.5 transition py-1.5">
+        Backup JSON
       </button>
-      <button id="btnClearToday" class="text-slate-500 hover:text-rose-400 transition py-2">
+      <button id="btnClearToday" class="text-slate-500 hover:text-rose-400 transition py-1.5">
         Reset Day
       </button>
     </footer>
@@ -232,30 +281,29 @@
   </div>
 
   <!-- Floating 5-Second Undo Toast with Animated Progress Bar -->
-  <div id="undoToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-blue-500/40 shadow-2xl shadow-blue-500/20 rounded-2xl p-3.5 flex flex-col gap-2 z-50 hidden toast-spring w-[90%] max-w-sm overflow-hidden">
+  <div id="undoToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#121826] border border-white/15 shadow-2xl rounded-2xl p-3.5 flex flex-col gap-2 z-50 hidden toast-spring w-[90%] max-w-sm overflow-hidden">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <span class="text-blue-400 font-bold">✓</span>
+        <span class="text-emerald-400 font-bold text-xs font-mono">✓</span>
         <span class="text-xs text-slate-100 font-semibold truncate" id="undoMessage">Set logged</span>
       </div>
-      <button id="btnUndoAction" class="spring-btn px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-sm">
+      <button id="btnUndoAction" class="spring-btn px-3 py-1 bg-white text-slate-950 text-xs font-bold rounded-lg shadow-sm">
         Undo
       </button>
     </div>
     <!-- Visual 5s countdown line -->
     <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-      <div id="toastProgressBar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 toast-bar"></div>
+      <div id="toastProgressBar" class="h-full bg-emerald-400 toast-bar"></div>
     </div>
   </div>
 
   <!-- Preview Modal for Phase 2 & 3 -->
   <div id="previewModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
-    <div class="studio-card p-6 max-w-sm w-full space-y-4">
-      <div class="text-3xl" id="modalIcon">🚀</div>
-      <h3 class="text-sm font-extrabold text-white" id="modalTitle">Phase Preview</h3>
-      <p class="text-xs text-slate-300 leading-relaxed" id="modalBody">Description</p>
-      <button id="btnCloseModal" class="spring-btn w-full py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-500">
-        Got it!
+    <div class="matte-card p-6 max-w-sm w-full space-y-4">
+      <h3 class="text-sm font-bold text-white tracking-wide font-mono uppercase" id="modalTitle">Phase Preview</h3>
+      <p class="text-xs text-slate-300 leading-relaxed font-sans" id="modalBody">Description</p>
+      <button id="btnCloseModal" class="spring-btn w-full py-2.5 rounded-xl bg-white text-slate-950 text-xs font-bold hover:bg-slate-200">
+        Got it
       </button>
     </div>
   </div>

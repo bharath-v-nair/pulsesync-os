@@ -1,10 +1,18 @@
-// PulseSync Life OS - Phase 1 Move MVP Engine
+// PulseSync Life OS - Matte Industrial Move Engine
 (function () {
   'use strict';
 
   // --- Constants & Storage Keys ---
-  const STORAGE_KEY_LOGS = 'pulsesync_logs_v1';
-  const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v1';
+  const STORAGE_KEY_LOGS = 'pulsesync_logs_v2';
+  const STORAGE_KEY_DEFAULTS = 'pulsesync_defaults_v2';
+
+  // Targets tailored for 90kg bodyweight + cognitive study load
+  const TARGETS = {
+    pullups: 20,       // 20 half pull-up reps (GTG)
+    pushups: 50,       // 50 push-up reps (micro-sets)
+    tonnage: 900,      // 900 kg volume (30 reps @ 30kg)
+    steps: 8000        // 8,000 steps (cardio / active recovery)
+  };
 
   // --- State ---
   let logs = [];
@@ -12,28 +20,42 @@
     pullupReps: 4,
     pushupReps: 10,
     barbellReps: 10,
-    selectedLift: 'Squats'
+    selectedLift: 'Squats',
+    stepIncrement: 2500,
+    ellipticalMins: 15
   };
   let undoTimeout = null;
   let lastLoggedId = null;
 
   // --- DOM Elements ---
   const currentDateDisplay = document.getElementById('currentDateDisplay');
-  const metricPullups = document.getElementById('metricPullups');
-  const metricPushups = document.getElementById('metricPushups');
-  const metricTonnage = document.getElementById('metricTonnage');
-  const metricWalks = document.getElementById('metricWalks');
+  const overallProgressText = document.getElementById('overallProgressText');
 
+  const metricPullups = document.getElementById('metricPullups');
+  const barPullup = document.getElementById('barPullup');
+
+  const metricPushups = document.getElementById('metricPushups');
+  const barPushup = document.getElementById('barPushup');
+
+  const metricTonnage = document.getElementById('metricTonnage');
+  const barTonnage = document.getElementById('barTonnage');
+
+  const metricSteps = document.getElementById('metricSteps');
+  const barSteps = document.getElementById('barSteps');
+
+  // Pull-up Stepper
   const valPullup = document.getElementById('valPullup');
   const btnPullupDec = document.getElementById('btnPullupDec');
   const btnPullupInc = document.getElementById('btnPullupInc');
   const btnPullupLog = document.getElementById('btnPullupLog');
 
+  // Push-up Stepper
   const valPushup = document.getElementById('valPushup');
   const btnPushupDec = document.getElementById('btnPushupDec');
   const btnPushupInc = document.getElementById('btnPushupInc');
   const btnPushupLog = document.getElementById('btnPushupLog');
 
+  // Barbell Module
   const barbellPills = document.getElementById('barbellPills');
   const selectedLiftName = document.getElementById('selectedLiftName');
   const valBarbell = document.getElementById('valBarbell');
@@ -41,37 +63,48 @@
   const btnBarbellInc = document.getElementById('btnBarbellInc');
   const btnBarbellLog = document.getElementById('btnBarbellLog');
 
-  const btnWalkMorning = document.getElementById('btnWalkMorning');
-  const btnWalkEvening = document.getElementById('btnWalkEvening');
-  const statusWalkMorning = document.getElementById('statusWalkMorning');
-  const statusWalkEvening = document.getElementById('statusWalkEvening');
+  // Cardio: Steps & Elliptical
+  const valSteps = document.getElementById('valSteps');
+  const btnStepDec = document.getElementById('btnStepDec');
+  const btnStepInc = document.getElementById('btnStepInc');
+  const btnStepLog = document.getElementById('btnStepLog');
+
+  const valElliptical = document.getElementById('valElliptical');
+  const btnEllipticalDec = document.getElementById('btnEllipticalDec');
+  const btnEllipticalInc = document.getElementById('btnEllipticalInc');
+  const btnEllipticalLog = document.getElementById('btnEllipticalLog');
+
+  // Wake Up Button
   const btnWakeUp = document.getElementById('btnWakeUp');
   const wakeUpLabel = document.getElementById('wakeUpLabel');
 
+  // Timeline
   const timelineContainer = document.getElementById('timelineContainer');
   const timelineList = document.getElementById('timelineList');
   const emptyTimeline = document.getElementById('emptyTimeline');
   const logCount = document.getElementById('logCount');
 
+  // Toast
   const undoToast = document.getElementById('undoToast');
   const undoMessage = document.getElementById('undoMessage');
   const btnUndoAction = document.getElementById('btnUndoAction');
   const toastProgressBar = document.getElementById('toastProgressBar');
 
+  // Utilities
   const btnExportCSV = document.getElementById('btnExportCSV');
   const btnExportJSON = document.getElementById('btnExportJSON');
   const btnClearToday = document.getElementById('btnClearToday');
 
+  // Navigation Previews
   const tabFocus = document.getElementById('tabFocus');
   const tabHabits = document.getElementById('tabHabits');
   const previewModal = document.getElementById('previewModal');
-  const modalIcon = document.getElementById('modalIcon');
   const modalTitle = document.getElementById('modalTitle');
   const modalBody = document.getElementById('modalBody');
   const btnCloseModal = document.getElementById('btnCloseModal');
 
   // --- Audio / Haptics Sensory Feedback ---
-  function playClickAudio(freq = 600, duration = 0.03) {
+  function playClickAudio(freq = 550, duration = 0.035) {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
@@ -91,12 +124,10 @@
 
       osc.start();
       osc.stop(ctx.currentTime + duration);
-    } catch (e) {
-      // Audio autoplay policy fallback
-    }
+    } catch (e) {}
   }
 
-  function triggerHaptic(duration = 15, audioFreq = 600) {
+  function triggerHaptic(duration = 15, audioFreq = 550) {
     playClickAudio(audioFreq);
     if ('vibrate' in navigator) {
       try {
@@ -105,7 +136,7 @@
     }
   }
 
-  // --- Date Formatter Utilities ---
+  // --- Date Helpers ---
   function getTodayDateStr() {
     const d = new Date();
     const year = d.getFullYear();
@@ -134,7 +165,7 @@
     return `${Math.floor(diffHr / 24)}d ago`;
   }
 
-  // --- Storage Management ---
+  // --- Storage ---
   function loadData() {
     try {
       const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
@@ -145,7 +176,7 @@
         stickyDefaults = { ...stickyDefaults, ...JSON.parse(storedDefaults) };
       }
     } catch (err) {
-      console.error('Error reading localStorage', err);
+      console.error('Error loading data', err);
       logs = [];
     }
   }
@@ -155,13 +186,13 @@
       localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
       localStorage.setItem(STORAGE_KEY_DEFAULTS, JSON.stringify(stickyDefaults));
     } catch (err) {
-      console.error('Error writing to localStorage', err);
+      console.error('Error saving data', err);
     }
   }
 
   // --- Rendering Functions ---
   function renderHeaderDate() {
-    const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+    const options = { weekday: 'short', month: 'short', day: 'numeric' };
     currentDateDisplay.textContent = new Date().toLocaleDateString(undefined, options);
   }
 
@@ -172,54 +203,45 @@
     let totalPullups = 0;
     let totalPushups = 0;
     let totalTonnage = 0;
-    let totalWalkKm = 0;
-    let morningWalkDone = false;
-    let eveningWalkDone = false;
+    let totalSteps = 0;
     let wokeUpTime = null;
 
     todayLogs.forEach(item => {
       if (item.category === 'pullup') totalPullups += (item.reps || 0);
       if (item.category === 'pushup') totalPushups += (item.reps || 0);
       if (item.category === 'barbell') totalTonnage += ((item.reps || 0) * (item.weightKg || 30));
-      if (item.category === 'walk') {
-        totalWalkKm += (item.distanceKm || 0);
-        if (item.name.includes('Morning')) morningWalkDone = true;
-        if (item.name.includes('Evening')) eveningWalkDone = true;
-      }
-      if (item.category === 'wake_up') {
-        wokeUpTime = item.timeFormatted;
-      }
+      if (item.category === 'walk') totalSteps += (item.steps || 0);
+      if (item.category === 'elliptical') totalSteps += ((item.minutes || 0) * 120); // ~120 steps/min equivalent
+      if (item.category === 'wake_up') wokeUpTime = item.timeFormatted;
     });
 
+    // Update numbers
     metricPullups.textContent = totalPullups;
     metricPushups.textContent = totalPushups;
     metricTonnage.textContent = totalTonnage;
-    metricWalks.textContent = totalWalkKm.toFixed(1);
+    metricSteps.textContent = totalSteps >= 1000 ? `${(totalSteps / 1000).toFixed(1)}k` : totalSteps;
 
-    // Update Walk Buttons Status
-    if (morningWalkDone) {
-      statusWalkMorning.textContent = 'Completed ✅';
-      statusWalkMorning.className = 'text-[10px] text-emerald-400 font-bold';
-    } else {
-      statusWalkMorning.textContent = 'Tap to log';
-      statusWalkMorning.className = 'text-[10px] text-slate-400';
-    }
+    // Progress Bar calculations
+    const pctPullup = Math.min(100, Math.round((totalPullups / TARGETS.pullups) * 100));
+    const pctPushup = Math.min(100, Math.round((totalPushups / TARGETS.pushups) * 100));
+    const pctTonnage = Math.min(100, Math.round((totalTonnage / TARGETS.tonnage) * 100));
+    const pctSteps = Math.min(100, Math.round((totalSteps / TARGETS.steps) * 100));
 
-    if (eveningWalkDone) {
-      statusWalkEvening.textContent = 'Completed ✅';
-      statusWalkEvening.className = 'text-[10px] text-emerald-400 font-bold';
-    } else {
-      statusWalkEvening.textContent = 'Tap to log';
-      statusWalkEvening.className = 'text-[10px] text-slate-400';
-    }
+    barPullup.style.width = `${pctPullup}%`;
+    barPushup.style.width = `${pctPushup}%`;
+    barTonnage.style.width = `${pctTonnage}%`;
+    barSteps.style.width = `${pctSteps}%`;
 
-    // Update Wake-Up Button
+    const avgProgress = Math.round((pctPullup + pctPushup + pctTonnage + pctSteps) / 4);
+    overallProgressText.textContent = `${avgProgress}% Target Achieved`;
+
+    // Wake-Up button
     if (wokeUpTime) {
       wakeUpLabel.textContent = `Woke ${wokeUpTime}`;
-      btnWakeUp.classList.add('border-amber-500/50', 'bg-amber-950/40');
+      btnWakeUp.classList.add('border-amber-500/40', 'bg-amber-950/20');
     } else {
       wakeUpLabel.textContent = 'Woke Up';
-      btnWakeUp.classList.remove('border-amber-500/50', 'bg-amber-950/40');
+      btnWakeUp.classList.remove('border-amber-500/40', 'bg-amber-950/20');
     }
   }
 
@@ -242,42 +264,37 @@
     timelineList.classList.remove('hidden');
 
     timelineList.innerHTML = todayLogs.map(item => {
-      let icon = '💪';
-      let badgeStyle = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      let badgeStyle = 'text-sky-400 bg-sky-950/30 border-sky-800/40';
       let details = `${item.reps} reps`;
 
       if (item.category === 'pushup') {
-        icon = '🤸';
-        badgeStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        badgeStyle = 'text-emerald-400 bg-emerald-950/30 border-emerald-800/40';
       } else if (item.category === 'barbell') {
-        icon = '🏋️';
-        badgeStyle = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        badgeStyle = 'text-amber-400 bg-amber-950/30 border-amber-800/40';
         details = `${item.reps} reps @ 30kg (${item.reps * 30}kg vol)`;
       } else if (item.category === 'walk') {
-        icon = '🚶';
-        badgeStyle = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
-        details = `${item.distanceKm} km completed`;
+        badgeStyle = 'text-purple-400 bg-purple-950/30 border-purple-800/40';
+        details = `${item.steps.toLocaleString()} steps logged`;
+      } else if (item.category === 'elliptical') {
+        badgeStyle = 'text-indigo-400 bg-indigo-950/30 border-indigo-800/40';
+        details = `${item.minutes} mins elliptical session`;
       } else if (item.category === 'wake_up') {
-        icon = '☀️';
-        badgeStyle = 'bg-amber-500/10 text-amber-300 border-amber-500/20';
-        details = 'Day anchor logged';
+        badgeStyle = 'text-amber-300 bg-amber-950/30 border-amber-800/40';
+        details = 'Day start recorded';
       }
 
       return `
-        <div class="timeline-item flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700 transition">
-          <div class="flex items-center gap-3">
-            <span class="text-xl">${icon}</span>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-slate-100">${item.name}</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded border ${badgeStyle} font-mono">${item.timeFormatted}</span>
-              </div>
-              <p class="text-[11px] text-slate-400 mt-0.5">${details}</p>
+        <div class="timeline-item flex items-center justify-between p-2.5 rounded-xl bg-[#111622] border border-white/[0.06] hover:border-white/15 transition">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-100">${item.name}</span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded border ${badgeStyle} font-mono">${item.timeFormatted}</span>
             </div>
+            <p class="text-[11px] text-slate-400 font-mono mt-0.5">${details}</p>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-[10px] text-slate-500 font-mono">${getRelativeTime(item.timestamp)}</span>
-            <button data-id="${item.id}" class="btn-delete-log text-slate-500 hover:text-rose-400 p-1.5 rounded-lg tap-target text-xs transition">
+            <button data-id="${item.id}" class="btn-delete-log text-slate-500 hover:text-rose-400 p-1 rounded tap-target text-xs transition">
               ✕
             </button>
           </div>
@@ -285,7 +302,7 @@
       `;
     }).join('');
 
-    // Delete buttons
+    // Attach delete listeners
     document.querySelectorAll('.btn-delete-log').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
@@ -305,6 +322,9 @@
     valBarbell.textContent = stickyDefaults.barbellReps;
     const vol = stickyDefaults.barbellReps * 30;
     btnBarbellLog.textContent = `LOG (${vol}kg)`;
+
+    valSteps.textContent = stickyDefaults.stepIncrement.toLocaleString();
+    valElliptical.textContent = `${stickyDefaults.ellipticalMins}m`;
   }
 
   // --- Action Logging Handlers ---
@@ -320,7 +340,7 @@
 
     logs.push(newLog);
     saveData();
-    triggerHaptic(15, 750);
+    triggerHaptic(15, 680);
     renderMetrics();
     renderTimeline();
 
@@ -331,7 +351,7 @@
   function deleteLog(id) {
     logs = logs.filter(item => item.id !== id);
     saveData();
-    triggerHaptic(10, 300);
+    triggerHaptic(10, 240);
     renderMetrics();
     renderTimeline();
   }
@@ -343,15 +363,14 @@
     undoMessage.textContent = msg;
     undoToast.classList.remove('hidden');
 
-    // Reset countdown bar animation
     toastProgressBar.classList.remove('toast-bar');
-    void toastProgressBar.offsetWidth; // Force reflow
+    void toastProgressBar.offsetWidth;
     toastProgressBar.classList.add('toast-bar');
 
     btnUndoAction.onclick = () => {
       deleteLog(logId);
       undoToast.classList.add('hidden');
-      triggerHaptic(20, 250);
+      triggerHaptic(20, 220);
     };
 
     undoTimeout = setTimeout(() => {
@@ -362,11 +381,11 @@
   // --- Export Utilities ---
   function exportCSV() {
     if (logs.length === 0) {
-      alert('No workout logs to export yet.');
+      alert('No logs available to export yet.');
       return;
     }
 
-    const headers = ['ID', 'Date', 'Time', 'Category', 'Exercise', 'Reps', 'WeightKg', 'DistanceKm'];
+    const headers = ['ID', 'Date', 'Time', 'Category', 'Exercise', 'Reps', 'WeightKg', 'Steps', 'Minutes'];
     const rows = logs.map(item => [
       item.id,
       item.dateStr,
@@ -375,14 +394,15 @@
       `"${item.name}"`,
       item.reps || 0,
       item.weightKg || 0,
-      item.distanceKm || 0
+      item.steps || 0,
+      item.minutes || 0
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `pulsesync_workouts_${getTodayDateStr()}.csv`);
+    link.setAttribute('download', `pulsesync_${getTodayDateStr()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -391,7 +411,7 @@
 
   function exportJSON() {
     if (logs.length === 0) {
-      alert('No workout logs to export yet.');
+      alert('No logs available to export yet.');
       return;
     }
 
@@ -409,7 +429,7 @@
     const todayStr = getTodayDateStr();
     const count = logs.filter(i => i.dateStr === todayStr).length;
     if (count === 0) {
-      alert('No logs to reset today.');
+      alert('No workouts logged today.');
       return;
     }
 
@@ -422,9 +442,9 @@
     }
   }
 
-  // --- Event Listeners ---
+  // --- Event Listeners Setup ---
   function setupListeners() {
-    // Half Pull-ups Stepper
+    // Pull-ups Stepper
     btnPullupDec.addEventListener('click', () => {
       if (stickyDefaults.pullupReps > 1) {
         stickyDefaults.pullupReps--;
@@ -476,13 +496,13 @@
       });
     });
 
-    // Barbell Pills Selection
+    // Barbell Pills
     barbellPills.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         barbellPills.querySelectorAll('button').forEach(b => {
-          b.className = 'spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/90 text-slate-300 hover:bg-slate-700 whitespace-nowrap';
+          b.className = 'spring-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2233] text-slate-300 hover:text-white whitespace-nowrap';
         });
-        btn.className = 'spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 whitespace-nowrap';
+        btn.className = 'spring-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-950 shadow-sm whitespace-nowrap';
         stickyDefaults.selectedLift = btn.getAttribute('data-lift');
         saveData();
         updateStepperDisplays();
@@ -516,20 +536,53 @@
       });
     });
 
-    // Cardio Walks
-    btnWalkMorning.addEventListener('click', () => {
+    // Steps Stepper
+    btnStepDec.addEventListener('click', () => {
+      if (stickyDefaults.stepIncrement > 500) {
+        stickyDefaults.stepIncrement = Math.max(500, stickyDefaults.stepIncrement - 500);
+        saveData();
+        updateStepperDisplays();
+        triggerHaptic(8, 450);
+      }
+    });
+
+    btnStepInc.addEventListener('click', () => {
+      stickyDefaults.stepIncrement += 500;
+      saveData();
+      updateStepperDisplays();
+      triggerHaptic(8, 650);
+    });
+
+    btnStepLog.addEventListener('click', () => {
       addLog({
         category: 'walk',
-        name: 'Morning 5k Walk',
-        distanceKm: 5.0
+        name: 'Walk Steps',
+        steps: stickyDefaults.stepIncrement
       });
     });
 
-    btnWalkEvening.addEventListener('click', () => {
+    // Elliptical Stepper
+    btnEllipticalDec.addEventListener('click', () => {
+      if (stickyDefaults.ellipticalMins > 5) {
+        stickyDefaults.ellipticalMins = Math.max(5, stickyDefaults.ellipticalMins - 5);
+        saveData();
+        updateStepperDisplays();
+        triggerHaptic(8, 450);
+      }
+    });
+
+    btnEllipticalInc.addEventListener('click', () => {
+      stickyDefaults.ellipticalMins += 5;
+      saveData();
+      updateStepperDisplays();
+      triggerHaptic(8, 650);
+    });
+
+    btnEllipticalLog.addEventListener('click', () => {
       addLog({
-        category: 'walk',
-        name: 'Evening 5k Walk',
-        distanceKm: 5.0
+        category: 'elliptical',
+        name: 'Elliptical / Cycle',
+        minutes: stickyDefaults.ellipticalMins
       });
     });
 
@@ -538,7 +591,7 @@
       const todayStr = getTodayDateStr();
       const existing = logs.find(i => i.dateStr === todayStr && i.category === 'wake_up');
       if (existing) {
-        alert(`Wake-up already logged today at ${existing.timeFormatted}`);
+        alert(`Wake-up already recorded today at ${existing.timeFormatted}`);
         return;
       }
       addLog({
@@ -547,24 +600,22 @@
       });
     });
 
-    // Exports & Clear
+    // Export & Clear
     btnExportCSV.addEventListener('click', exportCSV);
     btnExportJSON.addEventListener('click', exportJSON);
     btnClearToday.addEventListener('click', clearToday);
 
-    // Modal Previews for Phase 2 & Phase 3
+    // Modal Previews
     tabFocus.addEventListener('click', () => {
-      modalIcon.textContent = '🧠';
       modalTitle.textContent = 'Phase 2: Focus Engine';
-      modalBody.textContent = 'Upcoming in Phase 2: 7-Day Rotating Curriculum (Angular -> .NET -> Full Stack -> SysDesign), Daily 20-Question Queue, Active vs Break Split state machine, and the 45-15 Feynman timebox.';
+      modalBody.textContent = 'Upcoming in Phase 2: Add-Task Queue for interview questions, dual-clock Active vs Break Split timer, and 45-15 Feynman timebox with dual chime/flash alerts.';
       previewModal.classList.remove('hidden');
       triggerHaptic(10, 500);
     });
 
     tabHabits.addEventListener('click', () => {
-      modalIcon.textContent = '🛡️';
       modalTitle.textContent = 'Phase 3: Habits & Peer Sync';
-      modalBody.textContent = 'Upcoming in Phase 3: Sleep/wake duration, 20m book reading, private dopamine detox clean streaks (anti-porn, anti-media bingeing) with relapse trigger logging, and lean peer pair code.';
+      modalBody.textContent = 'Upcoming in Phase 3: Bedtime logging, 20m book reading, private dopamine detox clean streaks (anti-porn, anti-media bingeing), and lean peer pair code.';
       previewModal.classList.remove('hidden');
       triggerHaptic(10, 500);
     });
@@ -572,50 +623,15 @@
     btnCloseModal.addEventListener('click', () => {
       previewModal.classList.add('hidden');
     });
-
-    // App Shortcuts URL Handling
-    const urlParams = new URLSearchParams(window.location.search);
-    const quick = urlParams.get('quick');
-    if (quick === 'pullup') {
-      setTimeout(() => {
-        addLog({
-          category: 'pullup',
-          name: 'Half Pull-ups',
-          reps: stickyDefaults.pullupReps,
-          weightKg: 0
-        });
-      }, 300);
-    } else if (quick === 'pushup') {
-      setTimeout(() => {
-        addLog({
-          category: 'pushup',
-          name: 'Push-ups',
-          reps: stickyDefaults.pushupReps,
-          weightKg: 0
-        });
-      }, 300);
-    } else if (quick === 'walk') {
-      setTimeout(() => {
-        addLog({
-          category: 'walk',
-          name: '5k Walk',
-          distanceKm: 5.0
-        });
-      }, 300);
-    }
   }
 
-  // --- Service Worker Registration ---
+  // --- Service Worker ---
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => {
-            console.log('PulseSync SW registered:', reg.scope);
-          })
-          .catch(err => {
-            console.log('SW registration note:', err);
-          });
+          .then(reg => console.log('PulseSync SW active:', reg.scope))
+          .catch(err => console.log('SW note:', err));
       });
     }
   }

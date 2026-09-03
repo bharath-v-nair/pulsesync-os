@@ -1,15 +1,17 @@
-/* PulseSync Life OS - Studio Grade Mobile Design System */
+/* PulseSync Life OS - Bespoke Matte Industrial Design System */
 :root {
-  --bg-obsidian: #070a10;
-  --surface-card: rgba(15, 23, 42, 0.85);
-  --surface-card-border: rgba(255, 255, 255, 0.08);
-  --surface-hover: rgba(30, 41, 59, 0.95);
-  --text-main: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent-cyan: #06b6d4;
-  --accent-blue: #3b82f6;
+  --bg-primary: #080a0f;
+  --bg-surface: #101520;
+  --bg-surface-elevated: #161d2c;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-active: rgba(255, 255, 255, 0.16);
+  --text-primary: #f8fafc;
+  --text-muted: #8b9bb4;
+  --text-dim: #475569;
+  --accent-cyan: #38bdf8;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
 }
 
 * {
@@ -21,123 +23,133 @@
 }
 
 body {
-  background-color: var(--bg-obsidian);
-  color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
   padding-bottom: 96px;
   overflow-x: hidden;
   user-select: none;
+  letter-spacing: -0.01em;
 }
 
-/* Tabular Numerals to eliminate layout jitter */
+/* Tabular Numerals (Strict invariant: no layout jitter) */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Micro-Typography Eyebrows */
+/* Micro-Typography Eyebrow */
 .eyebrow {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--text-secondary);
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
 }
 
-/* Glassmorphism Surface Elevation */
-.studio-card {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(10, 15, 28, 0.92) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--surface-card-border);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+/* Clean Matte Card Surface */
+.matte-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.15s ease;
 }
 
-/* Spring Physics for Buttons */
+.matte-card:hover {
+  border-color: var(--border-active);
+}
+
+/* Tactile Spring Physics */
 .spring-btn {
   cursor: pointer;
   border: none;
   outline: none;
   font-family: inherit;
-  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, box-shadow 0.15s ease;
-  min-height: 48px;
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, border-color 0.15s ease;
+  min-height: 44px;
 }
 
 .spring-btn:active {
-  transform: translateY(2px) scale(0.96);
+  transform: translateY(2px) scale(0.97);
 }
 
 .tap-target {
-  min-width: 48px;
-  min-height: 48px;
+  min-width: 44px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Signature Stepper Component */
+/* Industrial Stepper Buttons */
 .stepper-btn {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: #1e293b;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background-color: #1a2233;
   color: #f1f5f9;
-  font-size: 20px;
-  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.stepper-btn:hover {
-  background: #334155;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .stepper-btn:active {
-  background: #0f172a;
+  background-color: #0f1523;
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
-/* Action Log Buttons with Soft Ambient Glows */
-.btn-log-blue {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #ffffff;
-  box-shadow: 0 4px 18px -2px rgba(37, 99, 235, 0.4);
+/* High-Contrast Action Buttons (Solid Matte, Zero AI Slop Neon) */
+.btn-action-primary {
+  background-color: #ffffff;
+  color: #090d16;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.12);
 }
 
-.btn-log-blue:active {
-  background: #1e40af;
+.btn-action-primary:active {
+  background-color: #e2e8f0;
 }
 
-.btn-log-emerald {
-  background: linear-gradient(135deg, #059669, #047857);
-  color: #ffffff;
-  box-shadow: 0 4px 18px -2px rgba(16, 185, 129, 0.4);
+.btn-action-dark {
+  background-color: #1a2233;
+  color: #f8fafc;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
 }
 
-.btn-log-emerald:active {
-  background: #065f46;
+.btn-action-dark:active {
+  background-color: #0d131f;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
-.btn-log-amber {
-  background: linear-gradient(135deg, #d97706, #b45309);
-  color: #ffffff;
-  box-shadow: 0 4px 18px -2px rgba(245, 158, 11, 0.4);
+/* Progress Bar Tracking */
+.progress-track {
+  background-color: #1a2233;
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
 }
 
-.btn-log-amber:active {
-  background: #92400e;
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Floating Toast with Spring Entry */
 @keyframes toastSpring {
   0% {
     opacity: 0;
-    transform: translate(-50%, 30px) scale(0.92);
+    transform: translate(-50%, 30px) scale(0.94);
   }
   70% {
-    transform: translate(-50%, -4px) scale(1.02);
+    transform: translate(-50%, -4px) scale(1.01);
   }
   100% {
     opacity: 1;
@@ -146,10 +158,9 @@ body {
 }
 
 .toast-spring {
-  animation: toastSpring 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: toastSpring 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Toast Progress Countdown Bar */
 @keyframes toastCountdown {
   from { width: 100%; }
   to { width: 0%; }
@@ -159,11 +170,11 @@ body {
   animation: toastCountdown 5s linear forwards;
 }
 
-/* Timeline Item Fade */
-@keyframes timelineEnter {
+/* Timeline Item Animations */
+@keyframes itemEnter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -172,18 +183,18 @@ body {
 }
 
 .timeline-item {
-  animation: timelineEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: itemEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Smooth Minimalist Scrollbar */
+/* Custom Minimalist Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #1e293b;
-  border-radius: 4px;
+  border-radius: 3px;
 }
