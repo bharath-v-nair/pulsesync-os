@@ -4,11 +4,13 @@ import { FocusTask } from '../../types';
 interface TodayFocusProgressCardProps {
   tasks: FocusTask[];
   totalStudySeconds: number;
+  targetHours?: number;
 }
 
 export const TodayFocusProgressCard: React.FC<TodayFocusProgressCardProps> = ({
   tasks,
   totalStudySeconds,
+  targetHours = 5.5,
 }) => {
   const deepTasks = tasks.filter((t) => t.bucket === 'deep');
   const deepCompleted = deepTasks.filter((t) => t.completed).length;
@@ -28,7 +30,7 @@ export const TodayFocusProgressCard: React.FC<TodayFocusProgressCardProps> = ({
 
   const hrs = Math.floor(totalStudySeconds / 3600);
   const mins = Math.floor((totalStudySeconds % 3600) / 60);
-  const formattedStudyTime = `${hrs}h ${String(mins).padStart(2, '0')}m / 5.5h Target`;
+  const formattedStudyTime = `${hrs}h ${String(mins).padStart(2, '0')}m / ${targetHours}h Target`;
 
   return (
     <section className="matte-card p-4 space-y-3 border-white/10 bg-[#0d131f]">

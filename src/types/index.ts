@@ -263,3 +263,205 @@ export interface HabitsData {
 // ==========================================
 export type AppTab = 'move' | 'focus' | 'habits';
 export type ActiveView = AppTab | 'overview' | 'library';
+
+// ==========================================
+// 5. Dynamic User Profile & Settings Types
+// ==========================================
+export interface UserMoveConfig {
+  equipmentMode: 'barbell_home' | 'dumbbells' | 'bodyweight_only';
+  barbellWeightKg: number;
+  enabledExercises: string[];
+  stepper1: {
+    title: string;
+    category: WorkoutCategory;
+    defaultReps: number;
+  };
+  stepper2: {
+    title: string;
+    category: WorkoutCategory;
+    defaultReps: number;
+  };
+  cardio: {
+    defaultWalkSteps: number;
+    dailyCardioStepsTarget: number;
+  };
+  targets: DailyTargets;
+}
+
+export interface FocusPresetConfig {
+  id: string;
+  label: string;
+  studyMinutes: number;
+  breakMinutes: number;
+  warningMinutes: number;
+  description: string;
+}
+
+export interface CurriculumTrackConfig {
+  id: string;
+  title: string;
+  description?: string;
+  days: CurriculumDayConfig[];
+}
+
+export interface UserFocusConfig {
+  timerPresets: FocusPresetConfig[];
+  activePresetId: string;
+  dailyStudyTargetHours: number;
+  dailyDsaTargetProblems: number;
+  curriculumTrackId: string;
+  curriculumTracks: CurriculumTrackConfig[];
+}
+
+export interface KeystoneConfig {
+  id: string;
+  label: string;
+  isCore: boolean;
+  iconName?: string;
+}
+
+export interface UserHabitsConfig {
+  sleepTargetHours: number;
+  sleepOptimalWindowDelta: number;
+  hydrationTargetMl: number;
+  containerMl: number;
+  quickAddAmounts: number[];
+  readingTargetPages: number;
+  keystones: KeystoneConfig[];
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  createdAt: number;
+  avatarColor: string;
+  moveConfig: UserMoveConfig;
+  focusConfig: UserFocusConfig;
+  habitsConfig: UserHabitsConfig;
+}
+
+export const DEFAULT_MOVE_CONFIG: UserMoveConfig = {
+  equipmentMode: 'barbell_home',
+  barbellWeightKg: 30,
+  enabledExercises: [
+    'Squats',
+    'Overhead Press',
+    'Bicep Curls',
+    'Bent Rows',
+    'RDLs',
+    'Deadlifts',
+  ],
+  stepper1: {
+    title: 'Half Pull-ups',
+    category: 'pullup',
+    defaultReps: 4,
+  },
+  stepper2: {
+    title: 'Push-ups',
+    category: 'pushup',
+    defaultReps: 10,
+  },
+  cardio: {
+    defaultWalkSteps: 5000,
+    dailyCardioStepsTarget: 8000,
+  },
+  targets: DEFAULT_TARGETS,
+};
+
+export const DEFAULT_FOCUS_CONFIG: UserFocusConfig = {
+  timerPresets: [
+    {
+      id: '50m',
+      label: '50m',
+      studyMinutes: 50,
+      breakMinutes: 10,
+      warningMinutes: 15,
+      description: '50m Hard Stop · 15m Early Answer Warning',
+    },
+    {
+      id: '30m',
+      label: '30m',
+      studyMinutes: 30,
+      breakMinutes: 5,
+      warningMinutes: 6,
+      description: '30m Rapid Verbal Checks · 6m each',
+    },
+    {
+      id: '60m',
+      label: '60m',
+      studyMinutes: 60,
+      breakMinutes: 10,
+      warningMinutes: 25,
+      description: '60m Hands-on Build · 25m Lookup Rule',
+    },
+    {
+      id: '25m',
+      label: '25m',
+      studyMinutes: 25,
+      breakMinutes: 5,
+      warningMinutes: 5,
+      description: '25m Pomodoro · 5m Restoration Break',
+    },
+  ],
+  activePresetId: '50m',
+  dailyStudyTargetHours: 5.5,
+  dailyDsaTargetProblems: 2,
+  curriculumTrackId: 'dotnet_angular',
+  curriculumTracks: [
+    {
+      id: 'dotnet_angular',
+      title: '.NET & Angular Senior Bootcamp',
+      description: 'Structured 7-day technical interview acceleration track',
+      days: [
+        { day: 1, title: 'Day 1: Angular Forms & Interceptors', tomorrow: 'Day 2: Backend 1 (.NET & Memory)', category: 'Angular' },
+        { day: 2, title: 'Day 2: Backend 1 (.NET & Memory)', tomorrow: 'Day 3: Frontend 2 (RxJS Basics)', category: '.NET' },
+        { day: 3, title: 'Day 3: Frontend 2 (RxJS Basics)', tomorrow: 'Day 4: Backend 2 (Web API Basics)', category: 'Angular' },
+        { day: 4, title: 'Day 4: Backend 2 (Web API Basics)', tomorrow: 'Day 5: Frontend 3 (State & Components)', category: '.NET' },
+        { day: 5, title: 'Day 5: Frontend 3 (State & Components)', tomorrow: 'Day 6: Backend 3 (EF Core & SQL)', category: 'Angular' },
+        { day: 6, title: 'Day 6: Backend 3 (EF Core & SQL)', tomorrow: 'Day 7: Cloud & Behavioral Review', category: '.NET' },
+        { day: 7, title: 'Day 7: Cloud & Behavioral Review', tomorrow: 'Week 2 Launch', category: 'Azure & STAR' },
+      ],
+    },
+    {
+      id: 'fullstack_ts',
+      title: 'Fullstack TypeScript & Systems',
+      description: 'React, Node.js, Distributed Systems & Cloud Architecture',
+      days: [
+        { day: 1, title: 'Day 1: React 19 Compiler & Server Actions', tomorrow: 'Day 2: Node.js Streams & Concurrency', category: 'Frontend' },
+        { day: 2, title: 'Day 2: Node.js Streams & Event Loop', tomorrow: 'Day 3: PostgreSQL Indexing & Query Plans', category: 'Backend' },
+        { day: 3, title: 'Day 3: PostgreSQL Indexing & ACID', tomorrow: 'Day 4: Redis Caching & Distributed Locks', category: 'Database' },
+        { day: 4, title: 'Day 4: Redis & Message Queues (Kafka/RabbitMQ)', tomorrow: 'Day 5: Microservices & gRPC', category: 'Systems' },
+        { day: 5, title: 'Day 5: System Design (Rate Limiters & URL Shortener)', tomorrow: 'Day 6: Cloud Native Deployment', category: 'Design' },
+        { day: 6, title: 'Day 6: Docker, Kubernetes & Observability', tomorrow: 'Day 7: Live Mock Architecture', category: 'Cloud' },
+        { day: 7, title: 'Day 7: Comprehensive Live Coding & Behavioral STAR', tomorrow: 'Track Review', category: 'STAR' },
+      ],
+    },
+  ],
+};
+
+export const DEFAULT_HABITS_CONFIG: UserHabitsConfig = {
+  sleepTargetHours: 8.0,
+  sleepOptimalWindowDelta: 0.5,
+  hydrationTargetMl: 3500,
+  containerMl: 700,
+  quickAddAmounts: [700, 350],
+  readingTargetPages: 20,
+  keystones: [
+    { id: 'cleanDiet', label: 'Clean Nutrition', isCore: true, iconName: 'Apple' },
+    { id: 'zeroDoomscroll', label: 'Zero Doomscrolling', isCore: true, iconName: 'Smartphone' },
+    { id: 'dailySupplements', label: 'Daily Supplements', isCore: true, iconName: 'Pill' },
+    { id: 'bedMade', label: 'Bed Made Upon Waking', isCore: true, iconName: 'CheckCheck' },
+    { id: 'roomReset', label: 'Evening Desk Reset', isCore: false, iconName: 'Sparkles' },
+  ],
+};
+
+export const DEFAULT_USER_PROFILE: UserProfile = {
+  id: 'profile_default',
+  name: 'Solo Athlete',
+  createdAt: 1725400000000,
+  avatarColor: 'sky',
+  moveConfig: DEFAULT_MOVE_CONFIG,
+  focusConfig: DEFAULT_FOCUS_CONFIG,
+  habitsConfig: DEFAULT_HABITS_CONFIG,
+};
+

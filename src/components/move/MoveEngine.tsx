@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WorkoutLog, StickyDefaults, BarbellExercise } from '../../types';
+import { WorkoutLog, StickyDefaults, BarbellExercise, UserMoveConfig } from '../../types';
 import { ScorecardsGrid } from './ScorecardsGrid';
 import { ExerciseStepper } from './ExerciseStepper';
 import { BarbellCard } from './BarbellCard';
@@ -10,6 +10,7 @@ import { EditWorkoutModal } from './EditWorkoutModal';
 interface MoveEngineProps {
   logs: WorkoutLog[];
   stickyDefaults: StickyDefaults;
+  moveConfig?: UserMoveConfig;
   onUpdateDefaults: (defaults: StickyDefaults) => void;
   onLogWorkout: (log: Omit<WorkoutLog, 'id' | 'timestamp' | 'dateStr' | 'timeFormatted'>) => void;
   onDeleteLog: (id: string) => void;
@@ -19,6 +20,7 @@ interface MoveEngineProps {
 export const MoveEngine: React.FC<MoveEngineProps> = ({
   logs,
   stickyDefaults,
+  moveConfig,
   onUpdateDefaults,
   onLogWorkout,
   onDeleteLog,
@@ -26,38 +28,51 @@ export const MoveEngine: React.FC<MoveEngineProps> = ({
 }) => {
   const [editingLog, setEditingLog] = useState<WorkoutLog | null>(null);
 
+  const stepper1Title = moveConfig?.stepper1?.title || 'Half Pull-ups';
+  const stepper1Category = moveConfig?.stepper1?.category || 'pullup';
+  const stepper2Title = moveConfig?.stepper2?.title || 'Push-ups';
+  const stepper2Category = moveConfig?.stepper2?.category || 'pushup';
+  const barbellWeightKg = moveConfig?.barbellWeightKg ?? 30;
+  const enabledExercises = moveConfig?.enabledExercises;
+  const targets = moveConfig?.targets;
+
   return (
     <div className="space-y-4">
       {/* 4 Dynamic Scorecards (Pull-ups, Push-ups, Tonnage, Cardio) */}
-      <ScorecardsGrid logs={logs} />
+      <ScorecardsGrid 
+        logs={logs} 
+        targets={targets}
+        barbellWeightKg={barbellWeightKg}
+        enabledExercises={enabledExercises}
+      />
 
-      {/* Quick Action Stepper 1: Pull-ups */}
+      {/* Quick Action Stepper 1 */}
       <ExerciseStepper
-        title="Half Pull-ups"
+        title={stepper1Title}
         reps={stickyDefaults.pullupReps}
         onRepsChange={(newReps) =>
           onUpdateDefaults({ ...stickyDefaults, pullupReps: newReps })
         }
         onLog={(reps) =>
           onLogWorkout({
-            category: 'pullup',
-            name: 'Half Pull-ups',
+            category: stepper1Category,
+            name: stepper1Title,
             reps,
           })
         }
       />
 
-      {/* Quick Action Stepper 2: Push-ups */}
+      {/* Quick Action Stepper 2 */}
       <ExerciseStepper
-        title="Push-ups"
+        title={stepper2Title}
         reps={stickyDefaults.pushupReps}
         onRepsChange={(newReps) =>
           onUpdateDefaults({ ...stickyDefaults, pushupReps: newReps })
         }
         onLog={(reps) =>
           onLogWorkout({
-            category: 'pushup',
-            name: 'Push-ups',
+            category: stepper2Category,
+            name: stepper2Title,
             reps,
           })
         }
@@ -67,6 +82,8 @@ export const MoveEngine: React.FC<MoveEngineProps> = ({
       <BarbellCard
         selectedLift={stickyDefaults.selectedLift}
         reps={stickyDefaults.barbellReps}
+        weightKg={barbellWeightKg}
+        enabledExercises={enabledExercises}
         onSelectLift={(lift: BarbellExercise) =>
           onUpdateDefaults({ ...stickyDefaults, selectedLift: lift })
         }

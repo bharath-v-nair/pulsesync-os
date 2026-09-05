@@ -6,9 +6,11 @@ import { triggerHaptic } from '../../hooks/useHaptics';
 interface ScorecardsGridProps {
   logs: WorkoutLog[];
   targets?: DailyTargets;
+  barbellWeightKg?: number;
+  enabledExercises?: string[];
 }
 
-const BARBELL_EXERCISES: BarbellExercise[] = [
+const DEFAULT_BARBELL_EXERCISES: BarbellExercise[] = [
   'Squats',
   'Overhead Press',
   'Bicep Curls',
@@ -20,8 +22,13 @@ const BARBELL_EXERCISES: BarbellExercise[] = [
 export const ScorecardsGrid: React.FC<ScorecardsGridProps> = ({
   logs,
   targets = DEFAULT_TARGETS,
+  barbellWeightKg = 30,
+  enabledExercises,
 }) => {
   const [isTonnageDrawerOpen, setIsTonnageDrawerOpen] = useState(false);
+  const activeLifts = (enabledExercises && enabledExercises.length > 0)
+    ? (enabledExercises as BarbellExercise[])
+    : DEFAULT_BARBELL_EXERCISES;
 
   // 1. Pull-ups
   const currentPullups = logs
@@ -40,7 +47,7 @@ export const ScorecardsGrid: React.FC<ScorecardsGridProps> = ({
   // 3. Tonnage
   const currentTonnage = logs
     .filter((l) => l.category === 'barbell')
-    .reduce((acc, l) => acc + (l.reps || 0) * (l.weightKg || 30), 0);
+    .reduce((acc, l) => acc + (l.reps || 0) * (l.weightKg || barbellWeightKg), 0);
   const tonnageMet = currentTonnage >= targets.tonnage;
   const tonnagePct = Math.min(100, Math.round((currentTonnage / targets.tonnage) * 100));
 
@@ -63,14 +70,14 @@ export const ScorecardsGrid: React.FC<ScorecardsGridProps> = ({
   const cardioPct = Math.min(100, Math.round((currentCardio / targets.cardioSteps) * 100));
 
   // Per-exercise breakdown for Tonnage drawer
-  const barbellBreakdown = BARBELL_EXERCISES.map((exercise) => {
+  const barbellBreakdown = activeLifts.map((exercise) => {
     const matchingLogs = logs.filter(
       (l) => l.category === 'barbell' && (l.name === `Barbell ${exercise}` || l.name === exercise || l.name.includes(exercise))
     );
     const sets = matchingLogs.length;
     const reps = matchingLogs.reduce((acc, l) => acc + (l.reps || 0), 0);
     const volume = matchingLogs.reduce(
-      (acc, l) => acc + (l.reps || 0) * (l.weightKg || 30),
+      (acc, l) => acc + (l.reps || 0) * (l.weightKg || barbellWeightKg),
       0
     );
     return { exercise, sets, reps, volume };

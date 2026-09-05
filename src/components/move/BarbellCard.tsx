@@ -7,12 +7,14 @@ interface BarbellCardProps {
   selectedLift: BarbellExercise;
   reps: number;
   weightKg?: number;
+  title?: string;
+  enabledExercises?: string[];
   onSelectLift: (lift: BarbellExercise) => void;
   onRepsChange: (reps: number) => void;
   onLog: (lift: BarbellExercise, reps: number, weightKg: number) => void;
 }
 
-const BARBELL_EXERCISES: BarbellExercise[] = [
+const DEFAULT_BARBELL_EXERCISES: BarbellExercise[] = [
   'Squats',
   'Overhead Press',
   'Bicep Curls',
@@ -25,10 +27,16 @@ export const BarbellCard: React.FC<BarbellCardProps> = ({
   selectedLift,
   reps,
   weightKg = 30,
+  title,
+  enabledExercises,
   onSelectLift,
   onRepsChange,
   onLog,
 }) => {
+  const liftsToRender = (enabledExercises && enabledExercises.length > 0)
+    ? (enabledExercises as BarbellExercise[])
+    : DEFAULT_BARBELL_EXERCISES;
+
   const totalTonnage = reps * weightKg;
 
   const handleLiftClick = (lift: BarbellExercise) => {
@@ -58,16 +66,18 @@ export const BarbellCard: React.FC<BarbellCardProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className="w-4 h-4 text-amber-400" />
-          <h3 className="text-sm font-bold tracking-tight text-white">30kg Home Barbell</h3>
+          <h3 className="text-sm font-bold tracking-tight text-white">
+            {title || `${weightKg}kg Home Barbell`}
+          </h3>
         </div>
-        <span className="badge-pill bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-[10px]">
-          Fixed 30 kg
+        <span className="badge-pill bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-[10px] tabular-nums">
+          {weightKg} kg
         </span>
       </div>
 
       {/* Exercise Pill Tabs */}
       <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Select Barbell Exercise">
-        {BARBELL_EXERCISES.map((lift) => {
+        {liftsToRender.map((lift) => {
           const isSelected = selectedLift === lift;
           return (
             <button

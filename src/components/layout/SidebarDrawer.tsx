@@ -1,4 +1,4 @@
-import { X, BookOpen, Download, Upload, Trash2, Award, BookMarked, ShieldCheck } from 'lucide-react';
+import { X, BookOpen, Download, Upload, Trash2, Award, BookMarked, ShieldCheck, Sliders } from 'lucide-react';
 import { StorageService } from '../../services/storage';
 
 interface SidebarDrawerProps {
@@ -7,6 +7,8 @@ interface SidebarDrawerProps {
   onNavigateLibrary: () => void;
   onOpenProtocolsGuide: () => void;
   onOpenHabitsProtocol: () => void;
+  onOpenSettings?: () => void;
+  activeProfileName?: string;
   bookCount: number;
   onDataReset: () => void;
 }
@@ -17,6 +19,8 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   onNavigateLibrary,
   onOpenProtocolsGuide,
   onOpenHabitsProtocol,
+  onOpenSettings,
+  activeProfileName,
   bookCount,
   onDataReset,
 }) => {
@@ -77,6 +81,29 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           {/* Navigation Links */}
           <div className="space-y-2">
             <p className="eyebrow">Dedicated Modules</p>
+
+            {onOpenSettings && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenSettings();
+                }}
+                className="w-full spring-btn p-3.5 rounded-2xl bg-[#141b29] border border-white/10 hover:border-amber-500/40 text-left flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                    <Sliders className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-semibold text-slate-100 group-hover:text-amber-300">Settings & Profiles</h3>
+                    <p className="text-[10px] text-slate-400">Equipment, targets & multi-user</p>
+                  </div>
+                </div>
+                <span className="badge-pill bg-amber-500/20 text-amber-300 font-mono text-[10px] truncate max-w-[80px]">
+                  {activeProfileName || 'Default'}
+                </span>
+              </button>
+            )}
             
             <button
               onClick={() => {

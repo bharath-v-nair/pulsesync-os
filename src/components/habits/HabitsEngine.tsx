@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HabitsData, SleepRecord, ReadingState, HydrationRecord, KeystonesState } from '../../types';
+import { HabitsData, SleepRecord, ReadingState, HydrationRecord, KeystonesState, UserHabitsConfig } from '../../types';
 import { HydrationCard } from './HydrationCard';
 import { SleepCard } from './SleepCard';
 import { DeepReadingCard } from './DeepReadingCard';
@@ -10,6 +10,7 @@ import { getTodayDateStr } from '../../services/storage';
 
 interface HabitsEngineProps {
   habitsData: HabitsData;
+  habitsConfig?: UserHabitsConfig;
   onUpdateHabitsData: (data: HabitsData) => void;
   onNavigateLibrary: () => void;
   onOpenProtocol?: (section: string) => void;
@@ -17,6 +18,7 @@ interface HabitsEngineProps {
 
 export const HabitsEngine: React.FC<HabitsEngineProps> = ({
   habitsData,
+  habitsConfig,
   onUpdateHabitsData,
   onNavigateLibrary,
   onOpenProtocol,
@@ -60,6 +62,7 @@ export const HabitsEngine: React.FC<HabitsEngineProps> = ({
       {/* Pillar 1: Water (Hydration) */}
       <HydrationCard
         hydration={habitsData.hydration}
+        containerMl={habitsConfig?.containerMl}
         onUpdateHydration={handleUpdateHydration}
         onOpenProtocol={handleOpenProtocol}
       />
@@ -67,6 +70,7 @@ export const HabitsEngine: React.FC<HabitsEngineProps> = ({
       {/* Pillar 2: Sleep & Circadian Timing */}
       <SleepCard
         sleep={habitsData.sleep}
+        sleepTargetHours={habitsConfig?.sleepTargetHours}
         onUpdateSleep={handleUpdateSleep}
         onOpenProtocol={handleOpenProtocol}
       />
@@ -75,6 +79,7 @@ export const HabitsEngine: React.FC<HabitsEngineProps> = ({
       <KeystonesCard
         keystones={habitsData.keystones}
         detox={habitsData.detox}
+        keystonesConfig={habitsConfig?.keystones}
         onUpdateKeystones={handleUpdateKeystones}
         onOpenProtocol={handleOpenProtocol}
       />

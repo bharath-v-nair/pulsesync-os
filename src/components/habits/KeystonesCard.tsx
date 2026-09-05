@@ -9,32 +9,41 @@ import {
   Sparkles,
   HelpCircle,
 } from 'lucide-react';
-import { KeystonesState, DetoxState } from '../../types';
+import { KeystonesState, DetoxState, KeystoneConfig } from '../../types';
 import { triggerHaptic } from '../../hooks/useHaptics';
 import { evaluateCleanDay } from '../../utils/habitsMath';
 
 interface KeystonesCardProps {
   keystones: KeystonesState;
   detox: DetoxState;
+  keystonesConfig?: KeystoneConfig[];
   onUpdateKeystones: (keystones: KeystonesState) => void;
   onOpenProtocol?: (section: string) => void;
 }
 
+const DEFAULT_KEYSTONE_DEFS: KeystoneConfig[] = [
+  { id: 'cleanDiet', label: 'Clean Nutrition', isCore: true, iconName: 'Apple' },
+  { id: 'zeroDoomscroll', label: 'Zero Doomscrolling', isCore: true, iconName: 'Smartphone' },
+  { id: 'dailySupplements', label: 'Daily Supplements', isCore: true, iconName: 'Pill' },
+  { id: 'bedMade', label: 'Bed Made Upon Waking', isCore: true, iconName: 'CheckCheck' },
+  { id: 'roomReset', label: 'Evening Desk Reset', isCore: false, iconName: 'Sparkles' },
+];
+
 export const KeystonesCard: React.FC<KeystonesCardProps> = ({
   keystones,
   detox,
+  keystonesConfig,
   onUpdateKeystones,
   onOpenProtocol,
 }) => {
   const isCleanDay = evaluateCleanDay(keystones);
+  const activeDefs = keystonesConfig && keystonesConfig.length > 0 ? keystonesConfig : DEFAULT_KEYSTONE_DEFS;
 
   // Count core markers completed
-  const coreMarkersCount = [
-    keystones.cleanDiet,
-    keystones.zeroDoomscroll,
-    keystones.dailySupplements,
-    keystones.bedMade,
-  ].filter(Boolean).length;
+  const coreMarkersCount = activeDefs
+    .filter((d) => d.isCore && Boolean((keystones as any)[d.id]))
+    .length;
+  const totalCore = activeDefs.filter((d) => d.isCore).length;
 
   const toggleMarker = (key: keyof KeystonesState) => {
     triggerHaptic(15);
@@ -45,43 +54,29 @@ export const KeystonesCard: React.FC<KeystonesCardProps> = ({
     onUpdateKeystones(updatedKeystones);
   };
 
-  const markers: {
-    key: keyof KeystonesState;
-    label: string;
-    icon: React.ReactNode;
-    isCore: boolean;
-  }[] = [
-    {
-      key: 'cleanDiet',
-      label: 'Clean Nutrition',
-      icon: <Apple className="w-4 h-4 text-emerald-400" />,
-      isCore: true,
-    },
-    {
-      key: 'zeroDoomscroll',
-      label: 'Zero Doomscrolling',
-      icon: <Smartphone className="w-4 h-4 text-sky-400" />,
-      isCore: true,
-    },
-    {
-      key: 'dailySupplements',
-      label: 'Daily Supplements',
-      icon: <Pill className="w-4 h-4 text-amber-400" />,
-      isCore: true,
-    },
-    {
-      key: 'bedMade',
-      label: 'Bed Made Upon Waking',
-      icon: <CheckCheck className="w-4 h-4 text-purple-400" />,
-      isCore: true,
-    },
-    {
-      key: 'roomReset',
-      label: 'Evening Desk Reset',
-      icon: <Sparkles className="w-4 h-4 text-slate-400" />,
-      isCore: false,
-    },
-  ];
+  const getIconForId = (id: string) => {
+    switch (id) {
+      case 'cleanDiet':
+        return <Apple className="w-4 h-4 text-emerald-400" />;
+      case 'zeroDoomscroll':
+        return <Smartphone className="w-4 h-4 text-sky-400" />;
+      case 'dailySupplements':
+        return <Pill className="w-4 h-4 text-amber-400" />;
+      case 'bedMade':
+        return <CheckCheck className="w-4 h-4 text-purple-400" />;
+      case 'roomReset':
+        return <Sparkles className="w-4 h-4 text-slate-400" />;
+      default:
+        return <ShieldCheck className="w-4 h-4 text-emerald-400" />;
+    }
+  };
+
+  const markers = activeDefs.map((def) => ({
+    key: def.id as keyof KeystonesState,
+    label: def.label,
+    icon: getIconForId(def.id),
+    isCore: def.isCore,
+  }));
 
   return (
     <div className="matte-card p-4 space-y-3.5">
@@ -113,7 +108,7 @@ export const KeystonesCard: React.FC<KeystonesCardProps> = ({
                 : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
             }`}
           >
-            {isCleanDay ? '✓ Clean Day Done' : `In Progress (${coreMarkersCount}/4)`}
+            {isCleanDay ? '✓ Clean Day Done' : `In Progress (${coreMarkersCount}/${totalCore})`}
           </span>
         </div>
       </div>

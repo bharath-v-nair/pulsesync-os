@@ -11,12 +11,14 @@ import {
 
 interface HydrationCardProps {
   hydration: HydrationRecord;
+  containerMl?: number;
   onUpdateHydration: (hydration: HydrationRecord) => void;
   onOpenProtocol?: (section: string) => void;
 }
 
 export const HydrationCard: React.FC<HydrationCardProps> = ({
   hydration,
+  containerMl,
   onUpdateHydration,
   onOpenProtocol,
 }) => {
@@ -26,8 +28,9 @@ export const HydrationCard: React.FC<HydrationCardProps> = ({
   const percentage = stats.progressPercent;
   const strokeDashoffset = stats.strokeDashoffset;
 
-  const bottlesCount = (currentMl / 700).toFixed(1);
-  const totalBottles = (targetMl / 700).toFixed(0);
+  const bottleUnit = containerMl && containerMl > 0 ? containerMl : 700;
+  const bottlesCount = (currentMl / bottleUnit).toFixed(1);
+  const totalBottles = (targetMl / bottleUnit).toFixed(0);
 
   const handleQuickAdd = (amount: number) => {
     triggerHaptic(15);
@@ -162,23 +165,23 @@ export const HydrationCard: React.FC<HydrationCardProps> = ({
         </div>
       </div>
 
-      {/* 700ml Bottle Quick-Logs */}
+      {/* Bottle Quick-Logs */}
       <div className="grid grid-cols-2 gap-2.5">
         <button
           type="button"
-          onClick={() => handleQuickAdd(700)}
+          onClick={() => handleQuickAdd(bottleUnit)}
           className="spring-btn min-h-[44px] px-3.5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:bg-sky-500/30 border border-sky-500/25 flex items-center justify-center gap-2 tap-target transition-all active:scale-[0.98]"
         >
           <Droplets className="w-4 h-4 text-sky-400" />
-          <span className="text-xs font-bold font-mono text-sky-200">+700 ml Bottle</span>
+          <span className="text-xs font-bold font-mono text-sky-200">+{bottleUnit} ml Bottle</span>
         </button>
         <button
           type="button"
-          onClick={() => handleQuickAdd(350)}
+          onClick={() => handleQuickAdd(Math.round(bottleUnit / 2))}
           className="spring-btn min-h-[44px] px-3.5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:bg-sky-500/30 border border-sky-500/25 flex items-center justify-center gap-2 tap-target transition-all active:scale-[0.98]"
         >
           <Droplets className="w-4 h-4 text-sky-400" />
-          <span className="text-xs font-bold font-mono text-sky-200">+350 ml Half</span>
+          <span className="text-xs font-bold font-mono text-sky-200">+{Math.round(bottleUnit / 2)} ml Half</span>
         </button>
       </div>
 

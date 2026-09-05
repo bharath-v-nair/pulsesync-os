@@ -8,15 +8,28 @@ import type {
   DetoxState,
   ReadingState,
   KeystonesState,
-  DailyHabitRecord
-} from '../types';
+  DailyHabitRecord,
+  UserProfile
+} from '../types/index.ts';
+import { DEFAULT_USER_PROFILE } from '../types/index.ts';
 
 export const STORAGE_KEYS = {
+  // Legacy global keys (v4)
   WORKOUTS: 'pulsesync_workouts_v4',
   DEFAULTS: 'pulsesync_sticky_defaults_v4',
   FOCUS: 'pulsesync_focus_v4',
   HABITS: 'pulsesync_habits_v4',
+
+  // Profile metadata keys (v1)
+  PROFILES: 'pulsesync_profiles_v1',
+  ACTIVE_PROFILE_ID: 'pulsesync_active_profile_id_v1',
 };
+
+export function getPartitionKey(profileId: string, domain: 'workouts' | 'defaults' | 'focus' | 'habits'): string {
+  const safeId = profileId?.trim() || DEFAULT_USER_PROFILE.id;
+  return `pulsesync_p_${safeId}_${domain}_v4`;
+}
+
 
 export function getTodayDateStr(): string {
   const now = new Date();
@@ -42,7 +55,7 @@ const DEFAULT_STICKY: StickyDefaults = {
   ellipticalMins: 10,
 };
 
-import { INITIAL_FOCUS_DATA } from '../data/focusData';
+import { INITIAL_FOCUS_DATA } from '../data/focusData.ts';
 
 const DEFAULT_FOCUS: FocusData = INITIAL_FOCUS_DATA;
 
@@ -370,26 +383,183 @@ export function migrateHabitsData(raw: any): HabitsData {
 }
 
 export const StorageService = {
-  getWorkouts(): WorkoutLog[] {
+  // ==========================================
+  // Profile Management & Partitioning APIs
+  // ==========================================
+  getProfiles(): UserProfile[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.WORKOUTS);
+      const raw = localStorage.getItem(STORAGE_KEYS.PROFILES);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to parse profiles from localStorage', e);
+    }
+
+    // Auto-migration for existing single-user installation:
+    // Initialize default profile 'profile_default' and copy any existing unpartitioned data
+    const defaultProfile: UserProfile = { ...DEFAULT_USER_PROFILE };
+
+    try {
+      const legacyWorkouts = localStorage.getItem(STORAGE_KEYS.WORKOUTS);
+      const legacyDefaults = localStorage.getItem(STORAGE_KEYS.DEFAULTS);
+      const legacyFocus = localStorage.getItem(STORAGE_KEYS.FOCUS);
+      const legacyHabits = localStorage.getItem(STORAGE_KEYS.HABITS);
+
+      if (legacyWorkouts && !localStorage.getItem(getPartitionKey(defaultProfile.id, 'workouts'))) {
+        localStorage.setItem(getPartitionKey(defaultProfile.id, 'workouts'), legacyWorkouts);
+      }
+      if (legacyDefaults && !localStorage.getItem(getPartitionKey(defaultProfile.id, 'defaults'))) {
+        localStorage.setItem(getPartitionKey(defaultProfile.id, 'defaults'), legacyDefaults);
+      }
+      if (legacyFocus && !localStorage.getItem(getPartitionKey(defaultProfile.id, 'focus'))) {
+        localStorage.setItem(getPartitionKey(defaultProfile.id, 'focus'), legacyFocus);
+      }
+      if (legacyHabits && !localStorage.getItem(getPartitionKey(defaultProfile.id, 'habits'))) {
+        localStorage.setItem(getPartitionKey(defaultProfile.id, 'habits'), legacyHabits);
+      }
+
+      localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify([defaultProfile]));
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_PROFILE_ID, defaultProfile.id);
+    } catch (e) {
+      console.error('Failed to initialize profiles and migrate legacy data', e);
+    }
+
+    return [defaultProfile];
+  },
+
+  saveProfiles(profiles: UserProfile[]): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(profiles));
+    } catch (e) {
+      console.error('Failed to save profiles to localStorage', e);
+    }
+  },
+
+  getActiveProfileId(): string {
+    try {
+      const id = localStorage.getItem(STORAGE_KEYS.ACTIVE_PROFILE_ID);
+      if (id) return id;
+    } catch {}
+    const profiles = this.getProfiles();
+    return profiles[0]?.id || DEFAULT_USER_PROFILE.id;
+  },
+
+  setActiveProfileId(id: string): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_PROFILE_ID, id);
+    } catch (e) {
+      console.error('Failed to set active profile id in localStorage', e);
+    }
+  },
+
+  getActiveProfile(): UserProfile {
+    const profiles = this.getProfiles();
+    const activeId = this.getActiveProfileId();
+    return profiles.find((p) => p.id === activeId) || profiles[0] || DEFAULT_USER_PROFILE;
+  },
+
+  saveActiveProfile(profile: UserProfile): void {
+    const profiles = this.getProfiles();
+    const index = profiles.findIndex((p) => p.id === profile.id);
+    if (index >= 0) {
+      profiles[index] = profile;
+    } else {
+      profiles.push(profile);
+    }
+    this.saveProfiles(profiles);
+  },
+
+  createProfile(name: string, template?: Partial<UserProfile>): UserProfile {
+    const newId = `profile_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const base = template ? { ...DEFAULT_USER_PROFILE, ...template } : { ...DEFAULT_USER_PROFILE };
+    const avatarColors = ['sky', 'emerald', 'amber', 'purple', 'rose'];
+    const randomColor = avatarColors[Math.floor(Math.random() * avatarColors.length)];
+
+    const newProfile: UserProfile = {
+      ...base,
+      id: newId,
+      name: name.trim() || 'New Athlete',
+      createdAt: Date.now(),
+      avatarColor: template?.avatarColor || randomColor,
+    };
+
+    const profiles = this.getProfiles();
+    profiles.push(newProfile);
+    this.saveProfiles(profiles);
+    this.setActiveProfileId(newId);
+    return newProfile;
+  },
+
+  deleteProfile(id: string): boolean {
+    const profiles = this.getProfiles();
+    if (profiles.length <= 1) {
+      return false; // Prevent deleting the sole remaining profile
+    }
+
+    const remaining = profiles.filter((p) => p.id !== id);
+    this.saveProfiles(remaining);
+
+    // Clean up partitioned data
+    try {
+      localStorage.removeItem(getPartitionKey(id, 'workouts'));
+      localStorage.removeItem(getPartitionKey(id, 'defaults'));
+      localStorage.removeItem(getPartitionKey(id, 'focus'));
+      localStorage.removeItem(getPartitionKey(id, 'habits'));
+    } catch {}
+
+    if (this.getActiveProfileId() === id) {
+      this.setActiveProfileId(remaining[0].id);
+    }
+    return true;
+  },
+
+  // ==========================================
+  // Domain Data Partitioned Accessors
+  // ==========================================
+  getWorkouts(profileId?: string): WorkoutLog[] {
+    try {
+      const targetId = profileId || this.getActiveProfileId();
+      const pKey = getPartitionKey(targetId, 'workouts');
+      let data = localStorage.getItem(pKey);
+      if (!data && targetId === DEFAULT_USER_PROFILE.id) {
+        data = localStorage.getItem(STORAGE_KEYS.WORKOUTS);
+        if (data) {
+          localStorage.setItem(pKey, data);
+        }
+      }
       return data ? JSON.parse(data) : [];
     } catch {
       return [];
     }
   },
 
-  saveWorkouts(logs: WorkoutLog[]): void {
+  saveWorkouts(logs: WorkoutLog[], profileId?: string): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(logs));
+      const targetId = profileId || this.getActiveProfileId();
+      localStorage.setItem(getPartitionKey(targetId, 'workouts'), JSON.stringify(logs));
+      if (targetId === DEFAULT_USER_PROFILE.id) {
+        localStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(logs));
+      }
     } catch (e) {
       console.error('Failed to save workouts to localStorage', e);
     }
   },
 
-  getStickyDefaults(): StickyDefaults {
+  getStickyDefaults(profileId?: string): StickyDefaults {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.DEFAULTS);
+      const targetId = profileId || this.getActiveProfileId();
+      const pKey = getPartitionKey(targetId, 'defaults');
+      let data = localStorage.getItem(pKey);
+      if (!data && targetId === DEFAULT_USER_PROFILE.id) {
+        data = localStorage.getItem(STORAGE_KEYS.DEFAULTS);
+        if (data) {
+          localStorage.setItem(pKey, data);
+        }
+      }
       if (!data) return DEFAULT_STICKY;
       const parsed = JSON.parse(data);
       return {
@@ -403,43 +573,67 @@ export const StorageService = {
     }
   },
 
-  saveStickyDefaults(defaults: StickyDefaults): void {
+  saveStickyDefaults(defaults: StickyDefaults, profileId?: string): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.DEFAULTS, JSON.stringify(defaults));
+      const targetId = profileId || this.getActiveProfileId();
+      localStorage.setItem(getPartitionKey(targetId, 'defaults'), JSON.stringify(defaults));
+      if (targetId === DEFAULT_USER_PROFILE.id) {
+        localStorage.setItem(STORAGE_KEYS.DEFAULTS, JSON.stringify(defaults));
+      }
     } catch (e) {
       console.error('Failed to save defaults to localStorage', e);
     }
   },
 
-  getFocusData(): FocusData {
+  getFocusData(profileId?: string): FocusData {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.FOCUS);
-      if (!data) return DEFAULT_FOCUS;
+      const targetId = profileId || this.getActiveProfileId();
+      const pKey = getPartitionKey(targetId, 'focus');
+      let data = localStorage.getItem(pKey);
+      if (!data && targetId === DEFAULT_USER_PROFILE.id) {
+        data = localStorage.getItem(STORAGE_KEYS.FOCUS);
+        if (data) {
+          localStorage.setItem(pKey, data);
+        }
+      }
+      if (!data) return JSON.parse(JSON.stringify(DEFAULT_FOCUS));
       const parsed = JSON.parse(data);
       if (!parsed.tasks || parsed.tasks.length <= 7 || !parsed.tasks[0]?.bucket) {
         return {
-          ...DEFAULT_FOCUS,
+          ...JSON.parse(JSON.stringify(DEFAULT_FOCUS)),
           ...parsed,
-          tasks: DEFAULT_FOCUS.tasks,
+          tasks: JSON.parse(JSON.stringify(DEFAULT_FOCUS.tasks)),
         };
       }
-      return { ...DEFAULT_FOCUS, ...parsed };
+      return { ...JSON.parse(JSON.stringify(DEFAULT_FOCUS)), ...parsed };
     } catch {
-      return DEFAULT_FOCUS;
+      return JSON.parse(JSON.stringify(DEFAULT_FOCUS));
     }
   },
 
-  saveFocusData(data: FocusData): void {
+  saveFocusData(data: FocusData, profileId?: string): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.FOCUS, JSON.stringify(data));
+      const targetId = profileId || this.getActiveProfileId();
+      localStorage.setItem(getPartitionKey(targetId, 'focus'), JSON.stringify(data));
+      if (targetId === DEFAULT_USER_PROFILE.id) {
+        localStorage.setItem(STORAGE_KEYS.FOCUS, JSON.stringify(data));
+      }
     } catch (e) {
       console.error('Failed to save focus to localStorage', e);
     }
   },
 
-  getHabitsData(): HabitsData {
+  getHabitsData(profileId?: string): HabitsData {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.HABITS);
+      const targetId = profileId || this.getActiveProfileId();
+      const pKey = getPartitionKey(targetId, 'habits');
+      let data = localStorage.getItem(pKey);
+      if (!data && targetId === DEFAULT_USER_PROFILE.id) {
+        data = localStorage.getItem(STORAGE_KEYS.HABITS);
+        if (data) {
+          localStorage.setItem(pKey, data);
+        }
+      }
       if (!data) return JSON.parse(JSON.stringify(DEFAULT_HABITS));
       const parsed = JSON.parse(data);
       return migrateHabitsData(parsed);
@@ -449,22 +643,47 @@ export const StorageService = {
     }
   },
 
-  saveHabitsData(data: HabitsData): void {
+  saveHabitsData(data: HabitsData, profileId?: string): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(data));
+      const targetId = profileId || this.getActiveProfileId();
+      localStorage.setItem(getPartitionKey(targetId, 'habits'), JSON.stringify(data));
+      if (targetId === DEFAULT_USER_PROFILE.id) {
+        localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(data));
+      }
     } catch (e) {
       console.error('Failed to save habits to localStorage', e);
     }
   },
 
+  // ==========================================
+  // Unified Multi-Profile Export & Import
+  // ==========================================
   exportAllJson(): string {
+    const activeId = this.getActiveProfileId();
+    const profiles = this.getProfiles();
+
+    const allProfilesData: Record<string, any> = {};
+    for (const p of profiles) {
+      allProfilesData[p.id] = {
+        workouts: this.getWorkouts(p.id),
+        defaults: this.getStickyDefaults(p.id),
+        focus: this.getFocusData(p.id),
+        habits: this.getHabitsData(p.id),
+      };
+    }
+
     const backup = {
-      version: 4,
+      version: 5,
       timestamp: Date.now(),
-      workouts: this.getWorkouts(),
-      defaults: this.getStickyDefaults(),
-      focus: this.getFocusData(),
-      habits: this.getHabitsData(),
+      activeProfileId: activeId,
+      profiles,
+      // Backward compatibility fields for v4 readers:
+      workouts: this.getWorkouts(activeId),
+      defaults: this.getStickyDefaults(activeId),
+      focus: this.getFocusData(activeId),
+      habits: this.getHabitsData(activeId),
+      allProfilesData,
+      partitionedData: allProfilesData,
     };
     return JSON.stringify(backup, null, 2);
   },
@@ -472,14 +691,40 @@ export const StorageService = {
   importAllJson(jsonStr: string): boolean {
     try {
       const data = JSON.parse(jsonStr);
-      if (data.workouts) this.saveWorkouts(data.workouts);
-      if (data.defaults) this.saveStickyDefaults(data.defaults);
-      if (data.focus) this.saveFocusData(data.focus);
-      if (data.habits) this.saveHabitsData(data.habits);
-      return true;
+      if (!data || typeof data !== 'object') return false;
+
+      // Version 5 multi-profile backup
+      const partitions = data.allProfilesData || data.partitionedData;
+      if (data.version === 5 && Array.isArray(data.profiles) && partitions) {
+        this.saveProfiles(data.profiles);
+        if (data.activeProfileId) {
+          this.setActiveProfileId(data.activeProfileId);
+        }
+        for (const [pId, pData] of Object.entries(partitions as Record<string, any>)) {
+          if (pData.workouts) this.saveWorkouts(pData.workouts, pId);
+          if (pData.defaults) this.saveStickyDefaults(pData.defaults, pId);
+          if (pData.focus) this.saveFocusData(pData.focus, pId);
+          if (pData.habits) this.saveHabitsData(pData.habits, pId);
+        }
+        return true;
+      }
+
+      // Legacy v4 single-user backup into active profile
+      const hasLegacyData = Boolean(data.workouts || data.defaults || data.focus || data.habits);
+      if (hasLegacyData) {
+        const activeId = this.getActiveProfileId();
+        if (data.workouts) this.saveWorkouts(data.workouts, activeId);
+        if (data.defaults) this.saveStickyDefaults(data.defaults, activeId);
+        if (data.focus) this.saveFocusData(data.focus, activeId);
+        if (data.habits) this.saveHabitsData(data.habits, activeId);
+        return true;
+      }
+
+      return false;
     } catch (e) {
       console.error('Failed to import backup JSON', e);
       return false;
     }
   }
 };
+

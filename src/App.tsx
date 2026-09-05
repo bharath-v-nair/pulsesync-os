@@ -6,12 +6,14 @@ import {
   StickyDefaults, 
   FocusData, 
   HabitsData, 
-  Book 
+  Book,
+  UserProfile
 } from './types';
 import { StorageService, getTodayDateStr, formatTime } from './services/storage';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { SidebarDrawer } from './components/layout/SidebarDrawer';
+import { SettingsModal } from './components/settings/SettingsModal';
 import { MoveEngine } from './components/move/MoveEngine';
 import { FocusEngine } from './components/focus/FocusEngine';
 import { HabitsEngine } from './components/habits/HabitsEngine';
@@ -28,6 +30,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>('move');
   const [activeView, setActiveView] = useState<ActiveView>('move');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProtocolsGuideOpen, setIsProtocolsGuideOpen] = useState(false);
   const [isHabitsProtocolOpen, setIsHabitsProtocolOpen] = useState(false);
   const [habitsProtocolSection, setHabitsProtocolSection] = useState('sleep');
@@ -37,12 +40,44 @@ export const App: React.FC = () => {
     setIsHabitsProtocolOpen(true);
   };
 
+  // Multi-User Profile State
+  const [profiles, setProfiles] = useState<UserProfile[]>(() => StorageService.getProfiles());
+  const [activeProfile, setActiveProfile] = useState<UserProfile>(() => StorageService.getActiveProfile());
+
   // App Domain State
   const [selectedDate, setSelectedDate] = useState<string>(() => getTodayDateStr());
   const [workouts, setWorkouts] = useState<WorkoutLog[]>(() => StorageService.getWorkouts());
   const [stickyDefaults, setStickyDefaults] = useState<StickyDefaults>(() => StorageService.getStickyDefaults());
   const [focusData, setFocusData] = useState<FocusData>(() => StorageService.getFocusData());
   const [habitsData, setHabitsData] = useState<HabitsData>(() => StorageService.getHabitsData());
+
+  // Profile Management Handlers
+  const handleSwitchProfile = (profileId: string) => {
+    StorageService.setActiveProfileId(profileId);
+    const current = StorageService.getActiveProfile();
+    const all = StorageService.getProfiles();
+    const newWorkouts = StorageService.getWorkouts(profileId);
+    const newSticky = StorageService.getStickyDefaults(profileId);
+    const newFocus = StorageService.getFocusData(profileId);
+    const newHabits = StorageService.getHabitsData(profileId);
+
+    setActiveProfile(current);
+    setProfiles(all);
+    setWorkouts(newWorkouts);
+    setStickyDefaults(newSticky);
+    setFocusData(newFocus);
+    setHabitsData(newHabits);
+  };
+
+  const handleUpdateActiveProfile = (updatedProfile: UserProfile) => {
+    setActiveProfile(updatedProfile);
+    setProfiles(StorageService.getProfiles());
+  };
+
+  const handleProfilesChanged = () => {
+    setProfiles(StorageService.getProfiles());
+    setActiveProfile(StorageService.getActiveProfile());
+  };
 
   // Undo Toast State
   const [undoToast, setUndoToast] = useState<{
@@ -237,6 +272,8 @@ export const App: React.FC = () => {
           activeView={activeView}
           onToggleOverview={handleToggleOverview}
           onOpenSidebar={() => setIsSidebarOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          activeProfile={activeProfile}
         />
 
         {/* View Router */}
@@ -253,6 +290,7 @@ export const App: React.FC = () => {
               onLogWorkout={handleLogWorkout}
               onUpdateFocusData={setFocusData}
               onUpdateHabitsData={setHabitsData}
+              activeProfile={activeProfile}
             />
           )}
 
@@ -276,6 +314,7 @@ export const App: React.FC = () => {
               onLogWorkout={handleLogWorkout}
               onDeleteLog={handleDeleteWorkout}
               onUpdateLog={handleUpdateWorkout}
+              moveConfig={activeProfile.moveConfig}
             />
           )}
 
@@ -286,6 +325,7 @@ export const App: React.FC = () => {
               workouts={workouts}
               habitsData={habitsData}
               selectedDate={selectedDate}
+              focusConfig={activeProfile.focusConfig}
             />
           )}
 
@@ -295,6 +335,7 @@ export const App: React.FC = () => {
               onUpdateHabitsData={setHabitsData}
               onNavigateLibrary={() => setActiveView('library')}
               onOpenProtocol={handleOpenHabitsProtocol}
+              habitsConfig={activeProfile.habitsConfig}
             />
           )}
         </main>
@@ -359,6 +400,8 @@ export const App: React.FC = () => {
         onNavigateLibrary={() => setActiveView('library')}
         onOpenProtocolsGuide={() => setIsProtocolsGuideOpen(true)}
         onOpenHabitsProtocol={() => handleOpenHabitsProtocol('sleep')}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        activeProfileName={activeProfile.name}
         bookCount={habitsData.reading.books.length}
         onDataReset={handleDataReset}
       />
@@ -374,6 +417,17 @@ export const App: React.FC = () => {
         isOpen={isHabitsProtocolOpen}
         onClose={() => setIsHabitsProtocolOpen(false)}
         initialSection={habitsProtocolSection}
+      />
+
+      {/* User Settings & Multi-User Profiles Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        activeProfile={activeProfile}
+        profiles={profiles}
+        onUpdateActiveProfile={handleUpdateActiveProfile}
+        onSwitchProfile={handleSwitchProfile}
+        onProfilesChanged={handleProfilesChanged}
       />
     </div>
   );

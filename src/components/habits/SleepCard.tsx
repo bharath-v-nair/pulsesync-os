@@ -12,16 +12,18 @@ import {
 
 interface SleepCardProps {
   sleep: SleepRecord;
+  sleepTargetHours?: number;
   onUpdateSleep: (sleep: SleepRecord) => void;
   onOpenProtocol?: (section: string) => void;
 }
 
 export const SleepCard: React.FC<SleepCardProps> = ({
   sleep,
+  sleepTargetHours,
   onUpdateSleep,
   onOpenProtocol,
 }) => {
-  const targetHours = sleep.targetHours > 0 ? sleep.targetHours : DEFAULT_SLEEP_BASELINE_HOURS;
+  const targetHours = sleepTargetHours || (sleep.targetHours > 0 ? sleep.targetHours : DEFAULT_SLEEP_BASELINE_HOURS);
   const durationHours = sleep.sleepDurationHours ?? 8.0;
   const isOptimal = isSleepOptimal(durationHours);
   const acuteDebt = calculateDailySleepDebt(durationHours, targetHours);

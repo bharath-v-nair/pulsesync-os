@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart3, Calendar, Dumbbell, Clock, BookOpen, Moon, Activity, Shield, ArrowRight, Trash2 } from 'lucide-react';
-import { WorkoutLog, FocusData, HabitsData, FocusSession } from '../../types';
+import { WorkoutLog, FocusData, HabitsData, FocusSession, UserProfile } from '../../types';
 import { ConsistencyHeatmap } from './ConsistencyHeatmap';
 import { VolumeProgressionChart } from './VolumeProgressionChart';
 import { WeeklyRebalanceCard } from './WeeklyRebalanceCard';
@@ -29,6 +29,7 @@ export interface OverviewViewProps {
   focus: FocusData;
   habits: HabitsData;
   selectedDate: string;
+  activeProfile?: UserProfile;
   onSelectDate: (date: string) => void;
   onUpdateWorkout: (updated: WorkoutLog) => void;
   onDeleteWorkout: (id: string) => void;
@@ -42,6 +43,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   focus,
   habits,
   selectedDate,
+  activeProfile,
   onSelectDate,
   onUpdateWorkout,
   onDeleteWorkout,
@@ -82,9 +84,10 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
     .filter((w) => w.category === 'pullup')
     .reduce((a, b) => a + (b.reps || 0), 0);
 
+  const barbellWeight = activeProfile?.moveConfig?.barbellWeightKg ?? 30;
   const totalTonnage = horizonWorkouts
     .filter((w) => w.category === 'barbell')
-    .reduce((a, b) => a + (b.reps || 0) * (b.weightKg || 30), 0);
+    .reduce((a, b) => a + (b.reps || 0) * (b.weightKg || barbellWeight), 0);
 
   const totalCardioSteps = horizonWorkouts.reduce((acc, l) => {
     if (l.category === 'walk') {
@@ -130,7 +133,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
     0
   );
   const horizonStudyHours = +(horizonFocusMins / 60).toFixed(1);
-  const targetStudyHours = +(5.5 * timeframe).toFixed(1);
+  const dailyStudyHours = activeProfile?.focusConfig?.dailyStudyTargetHours ?? 5.5;
+  const targetStudyHours = +(dailyStudyHours * timeframe).toFixed(1);
   const studyHoursPct = targetStudyHours > 0 ? Math.min(150, Math.round((horizonStudyHours / targetStudyHours) * 100)) : 0;
 
   // Active Focus Days & Consistency Rate

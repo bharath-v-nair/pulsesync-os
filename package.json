@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "node scripts/verify_focus_integrity.mjs && node scripts/verify_habits_integrity.mjs && node scripts/simulate_full_day_lifecycle.mjs",
+    "test": "node scripts/verify_focus_integrity.mjs && node scripts/verify_habits_integrity.mjs && node scripts/simulate_full_day_lifecycle.mjs && node scripts/verify_user_settings_integrity.mjs",
     "test:focus": "node scripts/verify_focus_integrity.mjs",
     "test:habits": "node scripts/verify_habits_integrity.mjs",
-    "test:lifecycle": "node scripts/simulate_full_day_lifecycle.mjs"
+    "test:lifecycle": "node scripts/simulate_full_day_lifecycle.mjs",
+    "test:settings": "node scripts/verify_user_settings_integrity.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.22.0",

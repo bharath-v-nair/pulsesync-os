@@ -1,23 +1,31 @@
 import React from 'react';
 import { Play, Pause, RotateCcw, Check, Zap, X, Clock, AlertTriangle } from 'lucide-react';
-import { FocusTask, FocusTimerState } from '../../types';
+import { FocusTask, FocusTimerState, FocusPresetConfig } from '../../types';
 import { triggerHaptic } from '../../hooks/useHaptics';
 import { playClickAudio } from '../../utils/audio';
 
 interface FeynmanTimerCardProps {
   timerState: FocusTimerState;
   boundTask: FocusTask | null;
+  presets?: FocusPresetConfig[];
   onStart: () => void;
   onPause: () => void;
   onReset: () => void;
-  onSelectPreset: (preset: '50m' | '30m' | '60m') => void;
+  onSelectPreset: (preset: any) => void;
   onUnbindTask: () => void;
   onCompleteActiveTask: () => void;
 }
 
+const DEFAULT_PRESET_ITEMS = [
+  { id: '50m', label: '50m', description: '50m Hard Stop · 15m Early Answer Warning' },
+  { id: '30m', label: '30m', description: '30m Rapid Verbal Checks · 6m each' },
+  { id: '60m', label: '60m', description: '60m Hands-on Build · 25m Lookup Rule' },
+];
+
 export const FeynmanTimerCard: React.FC<FeynmanTimerCardProps> = ({
   timerState,
   boundTask,
+  presets,
   onStart,
   onPause,
   onReset,
@@ -26,6 +34,8 @@ export const FeynmanTimerCard: React.FC<FeynmanTimerCardProps> = ({
   onCompleteActiveTask,
 }) => {
   const { isRunning, preset, remainingSeconds, totalSeconds, warningTriggered } = timerState;
+
+  const presetList = presets && presets.length > 0 ? presets : DEFAULT_PRESET_ITEMS;
 
   const minutes = Math.floor(remainingSeconds / 60);
   const seconds = remainingSeconds % 60;
@@ -37,6 +47,8 @@ export const FeynmanTimerCard: React.FC<FeynmanTimerCardProps> = ({
 
   const getSubLabel = () => {
     if (boundTask?.id === 'AZURE_AI_PRACTICE') return '45m Pomodoro Deliberate Practice · Azure Track';
+    const found = presetList.find((p) => p.id === preset);
+    if (found?.description) return found.description;
     if (preset === '50m') return '50m Hard Stop · 15m Early Answer Warning';
     if (preset === '30m') return '30m Rapid Verbal Checks · 6m each';
     return '60m Hands-on Build · 25m Lookup Rule';
@@ -50,16 +62,16 @@ export const FeynmanTimerCard: React.FC<FeynmanTimerCardProps> = ({
           Feynman Focus Timer
         </span>
         <div className="flex items-center gap-1.5 text-xs font-mono">
-          {(['50m', '30m', '60m'] as const).map((p) => {
-            const isSelected = preset === p;
+          {presetList.map((p) => {
+            const isSelected = preset === p.id;
             return (
               <button
-                key={p}
+                key={p.id}
                 type="button"
                 onClick={() => {
                   triggerHaptic(10);
                   playClickAudio(500);
-                  onSelectPreset(p);
+                  onSelectPreset(p.id);
                 }}
                 className={`px-3 py-1.5 rounded-xl transition tap-target min-h-[44px] min-w-[44px] flex items-center justify-center font-bold ${
                   isSelected
@@ -67,7 +79,7 @@ export const FeynmanTimerCard: React.FC<FeynmanTimerCardProps> = ({
                     : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border border-white/5'
                 }`}
               >
-                {p}
+                {p.label}
               </button>
             );
           })}

@@ -4,6 +4,7 @@ import {
   FocusTask,
   FocusSession,
   FocusTimerState,
+  UserFocusConfig,
 } from '../../types';
 import { CurriculumDayBanner } from './CurriculumDayBanner';
 import { CurriculumPickerModal } from './CurriculumPickerModal';
@@ -24,6 +25,7 @@ import { getTodayDateStr } from '../../services/storage';
 interface FocusEngineProps {
   focusData: FocusData;
   onUpdateFocusData: (data: FocusData) => void;
+  focusConfig?: UserFocusConfig;
   selectedDate?: string;
   workouts?: any;
   habitsData?: any;
@@ -32,6 +34,7 @@ interface FocusEngineProps {
 export const FocusEngine: React.FC<FocusEngineProps> = ({
   focusData,
   onUpdateFocusData,
+  focusConfig,
   selectedDate: _selectedDate = getTodayDateStr(),
 }) => {
   // Modals state
@@ -125,10 +128,15 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
   // ----------------------------------------------------
   // Timer Actions
   // ----------------------------------------------------
-  const handleSelectPreset = (preset: '50m' | '30m' | '60m') => {
-    let secs = 50 * 60;
-    if (preset === '30m') secs = 30 * 60;
-    if (preset === '60m') secs = 60 * 60;
+  const handleSelectPreset = (preset: any) => {
+    const configured = focusConfig?.timerPresets?.find((p) => p.id === preset);
+    let secs = configured ? configured.studyMinutes * 60 : 50 * 60;
+    if (!configured) {
+      if (preset === '30m') secs = 30 * 60;
+      else if (preset === '60m') secs = 60 * 60;
+      else if (preset === '25m') secs = 25 * 60;
+      else if (preset === '10m') secs = 10 * 60;
+    }
 
     const updatedTimer: FocusTimerState = {
       ...timerState,
@@ -460,10 +468,11 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       const newDisplay = Math.max(0, ts.remainingSeconds - pending);
       setDisplayRemaining(newDisplay);
 
-      // 15-Minute Early Answer Warning alert (persisted on next flush)
+      // Early Answer Warning alert (persisted on next flush)
+      const configuredWarningMins = focusConfig?.timerPresets?.find((p) => p.id === ts.preset)?.warningMinutes ?? 15;
       if (
-        ts.totalSeconds >= 45 * 60 &&
-        newDisplay <= 15 * 60 &&
+        ts.totalSeconds >= 20 * 60 &&
+        newDisplay <= configuredWarningMins * 60 &&
         !warnedRef.current
       ) {
         warnedRef.current = true;
@@ -876,6 +885,7 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       <FeynmanTimerCard
         timerState={displayTimerState}
         boundTask={boundTask}
+        presets={focusConfig?.timerPresets}
         onStart={handleStartTimer}
         onPause={handlePauseTimer}
         onReset={handleResetTimer}
@@ -894,6 +904,7 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       <TodayFocusProgressCard
         tasks={currentDayTasks}
         totalStudySeconds={focusData.stats.totalStudySeconds}
+        targetHours={focusConfig?.dailyStudyTargetHours ?? 5.5}
       />
 
       {/* ZONE 4: Clean Task Roster */}
