@@ -1,7 +1,4 @@
 /* PulseSync Life OS - Matte Industrial Design System (React 19) */
-/* Tailwind utilities bundled locally via @tailwindcss/vite (no CDN runtime). */
-@import "tailwindcss";
-
 :root {
   --bg-primary: #080a0f;
   --bg-surface: #101520;
@@ -86,37 +83,6 @@ body {
   justify-content: center;
 }
 
-/* Fluid Fade-In & Pop Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes modalSpring {
-  0% {
-    opacity: 0;
-    transform: scale(0.96) translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-modalSpring {
-  animation: modalSpring 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
 /* Stepper Buttons (48px mobile touch hitbox) */
 .stepper-btn {
   width: 44px;
@@ -148,6 +114,37 @@ body {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
+}
+
+/* Fluid Fade-In & Pop Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalSpring {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalSpring {
+  animation: modalSpring 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom Horizontal Scroll Track for 30-Day Charts */

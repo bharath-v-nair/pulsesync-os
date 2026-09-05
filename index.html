@@ -8,6 +8,21 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>PulseSync Life OS</title>
   <link rel="manifest" href="/manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#080a0f',
+            surface: '#101520',
+            surfaceElevated: '#161d2c',
+          }
+        }
+      }
+    }
+  </script>
 </head>
 <body class="bg-[#080a0f] text-slate-100 antialiased min-h-screen">
   <div id="root"></div>
