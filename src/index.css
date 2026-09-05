@@ -1,0 +1,170 @@
+/* PulseSync Life OS - Matte Industrial Design System (React 19) */
+/* Tailwind utilities bundled locally via @tailwindcss/vite (no CDN runtime). */
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #080a0f;
+  --bg-surface: #101520;
+  --bg-surface-elevated: #161d2c;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-active: rgba(255, 255, 255, 0.16);
+  --text-primary: #f8fafc;
+  --text-muted: #8b9bb4;
+  --text-dim: #475569;
+  --accent-cyan: #38bdf8;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-purple: #c084fc;
+  --accent-rose: #f43f5e;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  padding-bottom: 96px;
+  overflow-x: hidden;
+  user-select: none;
+  letter-spacing: -0.01em;
+}
+
+/* Tabular Numerals to eliminate layout shifts */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Micro-Typography Eyebrow */
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+}
+
+/* Clean Matte Card Surface */
+.matte-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.matte-card:hover {
+  border-color: var(--border-active);
+}
+
+/* Tactile Spring Physics */
+.spring-btn {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, border-color 0.15s ease;
+  min-height: 44px;
+}
+
+.spring-btn:active {
+  transform: translateY(2px) scale(0.97);
+}
+
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fluid Fade-In & Pop Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalSpring {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalSpring {
+  animation: modalSpring 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stepper Buttons (48px mobile touch hitbox) */
+.stepper-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #1a2233;
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stepper-btn:active {
+  background-color: #243047;
+  transform: scale(0.94);
+}
+
+/* Pill Badges */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Custom Horizontal Scroll Track for 30-Day Charts */
+.horizontal-chart-scroll {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.horizontal-chart-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.horizontal-chart-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}

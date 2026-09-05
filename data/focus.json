@@ -1,5 +1,14 @@
 {
   "currentCurriculumDay": 1,
+  "jobAppsCount": 0,
+  "azureMinutes": 0,
+  "dailyHistory": {
+    "2026-09-04": {
+      "studySeconds": 9449,
+      "jobApps": 0,
+      "azureMinutes": 0
+    }
+  },
   "tasks": [
     {
       "id": "d1_deep_1",
@@ -21,7 +30,8 @@
       "curriculumDay": 1,
       "dateStr": "2026-09-04",
       "completed": false,
-      "completedAt": null
+      "completedAt": null,
+      "startedAt": "3:22 PM"
     },
     {
       "id": "d1_deep_3",
@@ -451,73 +461,37 @@
       "dateStr": "2026-09-04",
       "completed": false,
       "completedAt": null
-    },
-    {
-      "id": "d1_spaced_1",
-      "code": "NG-01",
-      "title": "[NG-01] Component vs Directive in 60 seconds",
-      "category": "Angular",
-      "bucket": "spaced",
-      "curriculumDay": 1,
-      "dateStr": "2026-09-04",
-      "completed": false,
-      "completedAt": null
-    },
-    {
-      "id": "d1_spaced_2",
-      "code": "NG-02",
-      "title": "[NG-02] Data Binding types (Interpolation vs Property vs Event)",
-      "category": "Angular",
-      "bucket": "spaced",
-      "curriculumDay": 1,
-      "dateStr": "2026-09-04",
-      "completed": false,
-      "completedAt": null
-    },
-    {
-      "id": "d1_spaced_3",
-      "code": "NG-06",
-      "title": "[NG-06] Constructor vs ngOnInit (when to initialize subscriptions)",
-      "category": "Angular",
-      "bucket": "spaced",
-      "curriculumDay": 1,
-      "dateStr": "2026-09-04",
-      "completed": false,
-      "completedAt": null
-    },
-    {
-      "id": "d1_spaced_4",
-      "code": "NG-03",
-      "title": "[NG-03] What does providedIn: 'root' mean in Angular DI?",
-      "category": "Angular",
-      "bucket": "spaced",
-      "curriculumDay": 1,
-      "dateStr": "2026-09-04",
-      "completed": false,
-      "completedAt": null
-    },
-    {
-      "id": "d1_spaced_5",
-      "code": "NG-15",
-      "title": "[NG-15] Smart vs Dumb Components (@Input, @Output communication)",
-      "category": "Angular",
-      "bucket": "spaced",
-      "curriculumDay": 1,
-      "dateStr": "2026-09-04",
-      "completed": false,
-      "completedAt": null
-    },
-    {
-      "id": "task_1788470364436_r00g",
-      "title": "(ng34)",
-      "category": "Angular",
-      "bucket": "spaced",
-      "curriculumDay": 1,
-      "dateStr": "2026-09-04",
-      "completed": false,
-      "completedAt": null
     }
   ],
+  "sessions": [
+    {
+      "id": "sess_1788515544220_h6v8y",
+      "taskId": "d1_deep_1",
+      "taskTitle": "[NG-09] Reactive Forms vs Template-Driven Forms (FormGroup, FormControl, Validators)",
+      "category": "Angular",
+      "bucket": "deep",
+      "dateStr": "2026-09-04",
+      "startTimestamp": 1788512520000,
+      "startTimeFormatted": "2:32 PM",
+      "endTimestamp": 1788515520000,
+      "endTimeFormatted": "3:22 PM",
+      "durationSeconds": 3000
+    },
+    {
+      "id": "sess_1788515558165_17n90",
+      "taskId": "d1_deep_2",
+      "taskTitle": "[NG-08] Route Guards (CanActivate basics) vs Resolvers (trade-offs & failure modes)",
+      "category": "Angular",
+      "bucket": "deep",
+      "dateStr": "2026-09-04",
+      "startTimestamp": 1788515558165,
+      "startTimeFormatted": "3:22 PM",
+      "endTimestamp": 1788515594298,
+      "endTimeFormatted": "3:23 PM",
+      "durationSeconds": 36
+    }
+  ],
+  "currentSession": null,
   "timerState": {
     "isRunning": false,
     "phase": "study",
@@ -531,6 +505,6 @@
     "warningTriggered": false
   },
   "stats": {
-    "totalStudySeconds": 6413
+    "totalStudySeconds": 6585
   }
 }

@@ -27,5 +27,13 @@
     "timeFormatted": "3:55 AM",
     "category": "wake_up",
     "name": "Woke Up"
+  },
+  {
+    "id": "log_1788479300413_hnnpj",
+    "timestamp": 1788479300413,
+    "dateStr": "2026-09-04",
+    "timeFormatted": "5:18 AM",
+    "category": "wake_up",
+    "name": "Woke Up"
   }
 ]

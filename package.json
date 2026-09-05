@@ -1,0 +1,29 @@
+{
+  "name": "pulsesync-os",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Sub-2-Second Micro-Workout & Life Accountability Progressive Web App",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "node scripts/verify_focus_integrity.mjs && node scripts/verify_habits_integrity.mjs && node scripts/simulate_full_day_lifecycle.mjs",
+    "test:focus": "node scripts/verify_focus_integrity.mjs",
+    "test:habits": "node scripts/verify_habits_integrity.mjs",
+    "test:lifecycle": "node scripts/simulate_full_day_lifecycle.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^1.22.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0"
+  }
+}
