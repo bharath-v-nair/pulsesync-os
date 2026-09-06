@@ -2,7 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // PulseSync OS Strict Tenant Isolation Rule
-    // Each user account only has access to their own data tree under users/{userId}
+    // Allow access to user root document AND all subcollections (partitions, days, etc.)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
     match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }

@@ -7,8 +7,8 @@
  * - Hashed Vite assets under `/assets/`: cache-first (immutable filenames).
  * - Cross-origin requests (fonts/CDN): network-only, never cached here.
  */
-const SHELL_CACHE = 'pulsesync-shell-v4';
-const ASSET_CACHE = 'pulsesync-assets-v4';
+const SHELL_CACHE = 'pulsesync-shell-v5';
+const ASSET_CACHE = 'pulsesync-assets-v5';
 const PRECACHE = ['/', '/index.html'];
 
 self.addEventListener('install', (event) => {

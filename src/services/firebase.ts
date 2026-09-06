@@ -2,8 +2,7 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
 import {
   initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager,
+  memoryLocalCache,
   getFirestore,
   type Firestore,
 } from 'firebase/firestore';
@@ -73,30 +72,53 @@ export function getFirebaseAuth(): Auth | null {
   }
 }
 
+/**
+ * Automatically purges any legacy corrupted Firestore multi-tab IndexedDB cache.
+ * Fixes the "400 Bad Request: Unknown SID" channel reconnection error.
+ */
+export function purgeLegacyFirestoreCache(): void {
+  if (typeof window !== 'undefined' && 'indexedDB' in window && typeof window.indexedDB?.databases === 'function') {
+    window.indexedDB.databases().then((dbs) => {
+      dbs.forEach((db) => {
+        if (db.name && db.name.toLowerCase().includes('firestore')) {
+          console.log('[PulseSync Firebase] Self-healing: Purging legacy Firestore IndexedDB cache:', db.name);
+          try {
+            window.indexedDB.deleteDatabase(db.name);
+          } catch (e) {
+            console.warn('[PulseSync Firebase] Stale DB purge note:', e);
+          }
+        }
+      });
+    }).catch(() => {});
+  }
+}
+
+// Run self-healing immediately on module load in browser
+if (typeof window !== 'undefined') {
+  purgeLegacyFirestoreCache();
+}
+
 export function getFirebaseDb(): Firestore | null {
   if (dbInstance) return dbInstance;
   const app = getFirebaseApp();
   if (!app) return null;
 
   try {
-    // Only attempt persistent IndexedDB cache in browser environments
-    if (typeof window !== 'undefined' && typeof indexedDB !== 'undefined') {
-      try {
-        dbInstance = initializeFirestore(app, {
-          localCache: persistentLocalCache({
-            tabManager: persistentMultipleTabManager(),
-          }),
-        });
-      } catch (cacheErr) {
-        console.warn('[PulseSync Firebase] Persistent cache already initialized or failed, falling back to default:', cacheErr);
-        dbInstance = getFirestore(app);
-      }
-    } else {
-      dbInstance = getFirestore(app);
-    }
+    // Standard memory cache prevents multi-tab IndexedDB session ID (SID) corruption
+    // while keeping real-time listeners and snapshots 100% active.
+    // Local persistence is already handled by PulseSync OS StorageService (localStorage).
+    dbInstance = initializeFirestore(app, {
+      localCache: memoryLocalCache(),
+    });
     return dbInstance;
   } catch (err) {
-    console.warn('[PulseSync Firebase] Firestore init failed:', err);
-    return null;
+    try {
+      dbInstance = getFirestore(app);
+      return dbInstance;
+    } catch (fallbackErr) {
+      console.warn('[PulseSync Firebase] Firestore init failed:', fallbackErr || err);
+      return null;
+    }
   }
 }
+

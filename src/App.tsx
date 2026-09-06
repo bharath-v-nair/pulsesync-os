@@ -22,6 +22,8 @@ import { OverviewView } from './components/overview/OverviewView';
 import { ProtocolsGuideModal } from './components/overview/ProtocolsGuideModal';
 import { ProtocolSidebar } from './components/habits/ProtocolSidebar';
 import { AuthModal } from './components/auth/AuthModal';
+import { AuthGate } from './components/auth/AuthGate';
+import { getCurrentAuthUser, subscribeToAuthState, type AuthUser } from './services/auth';
 import { X } from 'lucide-react';
 import { triggerHaptic } from './hooks/useHaptics';
 import { UndoToast } from './components/ui/UndoToast';
@@ -33,6 +35,23 @@ export const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(() => getCurrentAuthUser());
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isGuestBypassed, setIsGuestBypassed] = useState(() => {
+    try {
+      return sessionStorage.getItem('pulsesync_guest_bypass') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const unsub = subscribeToAuthState((user) => {
+      setAuthUser(user);
+      setIsAuthChecking(false);
+    });
+    return unsub;
+  }, []);
   const [isProtocolsGuideOpen, setIsProtocolsGuideOpen] = useState(false);
   const [isHabitsProtocolOpen, setIsHabitsProtocolOpen] = useState(false);
   const [habitsProtocolSection, setHabitsProtocolSection] = useState('sleep');
@@ -110,20 +129,40 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // Synchronize state changes to Local-First Storage
+  // Synchronize state changes to Local-First Storage (skip initial mount)
+  const isFirstMountWorkouts = React.useRef(true);
   useEffect(() => {
+    if (isFirstMountWorkouts.current) {
+      isFirstMountWorkouts.current = false;
+      return;
+    }
     StorageService.saveWorkouts(workouts);
   }, [workouts]);
 
+  const isFirstMountSticky = React.useRef(true);
   useEffect(() => {
+    if (isFirstMountSticky.current) {
+      isFirstMountSticky.current = false;
+      return;
+    }
     StorageService.saveStickyDefaults(stickyDefaults);
   }, [stickyDefaults]);
 
+  const isFirstMountFocus = React.useRef(true);
   useEffect(() => {
+    if (isFirstMountFocus.current) {
+      isFirstMountFocus.current = false;
+      return;
+    }
     StorageService.saveFocusData(focusData);
   }, [focusData]);
 
+  const isFirstMountHabits = React.useRef(true);
   useEffect(() => {
+    if (isFirstMountHabits.current) {
+      isFirstMountHabits.current = false;
+      return;
+    }
     StorageService.saveHabitsData(habitsData);
   }, [habitsData]);
 
@@ -463,6 +502,19 @@ export const App: React.FC = () => {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
       />
+
+      {/* Cloud Authentication Gate on first launch if unauthenticated */}
+      {!isAuthChecking && !authUser && !isGuestBypassed && (
+        <AuthGate
+          onLoginSuccess={() => {}}
+          onContinueGuest={() => {
+            try {
+              sessionStorage.setItem('pulsesync_guest_bypass', 'true');
+            } catch {}
+            setIsGuestBypassed(true);
+          }}
+        />
+      )}
     </div>
   );
 };

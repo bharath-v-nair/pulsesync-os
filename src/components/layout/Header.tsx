@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Activity, BarChart2 } from 'lucide-react';
+import { Menu, Activity, BarChart2, Cloud } from 'lucide-react';
 import { ActiveView, UserProfile } from '../../types';
 
 interface HeaderProps {
@@ -15,6 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeView,
   onToggleOverview,
   onOpenSidebar,
+  onOpenAuth,
 }) => {
   const isOverviewActive = activeView === 'overview';
 
@@ -44,8 +45,19 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right: Overview Toggle */}
+      {/* Right: Cloud Sync & Overview Toggle */}
       <div className="flex items-center gap-2 shrink-0">
+        {onOpenAuth && (
+          <button
+            onClick={onOpenAuth}
+            className="spring-btn p-2 rounded-xl bg-[#141b29] border border-white/10 text-sky-400 hover:border-sky-500/30 tap-target shrink-0 flex items-center justify-center"
+            aria-label="Cloud Sync & Devices"
+            title="Cloud Sync & Devices"
+          >
+            <Cloud className="w-4 h-4" />
+          </button>
+        )}
+
         <button
           onClick={onToggleOverview}
           className={`spring-btn px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide flex items-center gap-1.5 transition-all tap-target ${

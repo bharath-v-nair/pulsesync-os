@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Cloud, CloudCheck, CloudOff, RefreshCw, LogIn, LogOut, Shield, CheckCircle2, AlertCircle, Smartphone, Laptop } from 'lucide-react';
+import { X, Cloud, CloudCheck, CloudOff, RefreshCw, LogIn, LogOut, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
 import {
   getCurrentAuthUser,
   subscribeToAuthState,
@@ -9,8 +9,9 @@ import {
   type AuthUser,
   type CloudSyncStatus,
 } from '../../services/auth';
-import { subscribeToSyncStatus, syncNow } from '../../services/cloudSync';
+import { subscribeToSyncStatus, syncNow, getActiveSyncUid } from '../../services/cloudSync';
 import { isFirebaseConfigured } from '../../services/firebase';
+import { getTodayDateStr } from '../../services/storage';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -25,6 +26,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const configured = isFirebaseConfigured();
+  const activeUid = getActiveSyncUid();
+  const todayStr = getTodayDateStr();
 
   useEffect(() => {
     const unsubAuth = subscribeToAuthState((currUser) => {
@@ -155,27 +158,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               )}
             </div>
 
-            {/* Device Continuity Diagram */}
-            <div className="flex items-center justify-around py-2.5 px-3 rounded-lg bg-[#090d16] border border-white/5 text-xs text-slate-300">
-              <div className="flex flex-col items-center gap-1">
-                <Smartphone className="w-4 h-4 text-sky-400" />
-                <span className="text-[10px] text-slate-400">Motorola Edge 50</span>
+            {/* Firestore Destination Inspector */}
+            <div className="p-3 rounded-lg bg-[#090d16] border border-white/5 space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                <span className="uppercase tracking-wider">Firestore Destination</span>
+                <span className="text-sky-400">
+                  {lastSynced
+                    ? `Synced ${lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                    : 'Ready'}
+                </span>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] text-emerald-400 font-mono">0ms Local Cache</span>
-                <span className="text-[9px] text-slate-500">⇄ Cloud Firestore ⇄</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <Laptop className="w-4 h-4 text-sky-400" />
-                <span className="text-[10px] text-slate-400">MacBook Air</span>
-              </div>
+              <p className="text-xs font-mono text-emerald-300 break-all select-all font-semibold">
+                users/{activeUid}/days/{todayStr}
+              </p>
             </div>
 
-            {lastSynced && (
-              <p className="text-[10px] text-slate-400 font-mono text-center">
-                Last synced: {lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </p>
-            )}
+            {/* Universal Force Sync Button */}
+            <button
+              onClick={handleManualSync}
+              disabled={isLoading}
+              className="w-full spring-btn py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              Force Sync Now
+            </button>
           </div>
 
           {/* User Account State */}
@@ -203,17 +209,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                <button
-                  onClick={handleManualSync}
-                  className="flex-1 spring-btn py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" /> Force Sync Now
-                </button>
+              <div className="pt-2 border-t border-white/10">
                 <button
                   onClick={handleLogout}
                   disabled={isLoading}
-                  className="spring-btn py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full spring-btn py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" /> Sign Out
                 </button>
