@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Cloud, CloudCheck, CloudOff, RefreshCw, LogIn, LogOut, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Cloud, CloudCheck, CloudOff, RefreshCw, LogIn, LogOut, Shield, CheckCircle2, AlertCircle, Download } from 'lucide-react';
 import {
   getCurrentAuthUser,
   subscribeToAuthState,
@@ -173,15 +173,36 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               </p>
             </div>
 
-            {/* Universal Force Sync Button */}
-            <button
-              onClick={handleManualSync}
-              disabled={isLoading}
-              className="w-full spring-btn py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              Force Sync Now
-            </button>
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleManualSync}
+                disabled={isLoading}
+                className="spring-btn py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                Force Cloud Sync
+              </button>
+
+              <button
+                onClick={() => {
+                  if (typeof (window as any).__pulseSyncCheckAppUpdate === 'function') {
+                    (window as any).__pulseSyncCheckAppUpdate();
+                  } else {
+                    window.location.reload();
+                  }
+                }}
+                className="spring-btn py-2 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+                title="Fetches the newest PWA bundle and reloads the app"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Update / Reload
+              </button>
+            </div>
+
+            <p className="text-[10px] text-slate-400 leading-tight">
+              💡 <span className="text-slate-300 font-medium">Mobile PWA Tip:</span> Tap <span className="text-emerald-400">Update / Reload</span> to fetch new versions, or swipe PulseSync away from Android's Recent Apps screen to restart it.
+            </p>
           </div>
 
           {/* User Account State */}

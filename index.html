@@ -32,12 +32,57 @@
   <script type="module" src="/src/main.tsx"></script>
   <script>
     if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(
-          (reg) => console.log('PulseSync SW registered:', reg.scope),
-          (err) => console.log('PulseSync SW reg error:', err)
-        );
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
       });
+
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          console.log('PulseSync SW registered:', reg.scope);
+
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
+
+          reg.update();
+
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+              reg.update();
+            }
+          });
+        }).catch((err) => console.log('PulseSync SW reg error:', err));
+      });
+
+      window.__pulseSyncCheckAppUpdate = async () => {
+        try {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg) {
+            if (reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+            await reg.update();
+          }
+        } catch (e) {
+          console.warn('Update check note:', e);
+        }
+        window.location.reload();
+      };
     }
   </script>
 </body>
