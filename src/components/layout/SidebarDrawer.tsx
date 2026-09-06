@@ -1,4 +1,4 @@
-import { X, BookOpen, Download, Upload, Trash2, Award, BookMarked, ShieldCheck, Sliders } from 'lucide-react';
+import { X, BookOpen, Download, Upload, Trash2, Award, BookMarked, ShieldCheck, Sliders, Cloud } from 'lucide-react';
 import { StorageService } from '../../services/storage';
 
 interface SidebarDrawerProps {
@@ -8,6 +8,7 @@ interface SidebarDrawerProps {
   onOpenProtocolsGuide: () => void;
   onOpenHabitsProtocol: () => void;
   onOpenSettings?: () => void;
+  onOpenAuth?: () => void;
   activeProfileName?: string;
   bookCount: number;
   onDataReset: () => void;
@@ -20,6 +21,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   onOpenProtocolsGuide,
   onOpenHabitsProtocol,
   onOpenSettings,
+  onOpenAuth,
   activeProfileName,
   bookCount,
   onDataReset,
@@ -101,6 +103,29 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                 </div>
                 <span className="badge-pill bg-amber-500/20 text-amber-300 font-mono text-[10px] truncate max-w-[80px]">
                   {activeProfileName || 'Default'}
+                </span>
+              </button>
+            )}
+
+            {onOpenAuth && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenAuth();
+                }}
+                className="w-full spring-btn p-3.5 rounded-2xl bg-[#141b29] border border-white/10 hover:border-sky-500/40 text-left flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400">
+                    <Cloud className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-semibold text-slate-100 group-hover:text-sky-300">Cloud Sync & Auth</h3>
+                    <p className="text-[10px] text-slate-400">Google sign-in & live device sync</p>
+                  </div>
+                </div>
+                <span className="badge-pill bg-sky-500/20 text-sky-300 font-mono text-[10px]">
+                  Cloud
                 </span>
               </button>
             )}

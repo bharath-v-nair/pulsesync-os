@@ -39,6 +39,33 @@ export function getPartitionKey(profileId: string, domain: 'workouts' | 'default
   return `pulsesync_p_${safeId}_${domain}_v4`;
 }
 
+export type StorageMutationListener = (
+  profileId: string,
+  domain: 'workouts' | 'defaults' | 'focus' | 'habits' | 'profiles'
+) => void;
+
+const mutationListeners = new Set<StorageMutationListener>();
+
+export function onStorageMutation(listener: StorageMutationListener): () => void {
+  mutationListeners.add(listener);
+  return () => {
+    mutationListeners.delete(listener);
+  };
+}
+
+function notifyMutation(
+  profileId: string,
+  domain: 'workouts' | 'defaults' | 'focus' | 'habits' | 'profiles'
+) {
+  mutationListeners.forEach((listener) => {
+    try {
+      listener(profileId, domain);
+    } catch (e) {
+      console.error('[PulseSync Storage] Mutation listener error:', e);
+    }
+  });
+}
+
 
 export function getTodayDateStr(): string {
   const now = new Date();
@@ -483,6 +510,7 @@ export const StorageService = {
   saveProfiles(profiles: UserProfile[]): void {
     try {
       localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(profiles));
+      notifyMutation(this.getActiveProfileId(), 'profiles');
     } catch (e) {
       console.error('Failed to save profiles to localStorage', e);
     }
@@ -610,6 +638,7 @@ export const StorageService = {
       if (targetId === DEFAULT_USER_PROFILE.id) {
         localStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(logs));
       }
+      notifyMutation(targetId, 'workouts');
     } catch (e) {
       console.error('Failed to save workouts to localStorage', e);
     }
@@ -646,6 +675,7 @@ export const StorageService = {
       if (targetId === DEFAULT_USER_PROFILE.id) {
         localStorage.setItem(STORAGE_KEYS.DEFAULTS, JSON.stringify(defaults));
       }
+      notifyMutation(targetId, 'defaults');
     } catch (e) {
       console.error('Failed to save defaults to localStorage', e);
     }
@@ -684,6 +714,7 @@ export const StorageService = {
       if (targetId === DEFAULT_USER_PROFILE.id) {
         localStorage.setItem(STORAGE_KEYS.FOCUS, JSON.stringify(data));
       }
+      notifyMutation(targetId, 'focus');
     } catch (e) {
       console.error('Failed to save focus to localStorage', e);
     }
@@ -716,6 +747,7 @@ export const StorageService = {
       if (targetId === DEFAULT_USER_PROFILE.id) {
         localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(data));
       }
+      notifyMutation(targetId, 'habits');
     } catch (e) {
       console.error('Failed to save habits to localStorage', e);
     }
@@ -793,4 +825,6 @@ export const StorageService = {
     }
   }
 };
+
+export const storageService = StorageService;
 

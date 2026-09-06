@@ -21,6 +21,7 @@ import { LibraryView } from './components/library/LibraryView';
 import { OverviewView } from './components/overview/OverviewView';
 import { ProtocolsGuideModal } from './components/overview/ProtocolsGuideModal';
 import { ProtocolSidebar } from './components/habits/ProtocolSidebar';
+import { AuthModal } from './components/auth/AuthModal';
 import { X } from 'lucide-react';
 import { triggerHaptic } from './hooks/useHaptics';
 import { UndoToast } from './components/ui/UndoToast';
@@ -31,6 +32,7 @@ export const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ActiveView>('move');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProtocolsGuideOpen, setIsProtocolsGuideOpen] = useState(false);
   const [isHabitsProtocolOpen, setIsHabitsProtocolOpen] = useState(false);
   const [habitsProtocolSection, setHabitsProtocolSection] = useState('sleep');
@@ -91,6 +93,22 @@ export const App: React.FC = () => {
   useEffect(() => {
     setIsPastDayBannerDismissed(false);
   }, [selectedDate]);
+
+  // Listen for real-time remote cloud sync updates from other devices
+  useEffect(() => {
+    const handleCloudSyncUpdated = () => {
+      setActiveProfile(StorageService.getActiveProfile());
+      setProfiles(StorageService.getProfiles());
+      setWorkouts(StorageService.getWorkouts());
+      setStickyDefaults(StorageService.getStickyDefaults());
+      setFocusData(StorageService.getFocusData());
+      setHabitsData(StorageService.getHabitsData());
+    };
+    window.addEventListener('pulsesync_cloud_sync_updated', handleCloudSyncUpdated);
+    return () => {
+      window.removeEventListener('pulsesync_cloud_sync_updated', handleCloudSyncUpdated);
+    };
+  }, []);
 
   // Synchronize state changes to Local-First Storage
   useEffect(() => {
@@ -273,6 +291,7 @@ export const App: React.FC = () => {
           onToggleOverview={handleToggleOverview}
           onOpenSidebar={() => setIsSidebarOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
           activeProfile={activeProfile}
         />
 
@@ -409,6 +428,7 @@ export const App: React.FC = () => {
         onOpenProtocolsGuide={() => setIsProtocolsGuideOpen(true)}
         onOpenHabitsProtocol={() => handleOpenHabitsProtocol('sleep')}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
         activeProfileName={activeProfile.name}
         bookCount={habitsData.reading.books.length}
         onDataReset={handleDataReset}
@@ -436,6 +456,12 @@ export const App: React.FC = () => {
         onUpdateActiveProfile={handleUpdateActiveProfile}
         onSwitchProfile={handleSwitchProfile}
         onProfilesChanged={handleProfilesChanged}
+      />
+
+      {/* Cloud Sync & Google Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </div>
   );

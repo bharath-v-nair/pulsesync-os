@@ -4,3 +4,6 @@ dist/
 *.log
 audits/
 .vite/
+.env.local
+.env*.local
+*.local
