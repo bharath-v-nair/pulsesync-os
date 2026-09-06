@@ -17,6 +17,8 @@ const statusListeners = new Set<(status: CloudSyncStatus, lastSyncedAt: Date | n
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let syncingWatchdogTimer: ReturnType<typeof setTimeout> | null = null;
 let isApplyingRemoteUpdate = false;
+let isUploading = false;
+let isDownloading = false;
 
 function emitStatus(newStatus: CloudSyncStatus) {
   syncStatus = newStatus;
@@ -142,83 +144,72 @@ function sanitizeForFirestore<T>(data: T): any {
  * Writes root doc, partition doc, and today's daily doc to Firestore for a specific UID.
  */
 async function uploadDayAndPartitions(uid: string, targetId: string): Promise<void> {
+  if (isUploading || isDownloading || isApplyingRemoteUpdate) return;
   const db = getFirebaseDb();
   if (!db) return;
 
-  const todayStr = getTodayDateStr();
-
-  // Safety Pre-Merge: Pull remote day doc first to merge any workouts logged on mobile
+  isUploading = true;
   try {
+    const todayStr = getTodayDateStr();
+    const allWorkouts = StorageService.getWorkouts(targetId);
+    const todayWorkouts = allWorkouts.filter(
+      (w) => (w.dateStr || new Date(w.timestamp).toISOString().slice(0, 10)) === todayStr
+    );
+    const habitsData = StorageService.getHabitsData(targetId);
+
+    // 1. Root user doc
+    const userDocRef = doc(db, 'users', uid);
+    const userPromise = setDoc(
+      userDocRef,
+      {
+        uid,
+        activeProfileId: targetId,
+        profiles: sanitizeForFirestore(StorageService.getProfiles()),
+        updatedAt: serverTimestamp(),
+        clientTimestamp: Date.now(),
+      },
+      { merge: true }
+    );
+
+    // 2. Partition doc
+    const pDocRef = doc(db, 'users', uid, 'partitions', targetId);
+    const partitionPromise = setDoc(
+      pDocRef,
+      {
+        profileId: targetId,
+        workouts: sanitizeForFirestore(allWorkouts),
+        defaults: sanitizeForFirestore(StorageService.getStickyDefaults(targetId)),
+        focus: sanitizeForFirestore(StorageService.getFocusData(targetId)),
+        habits: sanitizeForFirestore(habitsData),
+        updatedAt: serverTimestamp(),
+        clientTimestamp: Date.now(),
+      },
+      { merge: true }
+    );
+
+    // 3. Daily doc (human-readable date partitioning)
     const dayDocRef = doc(db, 'users', uid, 'days', todayStr);
-    const remoteSnap = await getDoc(dayDocRef);
-    if (remoteSnap.exists()) {
-      const remoteData: any = remoteSnap.data();
-      if (Array.isArray(remoteData?.workouts) && remoteData.workouts.length > 0) {
-        const localW = StorageService.getWorkouts(targetId);
-        const mergedW = mergeWorkouts(localW, remoteData.workouts);
-        isApplyingRemoteUpdate = true;
-        StorageService.saveWorkouts(mergedW, targetId);
-        setTimeout(() => {
-          isApplyingRemoteUpdate = false;
-        }, 400);
-      }
-    }
-  } catch (mergeErr) {
-    console.warn('[PulseSync CloudSync] Pre-upload merge note (non-fatal):', mergeErr);
+    const dayPromise = setDoc(
+      dayDocRef,
+      {
+        date: todayStr,
+        profileId: targetId,
+        workouts: sanitizeForFirestore(todayWorkouts),
+        hydrationMl: habitsData.hydration.currentMl,
+        sleepHours: habitsData.sleep.sleepDurationHours,
+        cleanDay: habitsData.detox?.cleanDiet ?? true,
+        updatedAt: serverTimestamp(),
+        clientTimestamp: Date.now(),
+      },
+      { merge: true }
+    );
+
+    await Promise.all([userPromise, partitionPromise, dayPromise]);
+  } catch (err) {
+    console.warn('[PulseSync CloudSync] uploadDayAndPartitions note:', err);
+  } finally {
+    isUploading = false;
   }
-
-  const allWorkouts = StorageService.getWorkouts(targetId);
-  const todayWorkouts = allWorkouts.filter(
-    (w) => (w.dateStr || new Date(w.timestamp).toISOString().slice(0, 10)) === todayStr
-  );
-  const habitsData = StorageService.getHabitsData(targetId);
-
-  // 1. Root user doc
-  const userDocRef = doc(db, 'users', uid);
-  await setDoc(
-    userDocRef,
-    {
-      uid,
-      activeProfileId: targetId,
-      profiles: sanitizeForFirestore(StorageService.getProfiles()),
-      updatedAt: serverTimestamp(),
-      clientTimestamp: Date.now(),
-    },
-    { merge: true }
-  );
-
-  // 2. Partition doc
-  const pDocRef = doc(db, 'users', uid, 'partitions', targetId);
-  await setDoc(
-    pDocRef,
-    {
-      profileId: targetId,
-      workouts: sanitizeForFirestore(allWorkouts),
-      defaults: sanitizeForFirestore(StorageService.getStickyDefaults(targetId)),
-      focus: sanitizeForFirestore(StorageService.getFocusData(targetId)),
-      habits: sanitizeForFirestore(habitsData),
-      updatedAt: serverTimestamp(),
-      clientTimestamp: Date.now(),
-    },
-    { merge: true }
-  );
-
-  // 3. Daily doc (human-readable date partitioning)
-  const dayDocRef = doc(db, 'users', uid, 'days', todayStr);
-  await setDoc(
-    dayDocRef,
-    {
-      date: todayStr,
-      profileId: targetId,
-      workouts: sanitizeForFirestore(todayWorkouts),
-      hydrationMl: habitsData.hydration.currentMl,
-      sleepHours: habitsData.sleep.sleepDurationHours,
-      cleanDay: habitsData.detox?.cleanDiet ?? true,
-      updatedAt: serverTimestamp(),
-      clientTimestamp: Date.now(),
-    },
-    { merge: true }
-  );
 }
 
 /**
@@ -240,15 +231,8 @@ export async function initializeUserCloudSync(user?: AuthUser | null): Promise<v
   emitStatus('syncing');
 
   try {
-    // 1. Download latest cloud state to hydrate local storage
+    // Strictly download and hydrate local storage on startup / sign-in (never upload automatically)
     await downloadCloudStateToLocal(uid);
-
-    // 2. Bidirectional Auto-Sync on Startup:
-    // If this device has any local workouts or data not yet in the cloud (e.g. logged offline or before login),
-    // immediately upload the full merged state to Firestore so all other devices see it!
-    const activeId = StorageService.getActiveProfileId();
-    await uploadDayAndPartitions(uid, activeId);
-
     lastSyncedAt = new Date();
     emitStatus('synced');
   } catch (pullErr) {
@@ -348,10 +332,12 @@ export async function uploadFullLocalStateToCloud(uid: string): Promise<void> {
  * Downloads cloud state and saves into local storage via clean REST getDoc calls.
  */
 export async function downloadCloudStateToLocal(uid: string): Promise<void> {
+  if (isDownloading || isUploading) return;
   const db = getFirebaseDb();
   if (!db) return;
 
   console.log('[PulseSync CloudSync] Starting cloud state download for UID:', uid);
+  isDownloading = true;
   isApplyingRemoteUpdate = true;
   try {
     // 1. User root doc (optional metadata)
@@ -424,9 +410,10 @@ export async function downloadCloudStateToLocal(uid: string): Promise<void> {
   } catch (err) {
     console.warn('[PulseSync CloudSync] downloadCloudStateToLocal outer error:', err);
   } finally {
+    isDownloading = false;
     setTimeout(() => {
       isApplyingRemoteUpdate = false;
-    }, 600);
+    }, 1500);
   }
 }
 
@@ -434,6 +421,9 @@ export async function downloadCloudStateToLocal(uid: string): Promise<void> {
  * Explicit manual sync triggered by user.
  */
 export async function syncNow(): Promise<{ success: boolean; error?: string }> {
+  if (isDownloading || isUploading) {
+    return { success: true };
+  }
   const db = getFirebaseDb();
   if (!db) {
     return { success: false, error: 'Firebase is not initialized.' };
@@ -475,7 +465,7 @@ export async function syncNow(): Promise<{ success: boolean; error?: string }> {
  * Debounced push to cloud when local storage mutations occur.
  */
 export function queueCloudSync(profileId?: string): void {
-  if (isApplyingRemoteUpdate) return;
+  if (isApplyingRemoteUpdate || isDownloading || isUploading) return;
   const db = getFirebaseDb();
   if (!db) return;
 
@@ -484,6 +474,7 @@ export function queueCloudSync(profileId?: string): void {
   if (debounceTimer) clearTimeout(debounceTimer);
 
   debounceTimer = setTimeout(async () => {
+    if (isApplyingRemoteUpdate || isDownloading || isUploading) return;
     emitStatus('syncing');
     try {
       const targetId = profileId || StorageService.getActiveProfileId();
@@ -497,7 +488,7 @@ export function queueCloudSync(profileId?: string): void {
       lastSyncedAt = new Date();
       emitStatus('synced');
     }
-  }, 300);
+  }, 1500);
 }
 
 // Hook into auth state changes, storage mutations, and tab visibility

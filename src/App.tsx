@@ -113,15 +113,22 @@ export const App: React.FC = () => {
     setIsPastDayBannerDismissed(false);
   }, [selectedDate]);
 
+  // Guard against echo-saving to storage when updating from remote cloud sync
+  const isRemoteSyncRef = React.useRef(false);
+
   // Listen for real-time remote cloud sync updates from other devices
   useEffect(() => {
     const handleCloudSyncUpdated = () => {
+      isRemoteSyncRef.current = true;
       setActiveProfile(StorageService.getActiveProfile());
       setProfiles(StorageService.getProfiles());
       setWorkouts(StorageService.getWorkouts());
       setStickyDefaults(StorageService.getStickyDefaults());
       setFocusData(StorageService.getFocusData());
       setHabitsData(StorageService.getHabitsData());
+      setTimeout(() => {
+        isRemoteSyncRef.current = false;
+      }, 1000);
     };
     window.addEventListener('pulsesync_cloud_sync_updated', handleCloudSyncUpdated);
     return () => {
@@ -129,13 +136,14 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // Synchronize state changes to Local-First Storage (skip initial mount)
+  // Synchronize state changes to Local-First Storage (skip initial mount and remote syncs)
   const isFirstMountWorkouts = React.useRef(true);
   useEffect(() => {
     if (isFirstMountWorkouts.current) {
       isFirstMountWorkouts.current = false;
       return;
     }
+    if (isRemoteSyncRef.current) return;
     StorageService.saveWorkouts(workouts);
   }, [workouts]);
 
@@ -145,6 +153,7 @@ export const App: React.FC = () => {
       isFirstMountSticky.current = false;
       return;
     }
+    if (isRemoteSyncRef.current) return;
     StorageService.saveStickyDefaults(stickyDefaults);
   }, [stickyDefaults]);
 
@@ -154,6 +163,7 @@ export const App: React.FC = () => {
       isFirstMountFocus.current = false;
       return;
     }
+    if (isRemoteSyncRef.current) return;
     StorageService.saveFocusData(focusData);
   }, [focusData]);
 
@@ -163,6 +173,7 @@ export const App: React.FC = () => {
       isFirstMountHabits.current = false;
       return;
     }
+    if (isRemoteSyncRef.current) return;
     StorageService.saveHabitsData(habitsData);
   }, [habitsData]);
 
