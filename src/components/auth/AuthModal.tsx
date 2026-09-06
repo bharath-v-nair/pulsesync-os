@@ -9,7 +9,7 @@ import {
   type AuthUser,
   type CloudSyncStatus,
 } from '../../services/auth';
-import { subscribeToSyncStatus, queueCloudSync } from '../../services/cloudSync';
+import { subscribeToSyncStatus, syncNow } from '../../services/cloudSync';
 import { isFirebaseConfigured } from '../../services/firebase';
 
 interface AuthModalProps {
@@ -85,8 +85,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleManualSync = () => {
-    queueCloudSync();
+  const handleManualSync = async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await syncNow();
+      if (!res.success && res.error) {
+        setErrorMsg(res.error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

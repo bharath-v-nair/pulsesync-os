@@ -143,6 +143,16 @@ export async function initializeUserCloudSync(user: AuthUser): Promise<void> {
 }
 
 /**
+ * Sanitizes object data before writing to Cloud Firestore.
+ * Firestore throws a hard error if any field in an object is `undefined`.
+ * JSON.stringify safely strips all undefined keys.
+ */
+function sanitizeForFirestore<T>(data: T): any {
+  if (data === undefined) return null;
+  return JSON.parse(JSON.stringify(data));
+}
+
+/**
  * Uploads full local state to Firestore under users/{uid}.
  */
 export async function uploadFullLocalStateToCloud(uid: string): Promise<void> {
@@ -152,6 +162,8 @@ export async function uploadFullLocalStateToCloud(uid: string): Promise<void> {
   const profiles = StorageService.getProfiles();
   const activeProfileId = StorageService.getActiveProfileId();
 
+  console.log('[PulseSync CloudSync] Uploading local state to Firestore for UID:', uid);
+
   // 1. Write root user document
   const userDocRef = doc(db, 'users', uid);
   await setDoc(
@@ -159,7 +171,7 @@ export async function uploadFullLocalStateToCloud(uid: string): Promise<void> {
     {
       uid,
       activeProfileId,
-      profiles,
+      profiles: sanitizeForFirestore(profiles),
       updatedAt: serverTimestamp(),
       clientTimestamp: Date.now(),
     },
@@ -174,16 +186,18 @@ export async function uploadFullLocalStateToCloud(uid: string): Promise<void> {
       partitionDocRef,
       {
         profileId: pId,
-        workouts: StorageService.getWorkouts(pId),
-        defaults: StorageService.getStickyDefaults(pId),
-        focus: StorageService.getFocusData(pId),
-        habits: StorageService.getHabitsData(pId),
+        workouts: sanitizeForFirestore(StorageService.getWorkouts(pId)),
+        defaults: sanitizeForFirestore(StorageService.getStickyDefaults(pId)),
+        focus: sanitizeForFirestore(StorageService.getFocusData(pId)),
+        habits: sanitizeForFirestore(StorageService.getHabitsData(pId)),
         updatedAt: serverTimestamp(),
         clientTimestamp: Date.now(),
       },
       { merge: true }
     );
   }
+
+  console.log('[PulseSync CloudSync] Local state successfully uploaded to Firestore!');
 }
 
 /**
@@ -228,6 +242,33 @@ export async function downloadCloudStateToLocal(uid: string): Promise<void> {
 }
 
 /**
+ * Explicit manual sync triggered by user.
+ */
+export async function syncNow(): Promise<{ success: boolean; error?: string }> {
+  const user = getCurrentAuthUser();
+  if (!user) {
+    return { success: false, error: 'No user signed in. Please sign in with Google first.' };
+  }
+  const db = getFirebaseDb();
+  if (!db) {
+    return { success: false, error: 'Firebase is not initialized.' };
+  }
+
+  emitStatus('syncing');
+  try {
+    await uploadFullLocalStateToCloud(user.uid);
+    lastSyncedAt = new Date();
+    emitStatus('synced');
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Sync failed';
+    console.error('[PulseSync CloudSync] Manual sync error:', err);
+    emitStatus('offline');
+    return { success: false, error: message };
+  }
+}
+
+/**
  * Debounced push to cloud when local storage mutations occur.
  */
 export function queueCloudSync(profileId?: string): void {
@@ -251,10 +292,10 @@ export function queueCloudSync(profileId?: string): void {
         pDocRef,
         {
           profileId: targetId,
-          workouts: StorageService.getWorkouts(targetId),
-          defaults: StorageService.getStickyDefaults(targetId),
-          focus: StorageService.getFocusData(targetId),
-          habits: StorageService.getHabitsData(targetId),
+          workouts: sanitizeForFirestore(StorageService.getWorkouts(targetId)),
+          defaults: sanitizeForFirestore(StorageService.getStickyDefaults(targetId)),
+          focus: sanitizeForFirestore(StorageService.getFocusData(targetId)),
+          habits: sanitizeForFirestore(StorageService.getHabitsData(targetId)),
           updatedAt: serverTimestamp(),
           clientTimestamp: Date.now(),
         },

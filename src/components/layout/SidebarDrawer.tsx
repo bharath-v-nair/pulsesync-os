@@ -1,5 +1,27 @@
-import { X, BookOpen, Download, Upload, Trash2, Award, BookMarked, ShieldCheck, Sliders, Cloud } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  X,
+  BookOpen,
+  Download,
+  Upload,
+  Trash2,
+  Award,
+  BookMarked,
+  ShieldCheck,
+  Sliders,
+  Cloud,
+  LogOut,
+  User as UserIcon,
+} from 'lucide-react';
 import { StorageService } from '../../services/storage';
+import {
+  getCurrentAuthUser,
+  subscribeToAuthState,
+  logoutUser,
+  type AuthUser,
+  type CloudSyncStatus,
+} from '../../services/auth';
+import { getSyncStatus, subscribeToSyncStatus } from '../../services/cloudSync';
 
 interface SidebarDrawerProps {
   isOpen: boolean;
@@ -26,6 +48,24 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   bookCount,
   onDataReset,
 }) => {
+  const [authUser, setAuthUser] = useState<AuthUser | null>(getCurrentAuthUser());
+  const [syncStatus, setSyncStatus] = useState<CloudSyncStatus>(getSyncStatus());
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    const unsubAuth = subscribeToAuthState((user) => {
+      setAuthUser(user);
+      setAvatarError(false);
+    });
+    const unsubSync = subscribeToSyncStatus((status) => {
+      setSyncStatus(status);
+    });
+    return () => {
+      unsubAuth();
+      unsubSync();
+    };
+  }, []);
+
   if (!isOpen) return null;
 
   const handleExport = () => {
@@ -74,7 +114,8 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white"
+              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+              aria-label="Close drawer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -98,7 +139,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                   </div>
                   <div>
                     <h3 className="text-xs font-semibold text-slate-100 group-hover:text-amber-300">Settings & Profiles</h3>
-                    <p className="text-[10px] text-slate-400">Equipment, targets & multi-user</p>
+                    <p className="text-[10px] text-slate-400">Equipment, targets & athlete setup</p>
                   </div>
                 </div>
                 <span className="badge-pill bg-amber-500/20 text-amber-300 font-mono text-[10px] truncate max-w-[80px]">
@@ -120,16 +161,49 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                     <Cloud className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-semibold text-slate-100 group-hover:text-sky-300">Cloud Sync & Auth</h3>
-                    <p className="text-[10px] text-slate-400">Google sign-in & live device sync</p>
+                    <h3 className="text-xs font-semibold text-slate-100 group-hover:text-sky-300">Cloud Sync & Devices</h3>
+                    <p className="text-[10px] text-slate-400">Google backup & real-time sync</p>
                   </div>
                 </div>
-                <span className="badge-pill bg-sky-500/20 text-sky-300 font-mono text-[10px]">
-                  Cloud
+                <span
+                  className={`badge-pill font-mono text-[10px] flex items-center gap-1.5 ${
+                    syncStatus === 'synced'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : syncStatus === 'syncing'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      : syncStatus === 'offline'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      : syncStatus === 'error'
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      : 'bg-white/5 text-slate-400 border border-white/10'
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      syncStatus === 'synced'
+                        ? 'bg-emerald-400'
+                        : syncStatus === 'syncing'
+                        ? 'bg-amber-400 animate-pulse'
+                        : syncStatus === 'offline'
+                        ? 'bg-amber-400'
+                        : syncStatus === 'error'
+                        ? 'bg-rose-400'
+                        : 'bg-slate-500'
+                    }`}
+                  />
+                  {syncStatus === 'synced'
+                    ? 'Synced'
+                    : syncStatus === 'syncing'
+                    ? 'Syncing'
+                    : syncStatus === 'offline'
+                    ? 'Offline Q'
+                    : syncStatus === 'error'
+                    ? 'Error'
+                    : 'Local'}
                 </span>
               </button>
             )}
-            
+
             <button
               onClick={() => {
                 onClose();
@@ -240,15 +314,83 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           </div>
         </div>
 
-        {/* Footer: Reset & Clear */}
-        <div className="pt-4 border-t border-white/10">
+        {/* Bottom Dock: User Identity & Actions */}
+        <div className="pt-4 border-t border-white/10 space-y-3 mt-6">
+          {authUser ? (
+            <div className="p-3 rounded-2xl bg-[#141b29] border border-white/10 flex items-center justify-between gap-3 shadow-md">
+              <div className="flex items-center gap-3 min-w-0">
+                {authUser.photoURL && !avatarError ? (
+                  <img
+                    src={authUser.photoURL}
+                    alt={authUser.displayName || 'User'}
+                    referrerPolicy="no-referrer"
+                    onError={() => setAvatarError(true)}
+                    className="w-10 h-10 rounded-full border border-sky-400/40 object-cover flex-shrink-0 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center border border-sky-400/40 flex-shrink-0 shadow-sm">
+                    {authUser.displayName ? authUser.displayName.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-xs font-semibold text-slate-100 truncate">
+                      {authUser.displayName || 'PulseSync Athlete'}
+                    </h4>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" title="Connected" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-mono truncate">
+                    {authUser.email || (authUser.isAnonymous ? 'Guest Account' : 'Connected')}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={async () => {
+                  if (confirm('Sign out from your Google Cloud account? Local device data will remain intact.')) {
+                    await logoutUser();
+                  }
+                }}
+                title="Sign out / Disconnect"
+                className="p-2.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors flex-shrink-0 tap-target"
+                aria-label="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="p-3 rounded-2xl bg-[#141b29] border border-white/10 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-white/5 text-slate-400 flex items-center justify-center border border-white/10 flex-shrink-0">
+                  <UserIcon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-semibold text-slate-200">Local-First Mode</h4>
+                  <p className="text-[10px] text-slate-400">Offline storage active</p>
+                </div>
+              </div>
+              {onOpenAuth && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenAuth();
+                  }}
+                  className="py-1.5 px-3 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 text-[11px] font-semibold flex-shrink-0"
+                >
+                  Connect
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Clear Today's Data */}
           <button
             onClick={() => {
               if (confirm('Are you sure you want to clear today\'s logs?')) {
                 onDataReset();
               }
             }}
-            className="w-full py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-semibold text-rose-300 flex items-center justify-center gap-2"
+            className="w-full py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-semibold text-rose-300 flex items-center justify-center gap-2 transition-colors"
           >
             <Trash2 className="w-4 h-4 text-rose-400" />
             <span>Clear Today's Data</span>
