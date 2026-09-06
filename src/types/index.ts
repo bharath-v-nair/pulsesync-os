@@ -1,7 +1,7 @@
 // ==========================================
 // 1. Move (Workout) Domain Types
 // ==========================================
-export type WorkoutCategory = 'pullup' | 'pushup' | 'barbell' | 'walk' | 'machine_cardio' | 'wake_up';
+export type WorkoutCategory = 'pullup' | 'pushup' | 'barbell' | 'walk' | 'machine_cardio' | 'wake_up' | 'bodyweight';
 
 export type BarbellExercise = 
   | 'Squats'
@@ -171,7 +171,10 @@ export interface SleepRecord {
 export interface KeystonesState {
   cleanDiet?: boolean;           // Whole foods nutrition, zero processed sugar
   zeroDoomscroll?: boolean;      // Zero short-form algorithmic reels/shorts/tiktok
-  dailySupplements?: boolean;    // Daily micronutrient & electrolyte stack
+  dailySupplements?: boolean;    // Daily micronutrient & electrolyte stack (backward compatibility)
+  multivitaminLunch?: boolean;   // Multivitamin after lunch
+  magnesiumSleep?: boolean;      // Magnesium Glycinate before sleep
+  proteinShake?: boolean;        // Daily protein shake
   bedMade: boolean;              // Immediate post-waking environmental reset
   roomReset: boolean;            // Evening workspace & room order reset
 }
@@ -235,6 +238,9 @@ export interface DailyHabitRecord {
   cleanDiet?: boolean;           // Whole foods nutrition
   zeroDoomscroll?: boolean;      // Zero short-form feeds
   dailySupplements?: boolean;    // Micronutrient & electrolyte stack
+  multivitaminLunch?: boolean;   // Multivitamin after lunch
+  magnesiumSleep?: boolean;      // Magnesium Glycinate before sleep
+  proteinShake?: boolean;        // Daily protein shake
   bedMade?: boolean;             // Morning environmental reset
   roomReset?: boolean;           // Evening workspace reset
 
@@ -267,10 +273,38 @@ export type ActiveView = AppTab | 'overview' | 'library';
 // ==========================================
 // 5. Dynamic User Profile & Settings Types
 // ==========================================
+export interface WorkoutLocation {
+  id: string;
+  name: string;
+  equipmentMode: 'barbell_home' | 'dumbbells' | 'bodyweight_only';
+  barbellWeightKg?: number;
+  dumbbellWeightKg?: number;
+  notes?: string;
+}
+
+export interface PhysicalProfile {
+  heightCm: number;
+  weightKg: number;
+  targetWeightKg?: number;
+  primaryGoal: string;
+}
+
+export interface FocusQuestionTargets {
+  deepAnchors: number;
+  spacedChecks: number;
+  liveCoding: number;
+  dsaProblems: number;
+}
+
 export interface UserMoveConfig {
   equipmentMode: 'barbell_home' | 'dumbbells' | 'bodyweight_only';
   barbellWeightKg: number;
+  dumbbellWeightKg?: number;
+  locations?: WorkoutLocation[];
+  activeLocationId?: string;
   enabledExercises: string[];
+  enabledDumbbellExercises?: string[];
+  enabledBodyweightExercises?: string[];
   stepper1: {
     title: string;
     category: WorkoutCategory;
@@ -309,6 +343,7 @@ export interface UserFocusConfig {
   activePresetId: string;
   dailyStudyTargetHours: number;
   dailyDsaTargetProblems: number;
+  questionTargets?: FocusQuestionTargets;
   curriculumTrackId: string;
   curriculumTracks: CurriculumTrackConfig[];
 }
@@ -335,14 +370,65 @@ export interface UserProfile {
   name: string;
   createdAt: number;
   avatarColor: string;
+  physicalProfile?: PhysicalProfile;
   moveConfig: UserMoveConfig;
   focusConfig: UserFocusConfig;
   habitsConfig: UserHabitsConfig;
 }
 
+export const DEFAULT_WORKOUT_LOCATIONS: WorkoutLocation[] = [
+  {
+    id: 'loc_home',
+    name: 'Main Home Setup (30kg Barbell)',
+    equipmentMode: 'barbell_home',
+    barbellWeightKg: 30,
+    dumbbellWeightKg: 15,
+    notes: 'Home gym with fixed 30kg barbell & floor space',
+  },
+  {
+    id: 'loc_mothers',
+    name: "Mother's House (Dumbbells & Calisthenics)",
+    equipmentMode: 'dumbbells',
+    barbellWeightKg: 20,
+    dumbbellWeightKg: 12.5,
+    notes: 'Portable dumbbells & high-frequency bodyweight movement',
+  },
+  {
+    id: 'loc_gym',
+    name: 'Commercial Gym (Full Weights)',
+    equipmentMode: 'barbell_home',
+    barbellWeightKg: 60,
+    dumbbellWeightKg: 25,
+    notes: 'Full Olympic plates, cables & heavy dumbbells',
+  },
+];
+
+export const DEFAULT_DUMBBELL_EXERCISES = [
+  'DB Overhead Press',
+  'Incline DB Bench',
+  'Goblet Squats',
+  'Bent-Over DB Rows',
+  'Lateral Raises',
+  'Incline Hammer Curls',
+  'Romanian DB Deadlift',
+];
+
+export const DEFAULT_BODYWEIGHT_EXERCISES = [
+  'Half Pull-ups',
+  'Push-ups',
+  'Parallel Dips',
+  'Pike Push-ups',
+  'Bodyweight Squats',
+  'Walking Lunges',
+  'Plank Hold',
+];
+
 export const DEFAULT_MOVE_CONFIG: UserMoveConfig = {
   equipmentMode: 'barbell_home',
   barbellWeightKg: 30,
+  dumbbellWeightKg: 15,
+  locations: DEFAULT_WORKOUT_LOCATIONS,
+  activeLocationId: 'loc_home',
   enabledExercises: [
     'Squats',
     'Overhead Press',
@@ -351,6 +437,8 @@ export const DEFAULT_MOVE_CONFIG: UserMoveConfig = {
     'RDLs',
     'Deadlifts',
   ],
+  enabledDumbbellExercises: DEFAULT_DUMBBELL_EXERCISES,
+  enabledBodyweightExercises: DEFAULT_BODYWEIGHT_EXERCISES,
   stepper1: {
     title: 'Half Pull-ups',
     category: 'pullup',
@@ -405,7 +493,13 @@ export const DEFAULT_FOCUS_CONFIG: UserFocusConfig = {
   ],
   activePresetId: '50m',
   dailyStudyTargetHours: 5.5,
-  dailyDsaTargetProblems: 2,
+  dailyDsaTargetProblems: 1,
+  questionTargets: {
+    deepAnchors: 3,
+    spacedChecks: 5,
+    liveCoding: 1,
+    dsaProblems: 1,
+  },
   curriculumTrackId: 'dotnet_angular',
   curriculumTracks: [
     {
@@ -420,6 +514,20 @@ export const DEFAULT_FOCUS_CONFIG: UserFocusConfig = {
         { day: 5, title: 'Day 5: Frontend 3 (State & Components)', tomorrow: 'Day 6: Backend 3 (EF Core & SQL)', category: 'Angular' },
         { day: 6, title: 'Day 6: Backend 3 (EF Core & SQL)', tomorrow: 'Day 7: Cloud & Behavioral Review', category: '.NET' },
         { day: 7, title: 'Day 7: Cloud & Behavioral Review', tomorrow: 'Week 2 Launch', category: 'Azure & STAR' },
+      ],
+    },
+    {
+      id: 'azure_ai_cert',
+      title: 'Azure AI Certification Track (AI-900 & AI-102)',
+      description: 'AI-900 Fundamentals & AI-102 Azure AI Engineer Associate with Semantic Kernel & Vector Search',
+      days: [
+        { day: 1, title: 'Day 1: AI-900 Core Workloads & Azure OpenAI Service', tomorrow: 'Day 2: Computer Vision & OCR', category: 'Azure AI' },
+        { day: 2, title: 'Day 2: Azure AI Vision & Document Intelligence', tomorrow: 'Day 3: Language & Sentiment Analysis', category: 'Azure AI' },
+        { day: 3, title: 'Day 3: Azure AI Language & Conversational QA', tomorrow: 'Day 4: Azure AI Search & Vector RAG', category: 'Azure AI' },
+        { day: 4, title: 'Day 4: AI-102 Azure AI Search, Embeddings & RAG', tomorrow: 'Day 5: Generative AI & Semantic Kernel', category: 'Azure AI' },
+        { day: 5, title: 'Day 5: Semantic Kernel & Multi-Agent Orchestration', tomorrow: 'Day 6: Responsible AI & Content Safety', category: 'Azure AI' },
+        { day: 6, title: 'Day 6: Responsible AI, Prompt Flow & Evaluation', tomorrow: 'Day 7: Full Practice Exam & Certification Drill', category: 'Azure AI' },
+        { day: 7, title: 'Day 7: Full AI-102 Exam Simulation & Scenario Drill', tomorrow: 'Certification Completion', category: 'Certification' },
       ],
     },
     {
@@ -447,21 +555,32 @@ export const DEFAULT_HABITS_CONFIG: UserHabitsConfig = {
   quickAddAmounts: [700, 350],
   readingTargetPages: 20,
   keystones: [
-    { id: 'cleanDiet', label: 'Clean Nutrition', isCore: true, iconName: 'Apple' },
-    { id: 'zeroDoomscroll', label: 'Zero Doomscrolling', isCore: true, iconName: 'Smartphone' },
-    { id: 'dailySupplements', label: 'Daily Supplements', isCore: true, iconName: 'Pill' },
+    { id: 'cleanDiet', label: 'Clean Nutrition (Zero Junk)', isCore: true, iconName: 'Apple' },
+    { id: 'zeroDoomscroll', label: 'Zero Doomscrolling (Morning & Bed)', isCore: true, iconName: 'Smartphone' },
+    { id: 'multivitaminLunch', label: 'Multivitamin (After Lunch)', isCore: true, iconName: 'Pill' },
+    { id: 'magnesiumSleep', label: 'Magnesium Glycinate (Before Sleep)', isCore: true, iconName: 'Moon' },
+    { id: 'proteinShake', label: 'Daily Protein Shake', isCore: true, iconName: 'Zap' },
     { id: 'bedMade', label: 'Bed Made Upon Waking', isCore: true, iconName: 'CheckCheck' },
     { id: 'roomReset', label: 'Evening Desk Reset', isCore: false, iconName: 'Sparkles' },
   ],
 };
 
+export const DEFAULT_PHYSICAL_PROFILE: PhysicalProfile = {
+  heightCm: 175,
+  weightKg: 90,
+  targetWeightKg: 78,
+  primaryGoal: 'Lose love handles & man boobs, build lean muscle, athletic aesthetics',
+};
+
 export const DEFAULT_USER_PROFILE: UserProfile = {
   id: 'profile_default',
-  name: 'Solo Athlete',
+  name: 'Bharath Nair',
   createdAt: 1725400000000,
   avatarColor: 'sky',
+  physicalProfile: DEFAULT_PHYSICAL_PROFILE,
   moveConfig: DEFAULT_MOVE_CONFIG,
   focusConfig: DEFAULT_FOCUS_CONFIG,
   habitsConfig: DEFAULT_HABITS_CONFIG,
 };
+
 

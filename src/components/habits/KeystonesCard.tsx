@@ -8,6 +8,8 @@ import {
   CheckCheck,
   Sparkles,
   HelpCircle,
+  Moon,
+  Zap,
 } from 'lucide-react';
 import { KeystonesState, DetoxState, KeystoneConfig } from '../../types';
 import { triggerHaptic } from '../../hooks/useHaptics';
@@ -24,7 +26,9 @@ interface KeystonesCardProps {
 const DEFAULT_KEYSTONE_DEFS: KeystoneConfig[] = [
   { id: 'cleanDiet', label: 'Clean Nutrition', isCore: true, iconName: 'Apple' },
   { id: 'zeroDoomscroll', label: 'Zero Doomscrolling', isCore: true, iconName: 'Smartphone' },
-  { id: 'dailySupplements', label: 'Daily Supplements', isCore: true, iconName: 'Pill' },
+  { id: 'multivitaminLunch', label: 'Multivitamin (After Lunch)', isCore: true, iconName: 'Pill' },
+  { id: 'magnesiumSleep', label: 'Magnesium Glycinate (Before Sleep)', isCore: true, iconName: 'Moon' },
+  { id: 'proteinShake', label: 'Daily Protein Shake', isCore: true, iconName: 'Zap' },
   { id: 'bedMade', label: 'Bed Made Upon Waking', isCore: true, iconName: 'CheckCheck' },
   { id: 'roomReset', label: 'Evening Desk Reset', isCore: false, iconName: 'Sparkles' },
 ];
@@ -47,10 +51,19 @@ export const KeystonesCard: React.FC<KeystonesCardProps> = ({
 
   const toggleMarker = (key: keyof KeystonesState) => {
     triggerHaptic(15);
+    const nextVal = !keystones[key];
     const updatedKeystones: KeystonesState = {
       ...keystones,
-      [key]: !keystones[key],
+      [key]: nextVal,
     };
+
+    if (key === 'multivitaminLunch' || key === 'magnesiumSleep' || key === 'proteinShake') {
+      const multi = key === 'multivitaminLunch' ? nextVal : Boolean(keystones.multivitaminLunch);
+      const mag = key === 'magnesiumSleep' ? nextVal : Boolean(keystones.magnesiumSleep);
+      const prot = key === 'proteinShake' ? nextVal : Boolean(keystones.proteinShake);
+      updatedKeystones.dailySupplements = multi && mag && prot;
+    }
+
     onUpdateKeystones(updatedKeystones);
   };
 
@@ -62,6 +75,12 @@ export const KeystonesCard: React.FC<KeystonesCardProps> = ({
         return <Smartphone className="w-4 h-4 text-sky-400" />;
       case 'dailySupplements':
         return <Pill className="w-4 h-4 text-amber-400" />;
+      case 'multivitaminLunch':
+        return <Pill className="w-4 h-4 text-amber-400" />;
+      case 'magnesiumSleep':
+        return <Moon className="w-4 h-4 text-indigo-400" />;
+      case 'proteinShake':
+        return <Zap className="w-4 h-4 text-emerald-400" />;
       case 'bedMade':
         return <CheckCheck className="w-4 h-4 text-purple-400" />;
       case 'roomReset':

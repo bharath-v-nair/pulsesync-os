@@ -315,6 +315,9 @@ export interface KeystoneMarkersInput {
   cleanDiet?: boolean | null;
   zeroDoomscroll?: boolean | null;
   dailySupplements?: boolean | null;
+  multivitaminLunch?: boolean | null;
+  magnesiumSleep?: boolean | null;
+  proteinShake?: boolean | null;
   bedMade?: boolean | null;
   roomReset?: boolean | null;
 }
@@ -323,14 +326,16 @@ export interface KeystoneMarkersInput {
  * Reactive calculation of Clean Day status.
  *
  * Canonical Formula:
- * cleanDay = cleanDiet && zeroDoomscroll && dailySupplements && bedMade
+ * cleanDay = cleanDiet && zeroDoomscroll && (dailySupplements || (multivitaminLunch && magnesiumSleep && proteinShake)) && bedMade
  */
 export function evaluateCleanDay(keystones?: KeystoneMarkersInput | null): boolean {
   if (!keystones || typeof keystones !== 'object') return false;
+  const supplementsDone = keystones.dailySupplements === true ||
+    (keystones.multivitaminLunch === true && keystones.magnesiumSleep === true && keystones.proteinShake === true);
   return Boolean(
     keystones.cleanDiet === true &&
     keystones.zeroDoomscroll === true &&
-    keystones.dailySupplements === true &&
+    supplementsDone &&
     keystones.bedMade === true
   );
 }
@@ -343,7 +348,9 @@ export function countCleanMarkers(keystones?: KeystoneMarkersInput | null): numb
   let count = 0;
   if (keystones.cleanDiet === true) count++;
   if (keystones.zeroDoomscroll === true) count++;
-  if (keystones.dailySupplements === true) count++;
+  const supplementsDone = keystones.dailySupplements === true ||
+    (keystones.multivitaminLunch === true && keystones.magnesiumSleep === true && keystones.proteinShake === true);
+  if (supplementsDone) count++;
   if (keystones.bedMade === true) count++;
   return count;
 }

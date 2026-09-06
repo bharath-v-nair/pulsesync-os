@@ -104,6 +104,38 @@ body {
   transform: scale(0.94);
 }
 
+/* Tactile Stepper Pill Buttons (for -2.5 / +2.5, -0.25 / +0.25) */
+.tactile-pill-btn {
+  min-width: 52px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background-color: #1a2233;
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.tactile-pill-btn:hover {
+  background-color: #243047;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tactile-pill-btn:active {
+  background-color: #0f1623;
+  transform: scale(0.95);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
 /* Pill Badges */
 .badge-pill {
   display: inline-flex;

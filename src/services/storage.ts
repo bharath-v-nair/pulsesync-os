@@ -9,9 +9,18 @@ import type {
   ReadingState,
   KeystonesState,
   DailyHabitRecord,
-  UserProfile
+  UserProfile,
 } from '../types/index.ts';
-import { DEFAULT_USER_PROFILE } from '../types/index.ts';
+import { 
+  DEFAULT_USER_PROFILE,
+  DEFAULT_PHYSICAL_PROFILE,
+  DEFAULT_WORKOUT_LOCATIONS,
+  DEFAULT_DUMBBELL_EXERCISES,
+  DEFAULT_BODYWEIGHT_EXERCISES,
+  DEFAULT_MOVE_CONFIG,
+  DEFAULT_FOCUS_CONFIG,
+  DEFAULT_HABITS_CONFIG,
+} from '../types/index.ts';
 
 export const STORAGE_KEYS = {
   // Legacy global keys (v4)
@@ -392,7 +401,36 @@ export const StorageService = {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          return parsed.map((p: any) => ({
+            ...DEFAULT_USER_PROFILE,
+            ...p,
+            name: p.name || DEFAULT_USER_PROFILE.name,
+            physicalProfile: { ...DEFAULT_PHYSICAL_PROFILE, ...(p.physicalProfile || {}) },
+            moveConfig: {
+              ...DEFAULT_MOVE_CONFIG,
+              ...(p.moveConfig || {}),
+              locations: p.moveConfig?.locations && p.moveConfig.locations.length > 0 ? p.moveConfig.locations : DEFAULT_WORKOUT_LOCATIONS,
+              activeLocationId: p.moveConfig?.activeLocationId || 'loc_home',
+              enabledExercises: p.moveConfig?.enabledExercises || DEFAULT_MOVE_CONFIG.enabledExercises,
+              enabledDumbbellExercises: p.moveConfig?.enabledDumbbellExercises || DEFAULT_DUMBBELL_EXERCISES,
+              enabledBodyweightExercises: p.moveConfig?.enabledBodyweightExercises || DEFAULT_BODYWEIGHT_EXERCISES,
+              stepper1: { ...DEFAULT_MOVE_CONFIG.stepper1, ...(p.moveConfig?.stepper1 || {}) },
+              stepper2: { ...DEFAULT_MOVE_CONFIG.stepper2, ...(p.moveConfig?.stepper2 || {}) },
+              targets: { ...DEFAULT_MOVE_CONFIG.targets, ...(p.moveConfig?.targets || {}) },
+            },
+            focusConfig: {
+              ...DEFAULT_FOCUS_CONFIG,
+              ...(p.focusConfig || {}),
+              questionTargets: { ...DEFAULT_FOCUS_CONFIG.questionTargets, ...(p.focusConfig?.questionTargets || {}) },
+              curriculumTracks: p.focusConfig?.curriculumTracks && p.focusConfig.curriculumTracks.length > 0 ? p.focusConfig.curriculumTracks : DEFAULT_FOCUS_CONFIG.curriculumTracks,
+              timerPresets: p.focusConfig?.timerPresets && p.focusConfig.timerPresets.length > 0 ? p.focusConfig.timerPresets : DEFAULT_FOCUS_CONFIG.timerPresets,
+            },
+            habitsConfig: {
+              ...DEFAULT_HABITS_CONFIG,
+              ...(p.habitsConfig || {}),
+              keystones: p.habitsConfig?.keystones && p.habitsConfig.keystones.length > 0 ? p.habitsConfig.keystones : DEFAULT_HABITS_CONFIG.keystones,
+            },
+          }));
         }
       }
     } catch (e) {
@@ -471,6 +509,23 @@ export const StorageService = {
       profiles.push(profile);
     }
     this.saveProfiles(profiles);
+  },
+
+  setActiveLocation(locationId: string): UserProfile {
+    const profile = this.getActiveProfile();
+    const loc = profile.moveConfig.locations?.find((l) => l.id === locationId);
+    if (loc) {
+      profile.moveConfig.activeLocationId = loc.id;
+      profile.moveConfig.equipmentMode = loc.equipmentMode;
+      if (loc.barbellWeightKg !== undefined) {
+        profile.moveConfig.barbellWeightKg = loc.barbellWeightKg;
+      }
+      if (loc.dumbbellWeightKg !== undefined) {
+        profile.moveConfig.dumbbellWeightKg = loc.dumbbellWeightKg;
+      }
+      this.saveActiveProfile(profile);
+    }
+    return profile;
   },
 
   createProfile(name: string, template?: Partial<UserProfile>): UserProfile {

@@ -315,6 +315,14 @@ export const App: React.FC = () => {
               onDeleteLog={handleDeleteWorkout}
               onUpdateLog={handleUpdateWorkout}
               moveConfig={activeProfile.moveConfig}
+              onUpdateMoveConfig={(partial) => {
+                const updated = {
+                  ...activeProfile,
+                  moveConfig: { ...activeProfile.moveConfig, ...partial },
+                };
+                handleUpdateActiveProfile(updated);
+                StorageService.saveActiveProfile(updated);
+              }}
             />
           )}
 

@@ -14,13 +14,22 @@ import {
   Flame, 
   ShieldCheck, 
   Award,
-  Droplets
+  Droplets,
+  Activity,
+  MapPin,
+  Scale,
+  Target,
 } from 'lucide-react';
 import { 
   UserProfile, 
   UserMoveConfig, 
   UserFocusConfig, 
-  UserHabitsConfig
+  UserHabitsConfig,
+  PhysicalProfile,
+  DEFAULT_DUMBBELL_EXERCISES,
+  DEFAULT_BODYWEIGHT_EXERCISES,
+  DEFAULT_PHYSICAL_PROFILE,
+  DEFAULT_WORKOUT_LOCATIONS,
 } from '../../types';
 import { StorageService } from '../../services/storage';
 import { triggerHaptic } from '../../hooks/useHaptics';
@@ -65,9 +74,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   if (!isOpen) return null;
 
   // Local draft copies
-  const moveConfig = activeProfile.moveConfig;
+  const physicalProfile: PhysicalProfile = {
+    ...DEFAULT_PHYSICAL_PROFILE,
+    ...(activeProfile.physicalProfile || {}),
+  };
+  const moveConfig = {
+    ...activeProfile.moveConfig,
+    locations: activeProfile.moveConfig?.locations || DEFAULT_WORKOUT_LOCATIONS,
+    enabledDumbbellExercises: activeProfile.moveConfig?.enabledDumbbellExercises || DEFAULT_DUMBBELL_EXERCISES,
+    enabledBodyweightExercises: activeProfile.moveConfig?.enabledBodyweightExercises || DEFAULT_BODYWEIGHT_EXERCISES,
+    dumbbellWeightKg: activeProfile.moveConfig?.dumbbellWeightKg ?? 15,
+  };
   const focusConfig = activeProfile.focusConfig;
   const habitsConfig = activeProfile.habitsConfig;
+
+  const updatePhysical = (partial: Partial<PhysicalProfile>) => {
+    const updated: UserProfile = {
+      ...activeProfile,
+      physicalProfile: { ...physicalProfile, ...partial },
+    };
+    onUpdateActiveProfile(updated);
+    StorageService.saveActiveProfile(updated);
+  };
+
+  const handleSwitchLocation = (locId: string) => {
+    triggerHaptic(15);
+    const loc = (moveConfig.locations || DEFAULT_WORKOUT_LOCATIONS).find((l) => l.id === locId);
+    if (loc) {
+      const updatedMove: UserMoveConfig = {
+        ...moveConfig,
+        activeLocationId: loc.id,
+        equipmentMode: loc.equipmentMode,
+        barbellWeightKg: loc.barbellWeightKg ?? moveConfig.barbellWeightKg,
+        dumbbellWeightKg: loc.dumbbellWeightKg ?? moveConfig.dumbbellWeightKg,
+      };
+      updateMove(updatedMove);
+    }
+  };
 
   const updateMove = (partial: Partial<UserMoveConfig>) => {
     const updated: UserProfile = {
@@ -404,6 +447,122 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
+              {/* Physical Profile & Biometrics */}
+              <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
+                <div className="flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-emerald-400" />
+                  <span className="font-semibold text-white text-xs">Physical Profile & Biometrics</span>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3 font-mono">
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Height (cm)</label>
+                    <input
+                      type="number"
+                      value={physicalProfile.heightCm}
+                      onChange={(e) => updatePhysical({ heightCm: parseInt(e.target.value, 10) || 175 })}
+                      className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-emerald-400 tabular-nums"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Current Weight</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        value={physicalProfile.weightKg}
+                        onChange={(e) => updatePhysical({ weightKg: parseFloat(e.target.value) || 90 })}
+                        className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-emerald-400 tabular-nums"
+                      />
+                      <span className="text-[10px] text-slate-500">kg</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Target Weight</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        value={physicalProfile.targetWeightKg || 78}
+                        onChange={(e) => updatePhysical({ targetWeightKg: parseFloat(e.target.value) || 78 })}
+                        className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-emerald-400 tabular-nums"
+                      />
+                      <span className="text-[10px] text-slate-500">kg</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-slate-400 block mb-1">Primary Body Transformation Goal</label>
+                  <input
+                    type="text"
+                    value={physicalProfile.primaryGoal}
+                    onChange={(e) => updatePhysical({ primaryGoal: e.target.value })}
+                    placeholder="e.g. Lose love handles & man boobs, build lean muscle"
+                    className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs font-semibold focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+              </div>
+
+              {/* Workout Location & Facility Switcher */}
+              <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-amber-400" />
+                    <span className="font-semibold text-white text-xs">Workout Location & Equipment Setup</span>
+                  </div>
+                  <span className="badge-pill bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-[10px]">
+                    Multi-Facility
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Switch your current workout location to instantly adjust available equipment and default loads:
+                </p>
+
+                <div className="space-y-2 pt-1">
+                  {(moveConfig.locations || DEFAULT_WORKOUT_LOCATIONS).map((loc) => {
+                    const isSelected = loc.id === (moveConfig.activeLocationId || 'loc_home');
+                    return (
+                      <div
+                        key={loc.id}
+                        onClick={() => handleSwitchLocation(loc.id)}
+                        className={`p-3 rounded-2xl border cursor-pointer transition-all tap-target flex items-center justify-between gap-3 ${
+                          isSelected
+                            ? 'bg-[#121927] border-amber-500/50 shadow-md shadow-amber-500/10'
+                            : 'bg-black/30 border-white/5 hover:border-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                            isSelected ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-slate-400'
+                          }`}>
+                            <MapPin className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-white text-xs">{loc.name}</span>
+                              {isSelected && (
+                                <span className="badge-pill bg-amber-500/20 text-amber-300 font-mono text-[9px]">
+                                  Current
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-0.5">
+                              {loc.notes}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 font-mono text-[11px]">
+                          <span className="badge-pill bg-white/5 text-slate-300 border border-white/10 uppercase text-[9px]">
+                            {loc.equipmentMode.replace('_', ' ')}
+                          </span>
+                          {isSelected && <Check className="w-4 h-4 text-amber-400" />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Data Sovereignty: Unified Backup & Restore */}
               <div className="space-y-2.5 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
                 <span className="eyebrow text-slate-400 font-mono text-[10px]">Data Sovereignty & Backups</span>
@@ -471,88 +630,235 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* Barbell Load Settings */}
-              <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Flame className="w-4 h-4 text-amber-400" />
-                    <span className="font-semibold text-white text-xs">Home Barbell Load</span>
+              {/* Conditional Equipment View 1: Barbell */}
+              {moveConfig.equipmentMode === 'barbell_home' && (
+                <>
+                  {/* Barbell Load Settings */}
+                  <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5 animate-fadeIn">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Flame className="w-4 h-4 text-amber-400" />
+                        <span className="font-semibold text-white text-xs">Home Barbell Load</span>
+                      </div>
+                      <span className="badge-pill bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-xs tabular-nums">
+                        {moveConfig.barbellWeightKg} kg
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={10}
+                        max={120}
+                        step={2.5}
+                        value={moveConfig.barbellWeightKg}
+                        onChange={(e) => updateMove({ barbellWeightKg: parseFloat(e.target.value) })}
+                        className="flex-1 accent-amber-400 cursor-pointer h-2 bg-white/10 rounded-lg"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic(10);
+                            updateMove({ barbellWeightKg: Math.max(5, moveConfig.barbellWeightKg - 2.5) });
+                          }}
+                          className="tactile-pill-btn tap-target hover:border-amber-500/40 text-amber-300"
+                        >
+                          -2.5
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic(10);
+                            updateMove({ barbellWeightKg: moveConfig.barbellWeightKg + 2.5 });
+                          }}
+                          className="tactile-pill-btn tap-target hover:border-amber-500/40 text-amber-300"
+                        >
+                          +2.5
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <span className="badge-pill bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-xs tabular-nums">
-                    {moveConfig.barbellWeightKg} kg
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min={10}
-                    max={120}
-                    step={2.5}
-                    value={moveConfig.barbellWeightKg}
-                    onChange={(e) => updateMove({ barbellWeightKg: parseFloat(e.target.value) })}
-                    className="flex-1 accent-amber-400 cursor-pointer h-2 bg-white/10 rounded-lg"
-                  />
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic(10);
-                        updateMove({ barbellWeightKg: Math.max(5, moveConfig.barbellWeightKg - 2.5) });
-                      }}
-                      className="stepper-btn tap-target min-h-[38px] min-w-[38px] text-xs font-mono font-bold"
-                    >
-                      -2.5
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic(10);
-                        updateMove({ barbellWeightKg: moveConfig.barbellWeightKg + 2.5 });
-                      }}
-                      className="stepper-btn tap-target min-h-[38px] min-w-[38px] text-xs font-mono font-bold"
-                    >
-                      +2.5
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Exercise Rotation Checklist */}
-              <div className="space-y-2 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
-                <span className="eyebrow text-slate-400 font-mono text-[10px]">Active Lift Rotation</span>
-                <p className="text-xs text-slate-400">
-                  Select which lifts appear on the quick-tap Barbell card:
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1">
-                  {ALL_POSSIBLE_EXERCISES.map((lift) => {
-                    const isEnabled = moveConfig.enabledExercises.includes(lift);
-                    return (
-                      <button
-                        key={lift}
-                        type="button"
-                        onClick={() => {
-                          triggerHaptic(10);
-                          let next = [...moveConfig.enabledExercises];
-                          if (isEnabled) {
-                            if (next.length > 1) next = next.filter((e) => e !== lift);
-                          } else {
-                            next.push(lift);
-                          }
-                          updateMove({ enabledExercises: next });
-                        }}
-                        className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between min-h-[44px] tap-target ${
-                          isEnabled
-                            ? 'bg-amber-500/15 text-amber-200 border-amber-500/30'
-                            : 'bg-black/30 text-slate-500 border-white/5 opacity-60'
-                        }`}
-                      >
-                        <span className="truncate">{lift}</span>
-                        {isEnabled && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+                  {/* Barbell Exercise Rotation Checklist */}
+                  <div className="space-y-2 p-4 rounded-2xl bg-[#0e131d] border border-white/5 animate-fadeIn">
+                    <span className="eyebrow text-slate-400 font-mono text-[10px]">Active Barbell Lift Rotation</span>
+                    <p className="text-xs text-slate-400">
+                      Select which lifts appear on the quick-tap Barbell card:
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1">
+                      {ALL_POSSIBLE_EXERCISES.map((lift) => {
+                        const isEnabled = moveConfig.enabledExercises.includes(lift);
+                        return (
+                          <button
+                            key={lift}
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic(10);
+                              let next = [...moveConfig.enabledExercises];
+                              if (isEnabled) {
+                                if (next.length > 1) next = next.filter((e) => e !== lift);
+                              } else {
+                                next.push(lift);
+                              }
+                              updateMove({ enabledExercises: next });
+                            }}
+                            className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between min-h-[44px] tap-target ${
+                              isEnabled
+                                ? 'bg-amber-500/15 text-amber-200 border-amber-500/30'
+                                : 'bg-black/30 text-slate-500 border-white/5 opacity-60'
+                            }`}
+                          >
+                            <span className="truncate">{lift}</span>
+                            {isEnabled && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Conditional Equipment View 2: Dumbbells */}
+              {moveConfig.equipmentMode === 'dumbbells' && (
+                <>
+                  {/* Dumbbell Load Settings */}
+                  <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5 animate-fadeIn">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Dumbbell className="w-4 h-4 text-sky-400" />
+                        <span className="font-semibold text-white text-xs">Dumbbell Load (Per Hand)</span>
+                      </div>
+                      <span className="badge-pill bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono text-xs tabular-nums">
+                        {moveConfig.dumbbellWeightKg} kg / hand
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={2.5}
+                        max={60}
+                        step={2.5}
+                        value={moveConfig.dumbbellWeightKg}
+                        onChange={(e) => updateMove({ dumbbellWeightKg: parseFloat(e.target.value) })}
+                        className="flex-1 accent-sky-400 cursor-pointer h-2 bg-white/10 rounded-lg"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic(10);
+                            updateMove({ dumbbellWeightKg: Math.max(2.5, moveConfig.dumbbellWeightKg - 2.5) });
+                          }}
+                          className="tactile-pill-btn tap-target hover:border-sky-500/40 text-sky-300"
+                        >
+                          -2.5
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic(10);
+                            updateMove({ dumbbellWeightKg: moveConfig.dumbbellWeightKg + 2.5 });
+                          }}
+                          className="tactile-pill-btn tap-target hover:border-sky-500/40 text-sky-300"
+                        >
+                          +2.5
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dumbbell Exercise Rotation */}
+                  <div className="space-y-2 p-4 rounded-2xl bg-[#0e131d] border border-white/5 animate-fadeIn">
+                    <span className="eyebrow text-slate-400 font-mono text-[10px]">Active Dumbbell Exercise Rotation</span>
+                    <p className="text-xs text-slate-400">
+                      Select which dumbbell exercises appear on your workout card:
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1">
+                      {DEFAULT_DUMBBELL_EXERCISES.map((ex) => {
+                        const isEnabled = (moveConfig.enabledDumbbellExercises || DEFAULT_DUMBBELL_EXERCISES).includes(ex);
+                        return (
+                          <button
+                            key={ex}
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic(10);
+                              let currentList = moveConfig.enabledDumbbellExercises || DEFAULT_DUMBBELL_EXERCISES;
+                              let next = [...currentList];
+                              if (isEnabled) {
+                                if (next.length > 1) next = next.filter((e) => e !== ex);
+                              } else {
+                                next.push(ex);
+                              }
+                              updateMove({ enabledDumbbellExercises: next });
+                            }}
+                            className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between min-h-[44px] tap-target ${
+                              isEnabled
+                                ? 'bg-sky-500/15 text-sky-200 border-sky-500/30'
+                                : 'bg-black/30 text-slate-500 border-white/5 opacity-60'
+                            }`}
+                          >
+                            <span className="truncate">{ex}</span>
+                            {isEnabled && <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Conditional Equipment View 3: Bodyweight Only */}
+              {moveConfig.equipmentMode === 'bodyweight_only' && (
+                <>
+                  <div className="p-4 rounded-2xl bg-[#0e131d] border border-white/5 space-y-2 animate-fadeIn">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-emerald-400" />
+                      <span className="font-semibold text-white text-xs">Grease-the-Groove Calisthenics Protocol</span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Optimized for travel, home, or mother&apos;s residence with zero heavy gym equipment. High-frequency submaximal sets throughout the day trigger steady muscle hypertrophy and neurological strength adaptations.
+                    </p>
+                  </div>
+
+                  {/* Bodyweight Movement Rotation */}
+                  <div className="space-y-2 p-4 rounded-2xl bg-[#0e131d] border border-white/5 animate-fadeIn">
+                    <span className="eyebrow text-slate-400 font-mono text-[10px]">Active Bodyweight Movement Rotation</span>
+                    <p className="text-xs text-slate-400">
+                      Select which calisthenics exercises to track in your rotation:
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1">
+                      {DEFAULT_BODYWEIGHT_EXERCISES.map((ex) => {
+                        const isEnabled = (moveConfig.enabledBodyweightExercises || DEFAULT_BODYWEIGHT_EXERCISES).includes(ex);
+                        return (
+                          <button
+                            key={ex}
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic(10);
+                              let currentList = moveConfig.enabledBodyweightExercises || DEFAULT_BODYWEIGHT_EXERCISES;
+                              let next = [...currentList];
+                              if (isEnabled) {
+                                if (next.length > 1) next = next.filter((e) => e !== ex);
+                              } else {
+                                next.push(ex);
+                              }
+                              updateMove({ enabledBodyweightExercises: next });
+                            }}
+                            className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between min-h-[44px] tap-target ${
+                              isEnabled
+                                ? 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30'
+                                : 'bg-black/30 text-slate-500 border-white/5 opacity-60'
+                            }`}
+                          >
+                            <span className="truncate">{ex}</span>
+                            {isEnabled && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Quick Steppers Configuration */}
               <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
@@ -702,6 +1008,113 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
+              {/* Question Targets Breakdown */}
+              <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-sky-400" />
+                    <span className="font-semibold text-white text-xs">Daily Question & Problem Targets</span>
+                  </div>
+                  <span className="badge-pill bg-sky-500/10 text-sky-300 border border-sky-500/20 font-mono text-[10px]">
+                    {((focusConfig.questionTargets?.deepAnchors ?? 3) + 
+                      (focusConfig.questionTargets?.spacedChecks ?? 5) + 
+                      (focusConfig.questionTargets?.liveCoding ?? 1) + 
+                      (focusConfig.questionTargets?.dsaProblems ?? 1))} Sprints Total
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Target distribution across deep conceptual anchors, spaced checks, live coding, and DSA:
+                </p>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono">
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                    <label className="text-[10px] text-slate-400 block mb-1">Deep Anchors</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={focusConfig.questionTargets?.deepAnchors ?? 3}
+                      onChange={(e) =>
+                        updateFocus({
+                          questionTargets: {
+                            deepAnchors: parseInt(e.target.value, 10) || 0,
+                            spacedChecks: focusConfig.questionTargets?.spacedChecks ?? 5,
+                            liveCoding: focusConfig.questionTargets?.liveCoding ?? 1,
+                            dsaProblems: focusConfig.questionTargets?.dsaProblems ?? 1,
+                          },
+                        })
+                      }
+                      className="w-full h-8 px-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs font-bold text-center focus:outline-none focus:border-sky-400 tabular-nums"
+                    />
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                    <label className="text-[10px] text-slate-400 block mb-1">Spaced Checks</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={30}
+                      value={focusConfig.questionTargets?.spacedChecks ?? 5}
+                      onChange={(e) =>
+                        updateFocus({
+                          questionTargets: {
+                            deepAnchors: focusConfig.questionTargets?.deepAnchors ?? 3,
+                            spacedChecks: parseInt(e.target.value, 10) || 0,
+                            liveCoding: focusConfig.questionTargets?.liveCoding ?? 1,
+                            dsaProblems: focusConfig.questionTargets?.dsaProblems ?? 1,
+                          },
+                        })
+                      }
+                      className="w-full h-8 px-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs font-bold text-center focus:outline-none focus:border-sky-400 tabular-nums"
+                    />
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                    <label className="text-[10px] text-slate-400 block mb-1">Live Coding</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={focusConfig.questionTargets?.liveCoding ?? 1}
+                      onChange={(e) =>
+                        updateFocus({
+                          questionTargets: {
+                            deepAnchors: focusConfig.questionTargets?.deepAnchors ?? 3,
+                            spacedChecks: focusConfig.questionTargets?.spacedChecks ?? 5,
+                            liveCoding: parseInt(e.target.value, 10) || 0,
+                            dsaProblems: focusConfig.questionTargets?.dsaProblems ?? 1,
+                          },
+                        })
+                      }
+                      className="w-full h-8 px-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs font-bold text-center focus:outline-none focus:border-sky-400 tabular-nums"
+                    />
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                    <label className="text-[10px] text-slate-400 block mb-1">DSA Problems</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={focusConfig.questionTargets?.dsaProblems ?? 1}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10) || 0;
+                        updateFocus({
+                          dailyDsaTargetProblems: val,
+                          questionTargets: {
+                            deepAnchors: focusConfig.questionTargets?.deepAnchors ?? 3,
+                            spacedChecks: focusConfig.questionTargets?.spacedChecks ?? 5,
+                            liveCoding: focusConfig.questionTargets?.liveCoding ?? 1,
+                            dsaProblems: val,
+                          },
+                        });
+                      }}
+                      className="w-full h-8 px-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs font-bold text-center focus:outline-none focus:border-sky-400 tabular-nums"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Active Curriculum Track */}
               <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
                 <span className="eyebrow text-slate-400 font-mono text-[10px]">Curriculum Track</span>
@@ -803,7 +1216,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         triggerHaptic(10);
                         updateHabits({ sleepTargetHours: Math.max(5.0, habitsConfig.sleepTargetHours - 0.25) });
                       }}
-                      className="stepper-btn tap-target min-h-[38px] min-w-[38px] font-bold"
+                      className="tactile-pill-btn tap-target text-indigo-300 hover:border-indigo-500/40"
                     >
                       -0.25
                     </button>
@@ -813,7 +1226,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         triggerHaptic(10);
                         updateHabits({ sleepTargetHours: Math.min(12.0, habitsConfig.sleepTargetHours + 0.25) });
                       }}
-                      className="stepper-btn tap-target min-h-[38px] min-w-[38px] font-bold"
+                      className="tactile-pill-btn tap-target text-indigo-300 hover:border-indigo-500/40"
                     >
                       +0.25
                     </button>

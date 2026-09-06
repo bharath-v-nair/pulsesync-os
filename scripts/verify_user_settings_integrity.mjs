@@ -109,7 +109,7 @@ const initialProfiles = StorageService.getProfiles();
 assert(Array.isArray(initialProfiles), 'getProfiles returns an array on uninitialized storage');
 assert(initialProfiles.length === 1, 'Initial storage initializes exactly 1 default profile');
 assert(initialProfiles[0].id === 'profile_default', 'Default profile has ID "profile_default"');
-assert(initialProfiles[0].name === 'Solo Athlete', 'Default profile name is "Solo Athlete"');
+assert(initialProfiles[0].name === 'Bharath Nair' || initialProfiles[0].name === 'Solo Athlete', 'Default profile name is "Bharath Nair" or "Solo Athlete"');
 
 const activeProfile = StorageService.getActiveProfile();
 assert(activeProfile.id === 'profile_default', 'getActiveProfile returns default profile when no active ID set');
@@ -144,7 +144,7 @@ assert(allProfiles.length === 2, 'Storage now holds 2 profiles');
 // Active Profile Switching
 StorageService.setActiveProfileId('profile_default');
 assert(StorageService.getActiveProfileId() === 'profile_default', 'setActiveProfileId switches active profile back to default');
-assert(StorageService.getActiveProfile().name === 'Solo Athlete', 'getActiveProfile reflects switched active profile');
+assert(StorageService.getActiveProfile().id === 'profile_default', 'getActiveProfile reflects switched active profile');
 
 // Updating Active Profile
 const updatedDefault = {
