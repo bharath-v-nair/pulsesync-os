@@ -291,16 +291,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
           )}
         </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-white/10 bg-[#0a0e17] flex justify-end shrink-0">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white transition-colors"
-          >
-            Close
-          </button>
-        </div>
       </div>
     </div>
   );

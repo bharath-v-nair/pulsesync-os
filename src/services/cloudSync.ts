@@ -122,30 +122,15 @@ export async function initializeUserCloudSync(user: AuthUser): Promise<void> {
   try {
     const userDocRef = doc(db, 'users', user.uid);
 
-    // Bounded fetch with 5-second timeout so slow network doesn't hang UI
-    let userDocExists = false;
+    // 1. First, attempt to pull and merge any existing remote data
     try {
-      const userDocSnap = await Promise.race([
-        getDoc(userDocRef),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Initial cloud connection timeout')), 5000)
-        ),
-      ]);
-      userDocExists = userDocSnap.exists();
-    } catch (fetchErr) {
-      console.warn('[PulseSync CloudSync] Fast getDoc timed out or offline, relying on IndexedDB cache & real-time streams:', fetchErr);
-      userDocExists = true; // Attempt download/merge from cache
+      await downloadCloudStateToLocal(user.uid);
+    } catch (downErr) {
+      console.warn('[PulseSync CloudSync] Note: Existing remote pull completed or empty:', downErr);
     }
 
-    if (!userDocExists) {
-      // First-time cloud account: upload local data to cloud (Zero Data Loss Migration)
-      console.log('[PulseSync CloudSync] First-time cloud account detected. Migrating local data to cloud...');
-      await uploadFullLocalStateToCloud(user.uid);
-    } else {
-      // Existing cloud account: pull cloud data down and merge
-      console.log('[PulseSync CloudSync] Existing cloud account found. Pulling down and merging cloud state...');
-      await downloadCloudStateToLocal(user.uid);
-    }
+    // 2. ALWAYS write/merge local state up to Firestore so users/{uid} and partitions are guaranteed to exist
+    await uploadFullLocalStateToCloud(user.uid);
 
     lastSyncedAt = new Date();
     emitStatus('synced');
@@ -381,8 +366,22 @@ export function queueCloudSync(profileId?: string): void {
   debounceTimer = setTimeout(async () => {
     try {
       const targetId = profileId || StorageService.getActiveProfileId();
-      const pDocRef = doc(db, 'users', user.uid, 'partitions', targetId);
+      
+      // Update root document to ensure users/{uid} exists and displays in console
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(
+        userDocRef,
+        {
+          uid: user.uid,
+          activeProfileId: targetId,
+          profiles: sanitizeForFirestore(StorageService.getProfiles()),
+          updatedAt: serverTimestamp(),
+          clientTimestamp: Date.now(),
+        },
+        { merge: true }
+      );
 
+      const pDocRef = doc(db, 'users', user.uid, 'partitions', targetId);
       await setDoc(
         pDocRef,
         {
