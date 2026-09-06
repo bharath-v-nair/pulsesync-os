@@ -223,9 +223,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-xl bg-[#0b0e14] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10 animate-fadeIn">
+      <div className="relative w-full max-w-xl bg-[#0b0e14] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[85vh] max-h-[820px] z-10 animate-fadeIn">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-[#0e131d]">
+        <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/10 bg-[#0e131d]">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
               <Award className="w-4 h-4" />
@@ -250,7 +250,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-white/10 bg-[#090d15] px-3 pt-2 gap-1 overflow-x-auto scrollbar-none">
+        <div className="shrink-0 flex border-b border-white/10 bg-[#090d15] px-3 pt-2 gap-1 overflow-x-auto scrollbar-none z-10">
           {tabs.map((tab) => {
             const isSelected = activeTab === tab.id;
             return (
@@ -261,7 +261,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   triggerHaptic(10);
                   setActiveTab(tab.id);
                 }}
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-t-xl text-xs font-semibold tracking-wide transition-all min-h-[44px] tap-target shrink-0 ${
+                className={`shrink-0 flex items-center gap-2 px-3.5 py-2.5 rounded-t-xl text-xs font-semibold tracking-wide transition-all min-h-[44px] tap-target ${
                   isSelected
                     ? 'bg-[#0b0e14] text-sky-400 border-t-2 border-sky-400 shadow-sm font-bold'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -275,7 +275,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Tab Content Area */}
-        <div className="p-5 overflow-y-auto space-y-5 flex-1 text-slate-200 text-sm">
+        <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-5 text-slate-200 text-sm">
           {/* ========================================================================= */}
           {/* TAB 1: PROFILE & IDENTITY */}
           {/* ========================================================================= */}
@@ -519,44 +519,99 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 <div className="space-y-2 pt-1">
                   {(moveConfig.locations || DEFAULT_WORKOUT_LOCATIONS).map((loc) => {
-                    const isSelected = loc.id === (moveConfig.activeLocationId || 'loc_home');
+                    const isSelected = loc.id === (moveConfig.activeLocationId || 'loc_mothers');
+                    const isMothersHome = loc.id === 'loc_mothers' || loc.name.includes("Mother");
+                    const isGym = loc.id === 'loc_gym' || loc.name.includes("Gym");
+
                     return (
                       <div
                         key={loc.id}
                         onClick={() => handleSwitchLocation(loc.id)}
-                        className={`p-3 rounded-2xl border cursor-pointer transition-all tap-target flex items-center justify-between gap-3 ${
+                        className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                           isSelected
                             ? 'bg-[#121927] border-amber-500/50 shadow-md shadow-amber-500/10'
                             : 'bg-black/30 border-white/5 hover:border-white/10'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                            isSelected ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-slate-400'
-                          }`}>
-                            <MapPin className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-white text-xs">{loc.name}</span>
-                              {isSelected && (
-                                <span className="badge-pill bg-amber-500/20 text-amber-300 font-mono text-[9px]">
-                                  Current
-                                </span>
-                              )}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                              isSelected ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-slate-400'
+                            }`}>
+                              <MapPin className="w-4 h-4" />
                             </div>
-                            <p className="text-[10px] text-slate-400 mt-0.5">
-                              {loc.notes}
-                            </p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-white text-xs">{loc.name}</span>
+                                {isSelected && (
+                                  <span className="badge-pill bg-amber-500/20 text-amber-300 font-mono text-[9px]">
+                                    Active Setup
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-slate-400 mt-0.5">
+                                {loc.notes}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 font-mono text-[11px]">
+                            {isSelected && <Check className="w-4 h-4 text-amber-400" />}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0 font-mono text-[11px]">
-                          <span className="badge-pill bg-white/5 text-slate-300 border border-white/10 uppercase text-[9px]">
-                            {loc.equipmentMode.replace('_', ' ')}
-                          </span>
-                          {isSelected && <Check className="w-4 h-4 text-amber-400" />}
-                        </div>
+                        {/* Equipment Setup Detail (shown when selected) */}
+                        {isSelected && isMothersHome && (
+                          <div className="mt-3 pt-3 border-t border-white/10 space-y-2 animate-fadeIn">
+                            <span className="text-[10px] uppercase font-mono tracking-wider text-amber-400 font-bold block">
+                              Active Equipment Inventory:
+                            </span>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div className="p-2 rounded-xl bg-black/40 border border-white/5 flex items-center gap-2">
+                                <Flame className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                <div>
+                                  <span className="text-slate-200 font-medium block">Barbell (30 kg)</span>
+                                  <span className="text-[10px] text-slate-400">Fixed load · 6 Lifts</span>
+                                </div>
+                              </div>
+                              <div className="p-2 rounded-xl bg-black/40 border border-white/5 flex items-center gap-2">
+                                <Dumbbell className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                                <div>
+                                  <span className="text-slate-200 font-medium block">Pull-up Bar</span>
+                                  <span className="text-[10px] text-slate-400">Half Pull-ups</span>
+                                </div>
+                              </div>
+                              <div className="p-2 rounded-xl bg-black/40 border border-white/5 flex items-center gap-2">
+                                <Activity className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                                <div>
+                                  <span className="text-slate-200 font-medium block">Dips Bar</span>
+                                  <span className="text-[10px] text-slate-400">Parallel Dips</span>
+                                </div>
+                              </div>
+                              <div className="p-2 rounded-xl bg-black/40 border border-white/5 flex items-center gap-2">
+                                <ShieldCheck className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                <div>
+                                  <span className="text-slate-200 font-medium block">Floor Space</span>
+                                  <span className="text-[10px] text-slate-400">Push-ups</span>
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-[10px] text-slate-500 italic mt-1">
+                              * Dumbbells: None added yet (can be added if purchased)
+                            </p>
+                          </div>
+                        )}
+
+                        {isSelected && isGym && (
+                          <div className="mt-3 pt-3 border-t border-white/10 text-xs text-slate-400 space-y-1 animate-fadeIn">
+                            <p className="text-[11px] text-amber-300 font-medium">
+                              Commercial Gym facility registered.
+                            </p>
+                            <p className="text-[10px] text-slate-400">
+                              Custom gym routine and heavy equipment will be configured once you begin attending gym. Currently training at Mother&apos;s Home.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -863,10 +918,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Quick Steppers Configuration */}
               <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
                 <span className="eyebrow text-slate-400 font-mono text-[10px]">Quick-Action Steppers</span>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">
-                      Stepper 1 Title
+                    <label className="text-[11px] font-semibold text-slate-300 block mb-1 truncate">
+                      Stepper 1
                     </label>
                     <input
                       type="text"
@@ -876,12 +931,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           stepper1: { ...moveConfig.stepper1, title: e.target.value },
                         })
                       }
-                      className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                      className="w-full h-9 px-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">
-                      Stepper 2 Title
+                    <label className="text-[11px] font-semibold text-slate-300 block mb-1 truncate">
+                      Stepper 2 (Dips)
                     </label>
                     <input
                       type="text"
@@ -891,7 +946,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           stepper2: { ...moveConfig.stepper2, title: e.target.value },
                         })
                       }
-                      className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                      className="w-full h-9 px-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-teal-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-300 block mb-1 truncate">
+                      Stepper 3
+                    </label>
+                    <input
+                      type="text"
+                      value={moveConfig.stepper3?.title || 'Push-ups'}
+                      onChange={(e) =>
+                        updateMove({
+                          stepper3: { title: e.target.value, category: 'pushup', defaultReps: 10 },
+                        })
+                      }
+                      className="w-full h-9 px-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-purple-400"
                     />
                   </div>
                 </div>
@@ -900,7 +970,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Daily Target Goals */}
               <div className="space-y-3 p-4 rounded-2xl bg-[#0e131d] border border-white/5">
                 <span className="eyebrow text-slate-400 font-mono text-[10px]">Daily Move Targets</span>
-                <div className="grid grid-cols-2 gap-3 font-mono">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono">
                   <div>
                     <label className="text-xs text-slate-400 block mb-1">Pull-ups Goal</label>
                     <input
@@ -915,6 +985,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     />
                   </div>
                   <div>
+                    <label className="text-xs text-slate-400 block mb-1">Dips Goal</label>
+                    <input
+                      type="number"
+                      value={moveConfig.targets.dips ?? 30}
+                      onChange={(e) =>
+                        updateMove({
+                          targets: { ...moveConfig.targets, dips: parseInt(e.target.value, 10) || 0 },
+                        })
+                      }
+                      className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-teal-400 tabular-nums"
+                    />
+                  </div>
+                  <div>
                     <label className="text-xs text-slate-400 block mb-1">Push-ups Goal</label>
                     <input
                       type="number"
@@ -924,7 +1007,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           targets: { ...moveConfig.targets, pushups: parseInt(e.target.value, 10) || 0 },
                         })
                       }
-                      className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400 tabular-nums"
+                      className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-purple-400 tabular-nums"
                     />
                   </div>
                   <div>
@@ -940,7 +1023,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400 tabular-nums"
                     />
                   </div>
-                  <div>
+                  <div className="col-span-2 sm:col-span-2">
                     <label className="text-xs text-slate-400 block mb-1">Cardio Steps Target</label>
                     <input
                       type="number"
@@ -1351,7 +1434,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-5 py-3 border-t border-white/10 bg-[#0e131d] flex items-center justify-between">
+        <div className="shrink-0 px-5 py-3 border-t border-white/10 bg-[#0e131d] flex items-center justify-between z-10">
           <span className="text-[11px] font-mono text-slate-400">
             Active: <span className="text-sky-400 font-bold">{activeProfile.name}</span>
           </span>

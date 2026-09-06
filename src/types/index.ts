@@ -1,7 +1,7 @@
 // ==========================================
 // 1. Move (Workout) Domain Types
 // ==========================================
-export type WorkoutCategory = 'pullup' | 'pushup' | 'barbell' | 'walk' | 'machine_cardio' | 'wake_up' | 'bodyweight';
+export type WorkoutCategory = 'pullup' | 'pushup' | 'dips' | 'barbell' | 'walk' | 'machine_cardio' | 'wake_up' | 'bodyweight';
 
 export type BarbellExercise = 
   | 'Squats'
@@ -31,6 +31,7 @@ export interface WorkoutLog {
 
 export interface DailyTargets {
   pullups: number;
+  dips?: number;
   pushups: number;
   tonnage: number;
   cardioSteps: number;
@@ -38,6 +39,7 @@ export interface DailyTargets {
 
 export const DEFAULT_TARGETS: DailyTargets = {
   pullups: 20,
+  dips: 30,
   pushups: 50,
   tonnage: 900,
   cardioSteps: 8000,
@@ -45,6 +47,7 @@ export const DEFAULT_TARGETS: DailyTargets = {
 
 export interface StickyDefaults {
   pullupReps: number;
+  dipsReps?: number;
   pushupReps: number;
   barbellReps: number;
   selectedLift: BarbellExercise;
@@ -279,6 +282,10 @@ export interface WorkoutLocation {
   equipmentMode: 'barbell_home' | 'dumbbells' | 'bodyweight_only';
   barbellWeightKg?: number;
   dumbbellWeightKg?: number;
+  hasBarbell?: boolean;
+  hasPullupBar?: boolean;
+  hasDipsBar?: boolean;
+  hasDumbbells?: boolean;
   notes?: string;
 }
 
@@ -311,6 +318,11 @@ export interface UserMoveConfig {
     defaultReps: number;
   };
   stepper2: {
+    title: string;
+    category: WorkoutCategory;
+    defaultReps: number;
+  };
+  stepper3?: {
     title: string;
     category: WorkoutCategory;
     defaultReps: number;
@@ -378,28 +390,26 @@ export interface UserProfile {
 
 export const DEFAULT_WORKOUT_LOCATIONS: WorkoutLocation[] = [
   {
-    id: 'loc_home',
-    name: 'Main Home Setup (30kg Barbell)',
+    id: 'loc_mothers',
+    name: "Mother's Home",
     equipmentMode: 'barbell_home',
     barbellWeightKg: 30,
-    dumbbellWeightKg: 15,
-    notes: 'Home gym with fixed 30kg barbell & floor space',
-  },
-  {
-    id: 'loc_mothers',
-    name: "Mother's House (Dumbbells & Calisthenics)",
-    equipmentMode: 'dumbbells',
-    barbellWeightKg: 20,
-    dumbbellWeightKg: 12.5,
-    notes: 'Portable dumbbells & high-frequency bodyweight movement',
+    hasBarbell: true,
+    hasPullupBar: true,
+    hasDipsBar: true,
+    hasDumbbells: false,
+    notes: '30kg Barbell, Pull-up Bar, Dips Bar & Push-ups',
   },
   {
     id: 'loc_gym',
-    name: 'Commercial Gym (Full Weights)',
+    name: 'Commercial Gym',
     equipmentMode: 'barbell_home',
     barbellWeightKg: 60,
-    dumbbellWeightKg: 25,
-    notes: 'Full Olympic plates, cables & heavy dumbbells',
+    hasBarbell: false,
+    hasPullupBar: false,
+    hasDipsBar: false,
+    hasDumbbells: false,
+    notes: 'Commercial gym facility (custom routine configured when gym visits begin)',
   },
 ];
 
@@ -415,8 +425,8 @@ export const DEFAULT_DUMBBELL_EXERCISES = [
 
 export const DEFAULT_BODYWEIGHT_EXERCISES = [
   'Half Pull-ups',
-  'Push-ups',
   'Parallel Dips',
+  'Push-ups',
   'Pike Push-ups',
   'Bodyweight Squats',
   'Walking Lunges',
@@ -428,7 +438,7 @@ export const DEFAULT_MOVE_CONFIG: UserMoveConfig = {
   barbellWeightKg: 30,
   dumbbellWeightKg: 15,
   locations: DEFAULT_WORKOUT_LOCATIONS,
-  activeLocationId: 'loc_home',
+  activeLocationId: 'loc_mothers',
   enabledExercises: [
     'Squats',
     'Overhead Press',
@@ -445,6 +455,11 @@ export const DEFAULT_MOVE_CONFIG: UserMoveConfig = {
     defaultReps: 4,
   },
   stepper2: {
+    title: 'Parallel Dips',
+    category: 'dips',
+    defaultReps: 8,
+  },
+  stepper3: {
     title: 'Push-ups',
     category: 'pushup',
     defaultReps: 10,

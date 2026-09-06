@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Dumbbell, Shield, Flame, Footprints, Activity, Clock } from 'lucide-react';
+import { X, Check, Dumbbell, Shield, Flame, Footprints, Activity, Clock, Zap } from 'lucide-react';
 import { WorkoutLog } from '../../types';
 import { triggerHaptic } from '../../hooks/useHaptics';
 
@@ -64,7 +64,7 @@ export const EditWorkoutModal: React.FC<EditWorkoutModalProps> = ({
     if (log.category === 'barbell') {
       updated.reps = typeof reps === 'number' ? reps : (log.reps || 0);
       updated.weightKg = typeof weightKg === 'number' ? weightKg : (log.weightKg || 30);
-    } else if (log.category === 'pullup' || log.category === 'pushup') {
+    } else if (log.category === 'pullup' || log.category === 'pushup' || log.category === 'dips') {
       updated.reps = typeof reps === 'number' ? reps : (log.reps || 0);
     } else if (log.category === 'machine_cardio') {
       const finalMins = typeof minutes === 'number' ? minutes : (log.minutes || 10);
@@ -87,6 +87,8 @@ export const EditWorkoutModal: React.FC<EditWorkoutModalProps> = ({
     switch (log.category) {
       case 'pullup':
         return <Dumbbell className="w-4 h-4 text-sky-400" />;
+      case 'dips':
+        return <Zap className="w-4 h-4 text-teal-400" />;
       case 'pushup':
         return <Shield className="w-4 h-4 text-purple-400" />;
       case 'barbell':

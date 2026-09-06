@@ -33,6 +33,7 @@ export const WorkoutTimeline: React.FC<WorkoutTimelineProps> = ({
         return parts.join(' • ');
       }
       case 'pullup':
+      case 'dips':
       case 'pushup':
         return `${log.reps || 0} reps`;
       default:
@@ -44,6 +45,8 @@ export const WorkoutTimeline: React.FC<WorkoutTimelineProps> = ({
     switch (category) {
       case 'pullup':
         return 'bg-sky-400';
+      case 'dips':
+        return 'bg-teal-400';
       case 'pushup':
         return 'bg-purple-400';
       case 'barbell':

@@ -91,26 +91,22 @@ assert(
 );
 
 // ----------------------------------------------------------------------------
-// Suite 2: Multi-Location Workout Switcher
+// Suite 2: Multi-Facility Setup & Parallel Dips Integration
 // ----------------------------------------------------------------------------
-suite('Suite 2: Multi-Location Workout Switcher');
+suite('Suite 2: Multi-Facility Setup & Parallel Dips Integration');
 
-assert(activeProfile.moveConfig.locations.length === 3, 'Locations list has 3 distinct training venues');
+assert(activeProfile.moveConfig.locations.length === 2, 'Locations list has exactly 2 training facilities');
 
-const homeLoc = activeProfile.moveConfig.locations.find(l => l.id === 'loc_home');
 const mothersLoc = activeProfile.moveConfig.locations.find(l => l.id === 'loc_mothers');
 const gymLoc = activeProfile.moveConfig.locations.find(l => l.id === 'loc_gym');
 
-assert(homeLoc && homeLoc.barbellWeightKg === 30, 'Main residence setup has 30kg barbell');
-assert(mothersLoc && mothersLoc.equipmentMode === 'dumbbells', "Mother's house setup uses dumbbells & bodyweight");
-assert(gymLoc && gymLoc.barbellWeightKg === 60, 'Commercial gym setup calibrated to full Olympic weights');
+assert(mothersLoc && mothersLoc.name.includes("Mother"), "Mother's Home facility is registered");
+assert(mothersLoc && mothersLoc.barbellWeightKg === 30, "Mother's Home setup has 30kg barbell");
+assert(mothersLoc && mothersLoc.hasPullupBar && mothersLoc.hasDipsBar, "Mother's Home setup has pull-up bar and dips bar");
+assert(gymLoc && gymLoc.name === 'Commercial Gym', 'Commercial Gym facility is registered');
 
-// Test active location switching
-StorageService.setActiveLocation('loc_mothers');
-const updatedAfterMothers = StorageService.getActiveProfile();
-assert(updatedAfterMothers.moveConfig.activeLocationId === 'loc_mothers', 'Switched active location to loc_mothers');
-assert(updatedAfterMothers.moveConfig.equipmentMode === 'dumbbells', 'Equipment mode automatically switched to dumbbells');
-assert(updatedAfterMothers.moveConfig.dumbbellWeightKg === 12.5, 'Dumbbell load adjusted to 12.5kg for mothers location');
+// Test active location starts at Mother's Home
+assert(activeProfile.moveConfig.activeLocationId === 'loc_mothers', "Default active location is Mother's Home");
 
 // Switch to Gym
 StorageService.setActiveLocation('loc_gym');
@@ -118,11 +114,16 @@ const updatedAfterGym = StorageService.getActiveProfile();
 assert(updatedAfterGym.moveConfig.activeLocationId === 'loc_gym', 'Switched active location to loc_gym');
 assert(updatedAfterGym.moveConfig.barbellWeightKg === 60, 'Barbell weight updated to 60kg for gym');
 
-// Switch back to Home
-StorageService.setActiveLocation('loc_home');
+// Switch back to Mother's Home
+StorageService.setActiveLocation('loc_mothers');
 const reloadedHome = StorageService.getActiveProfile();
-assert(reloadedHome.moveConfig.activeLocationId === 'loc_home', 'Switched back to home location');
+assert(reloadedHome.moveConfig.activeLocationId === 'loc_mothers', "Switched back to Mother's Home location");
 assert(reloadedHome.moveConfig.barbellWeightKg === 30, 'Home barbell restored to 30kg');
+
+// Parallel Dips Integration
+assert(reloadedHome.moveConfig.targets.dips === 30, 'Daily Dips target is calibrated to 30 reps');
+const sticky = StorageService.getStickyDefaults();
+assert(sticky.dipsReps === 8, 'Sticky defaults include 8 reps for parallel dips');
 
 // ----------------------------------------------------------------------------
 // Suite 3: Study Question Targets & Azure AI Certification Track

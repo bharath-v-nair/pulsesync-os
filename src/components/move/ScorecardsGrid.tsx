@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dumbbell, Shield, Flame, Footprints, Check, ChevronDown, Award } from 'lucide-react';
+import { Dumbbell, Shield, Flame, Footprints, Check, ChevronDown, Award, Zap } from 'lucide-react';
 import { WorkoutLog, DailyTargets, DEFAULT_TARGETS, BarbellExercise } from '../../types';
 import { triggerHaptic } from '../../hooks/useHaptics';
 
@@ -36,6 +36,14 @@ export const ScorecardsGrid: React.FC<ScorecardsGridProps> = ({
     .reduce((acc, l) => acc + (l.reps || 0), 0);
   const pullupsMet = currentPullups >= targets.pullups;
   const pullupsPct = Math.min(100, Math.round((currentPullups / targets.pullups) * 100));
+
+  // 2. Dips (Parallel Dips Bar)
+  const dipsTarget = targets.dips ?? 30;
+  const currentDips = logs
+    .filter((l) => l.category === 'dips' || l.name.toLowerCase().includes('dip'))
+    .reduce((acc, l) => acc + (l.reps || 0), 0);
+  const dipsMet = currentDips >= dipsTarget;
+  const dipsPct = Math.min(100, Math.round((currentDips / dipsTarget) * 100));
 
   // 2. Push-ups
   const currentPushups = logs
@@ -90,8 +98,8 @@ export const ScorecardsGrid: React.FC<ScorecardsGridProps> = ({
 
   return (
     <div className="space-y-2.5">
-      {/* 4 Scorecards Grid */}
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      {/* 5 Scorecards Grid: Pull-ups, Dips, Push-ups, Tonnage, Cardio */}
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
         {/* 1. Pull-ups Card */}
         <div
           role="region"
@@ -145,7 +153,60 @@ export const ScorecardsGrid: React.FC<ScorecardsGridProps> = ({
           </div>
         </div>
 
-        {/* 2. Push-ups Card */}
+        {/* 2. Dips Card (Parallel Dips Bar) */}
+        <div
+          role="region"
+          aria-label={`Dips target: ${currentDips} of ${dipsTarget} reps completed`}
+          className={`matte-card p-3 relative flex flex-col justify-between overflow-hidden transition-all duration-300 ${
+            dipsMet
+              ? 'border-teal-400/50 bg-[#081a1a] shadow-[0_0_18px_rgba(45,212,191,0.25)]'
+              : 'border-white/10 bg-[#0e131d] hover:border-white/20'
+          }`}
+        >
+          <div>
+            <div className="flex items-center justify-between gap-1 mb-1.5">
+              <div className="flex items-center gap-1.5 text-teal-400">
+                <Zap className="w-3.5 h-3.5" />
+                <span className="eyebrow text-[9px] text-teal-400 font-bold">Dips</span>
+              </div>
+              {dipsMet ? (
+                <span className="inline-flex items-center gap-0.5 font-mono text-[9px] font-semibold text-teal-300 bg-teal-500/20 px-1.5 py-0.5 rounded-full border border-teal-400/30">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" /> {dipsTarget}
+                </span>
+              ) : (
+                <span className="font-mono text-[9px] text-slate-400">
+                  {currentDips} / {dipsTarget}
+                </span>
+              )}
+            </div>
+
+            <p className="text-2xl font-bold font-mono text-white tabular-nums tracking-tight">
+              {currentDips}
+            </p>
+            <p className="text-[10px] text-slate-400 font-medium">reps today</p>
+          </div>
+
+          {/* 3px Bottom Progress Bar */}
+          <div
+            role="progressbar"
+            aria-valuenow={currentDips}
+            aria-valuemin={0}
+            aria-valuemax={dipsTarget}
+            aria-label="Dips progress"
+            className="w-full h-[3px] bg-white/10 rounded-full overflow-hidden mt-3"
+          >
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                dipsMet
+                  ? 'bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.9)]'
+                  : 'bg-teal-500/60'
+              }`}
+              style={{ width: `${dipsPct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* 3. Push-ups Card */}
         <div
           role="region"
           aria-label={`Push-ups target: ${currentPushups} of ${targets.pushups} reps completed`}

@@ -55,6 +55,7 @@ export function formatTime(date: Date = new Date()): string {
 // Initial Seeds
 const DEFAULT_STICKY: StickyDefaults = {
   pullupReps: 4,
+  dipsReps: 8,
   pushupReps: 10,
   barbellReps: 10,
   selectedLift: 'Squats',
@@ -409,14 +410,24 @@ export const StorageService = {
             moveConfig: {
               ...DEFAULT_MOVE_CONFIG,
               ...(p.moveConfig || {}),
-              locations: p.moveConfig?.locations && p.moveConfig.locations.length > 0 ? p.moveConfig.locations : DEFAULT_WORKOUT_LOCATIONS,
-              activeLocationId: p.moveConfig?.activeLocationId || 'loc_home',
+              equipmentMode: (p.moveConfig?.activeLocationId === 'loc_mothers' || !p.moveConfig?.equipmentMode) 
+                ? 'barbell_home' 
+                : p.moveConfig.equipmentMode,
+              locations: (p.moveConfig?.locations && p.moveConfig.locations.length === 2 && !p.moveConfig.locations.some((l: any) => l.id === 'loc_home')) 
+                ? p.moveConfig.locations 
+                : DEFAULT_WORKOUT_LOCATIONS,
+              activeLocationId: (p.moveConfig?.activeLocationId && p.moveConfig.activeLocationId !== 'loc_home') 
+                ? p.moveConfig.activeLocationId 
+                : 'loc_mothers',
               enabledExercises: p.moveConfig?.enabledExercises || DEFAULT_MOVE_CONFIG.enabledExercises,
               enabledDumbbellExercises: p.moveConfig?.enabledDumbbellExercises || DEFAULT_DUMBBELL_EXERCISES,
               enabledBodyweightExercises: p.moveConfig?.enabledBodyweightExercises || DEFAULT_BODYWEIGHT_EXERCISES,
               stepper1: { ...DEFAULT_MOVE_CONFIG.stepper1, ...(p.moveConfig?.stepper1 || {}) },
-              stepper2: { ...DEFAULT_MOVE_CONFIG.stepper2, ...(p.moveConfig?.stepper2 || {}) },
-              targets: { ...DEFAULT_MOVE_CONFIG.targets, ...(p.moveConfig?.targets || {}) },
+              stepper2: (p.moveConfig?.stepper2?.category === 'dips' || p.moveConfig?.stepper2?.title?.toLowerCase().includes('dip'))
+                ? { ...DEFAULT_MOVE_CONFIG.stepper2, ...(p.moveConfig?.stepper2 || {}) }
+                : DEFAULT_MOVE_CONFIG.stepper2,
+              stepper3: { ...DEFAULT_MOVE_CONFIG.stepper3, ...(p.moveConfig?.stepper3 || {}) },
+              targets: { ...DEFAULT_MOVE_CONFIG.targets, dips: 30, ...(p.moveConfig?.targets || {}) },
             },
             focusConfig: {
               ...DEFAULT_FOCUS_CONFIG,
