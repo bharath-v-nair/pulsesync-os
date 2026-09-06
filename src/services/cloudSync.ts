@@ -11,6 +11,8 @@ import { getFirebaseDb, isFirebaseConfigured } from './firebase';
 import { StorageService, onStorageMutation } from './storage';
 import { getCurrentAuthUser, subscribeToAuthState, type AuthUser, type CloudSyncStatus } from './auth';
 
+import type { WorkoutLog, HabitsData } from '../types';
+
 let syncStatus: CloudSyncStatus = isFirebaseConfigured() ? 'offline' : 'unconfigured';
 let lastSyncedAt: Date | null = null;
 const statusListeners = new Set<(status: CloudSyncStatus, lastSyncedAt: Date | null) => void>();
@@ -49,6 +51,59 @@ export function subscribeToSyncStatus(
 }
 
 /**
+ * Merges local and remote workouts without data loss.
+ * Preserves every logged set across both devices by unique id.
+ */
+function mergeWorkouts(local: WorkoutLog[], remote: WorkoutLog[]): WorkoutLog[] {
+  const map = new Map<string, WorkoutLog>();
+  if (Array.isArray(local)) {
+    for (const w of local) {
+      if (w && w.id) map.set(w.id, w);
+    }
+  }
+  if (Array.isArray(remote)) {
+    for (const w of remote) {
+      if (w && w.id) map.set(w.id, w);
+    }
+  }
+  return Array.from(map.values()).sort(
+    (a, b) => (a.timestamp || 0) - (b.timestamp || 0)
+  );
+}
+
+/**
+ * Merges local and remote habits data safely without data loss.
+ */
+function mergeHabitsData(local: HabitsData, remote: HabitsData): HabitsData {
+  if (!local) return remote;
+  if (!remote) return local;
+
+  const mergedRecords = { ...(local.dailyRecords || {}), ...(remote.dailyRecords || {}) };
+  if (local.dailyRecords && remote.dailyRecords) {
+    for (const [date, rRec] of Object.entries(remote.dailyRecords)) {
+      const lRec = local.dailyRecords[date];
+      if (lRec && rRec) {
+        mergedRecords[date] = {
+          ...lRec,
+          ...rRec,
+          hydrationMl: Math.max(lRec.hydrationMl || 0, rRec.hydrationMl || 0),
+          sleepMinutes: rRec.sleepMinutes || lRec.sleepMinutes,
+        };
+      }
+    }
+  }
+
+  return {
+    ...remote,
+    hydration: {
+      ...remote.hydration,
+      currentMl: Math.max(local.hydration?.currentMl || 0, remote.hydration?.currentMl || 0),
+    },
+    dailyRecords: mergedRecords,
+  };
+}
+
+/**
  * Initializes cloud synchronization for an authenticated user.
  */
 export async function initializeUserCloudSync(user: AuthUser): Promise<void> {
@@ -66,26 +121,45 @@ export async function initializeUserCloudSync(user: AuthUser): Promise<void> {
 
   try {
     const userDocRef = doc(db, 'users', user.uid);
-    const userDocSnap = await getDoc(userDocRef);
 
-    if (!userDocSnap.exists()) {
+    // Bounded fetch with 5-second timeout so slow network doesn't hang UI
+    let userDocExists = false;
+    try {
+      const userDocSnap = await Promise.race([
+        getDoc(userDocRef),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Initial cloud connection timeout')), 5000)
+        ),
+      ]);
+      userDocExists = userDocSnap.exists();
+    } catch (fetchErr) {
+      console.warn('[PulseSync CloudSync] Fast getDoc timed out or offline, relying on IndexedDB cache & real-time streams:', fetchErr);
+      userDocExists = true; // Attempt download/merge from cache
+    }
+
+    if (!userDocExists) {
       // First-time cloud account: upload local data to cloud (Zero Data Loss Migration)
       console.log('[PulseSync CloudSync] First-time cloud account detected. Migrating local data to cloud...');
       await uploadFullLocalStateToCloud(user.uid);
     } else {
-      // Existing cloud account: pull cloud data down to local
-      console.log('[PulseSync CloudSync] Existing cloud account found. Pulling down cloud state...');
+      // Existing cloud account: pull cloud data down and merge
+      console.log('[PulseSync CloudSync] Existing cloud account found. Pulling down and merging cloud state...');
       await downloadCloudStateToLocal(user.uid);
     }
 
     lastSyncedAt = new Date();
     emitStatus('synced');
 
-    // Subscribe to real-time remote updates
+    // Subscribe to real-time remote updates with metadata tracking
     const unsubUser = onSnapshot(
       userDocRef,
+      { includeMetadataChanges: true },
       (snapshot) => {
         if (!snapshot.exists() || isApplyingRemoteUpdate) return;
+        if (!snapshot.metadata.hasPendingWrites) {
+          lastSyncedAt = new Date();
+          emitStatus('synced');
+        }
         const data = snapshot.data();
         if (data.profiles && Array.isArray(data.profiles)) {
           isApplyingRemoteUpdate = true;
@@ -102,7 +176,7 @@ export async function initializeUserCloudSync(user: AuthUser): Promise<void> {
       },
       (err) => {
         console.warn('[PulseSync CloudSync] Snapshot listener error:', err);
-        emitStatus('error');
+        emitStatus('offline');
       }
     );
     activeUnsubscribes.push(unsubUser);
@@ -110,22 +184,35 @@ export async function initializeUserCloudSync(user: AuthUser): Promise<void> {
     const partitionsColRef = collection(db, 'users', user.uid, 'partitions');
     const unsubPartitions = onSnapshot(
       partitionsColRef,
+      { includeMetadataChanges: true },
       (querySnap) => {
-        if (querySnap.empty || isApplyingRemoteUpdate) return;
+        if (isApplyingRemoteUpdate) return;
+        if (!querySnap.metadata.hasPendingWrites) {
+          lastSyncedAt = new Date();
+          emitStatus('synced');
+        }
+        if (querySnap.empty) return;
+
         isApplyingRemoteUpdate = true;
         try {
           querySnap.docChanges().forEach((change) => {
             if (change.type === 'added' || change.type === 'modified') {
               const pId = change.doc.id;
               const pData = change.doc.data();
-              if (pData.workouts) StorageService.saveWorkouts(pData.workouts, pId);
+              if (pData.workouts) {
+                const localW = StorageService.getWorkouts(pId);
+                const mergedW = mergeWorkouts(localW, pData.workouts);
+                StorageService.saveWorkouts(mergedW, pId);
+              }
               if (pData.defaults) StorageService.saveStickyDefaults(pData.defaults, pId);
               if (pData.focus) StorageService.saveFocusData(pData.focus, pId);
-              if (pData.habits) StorageService.saveHabitsData(pData.habits, pId);
+              if (pData.habits) {
+                const localH = StorageService.getHabitsData(pId);
+                const mergedH = mergeHabitsData(localH, pData.habits);
+                StorageService.saveHabitsData(mergedH, pId);
+              }
             }
           });
-          lastSyncedAt = new Date();
-          emitStatus('synced');
           window.dispatchEvent(new CustomEvent('pulsesync_cloud_sync_updated'));
         } finally {
           isApplyingRemoteUpdate = false;
@@ -229,10 +316,18 @@ export async function downloadCloudStateToLocal(uid: string): Promise<void> {
       const pDocSnap = await getDoc(pDocRef);
       if (pDocSnap.exists()) {
         const pData = pDocSnap.data();
-        if (pData.workouts) StorageService.saveWorkouts(pData.workouts, pId);
+        if (pData.workouts) {
+          const localW = StorageService.getWorkouts(pId);
+          const mergedW = mergeWorkouts(localW, pData.workouts);
+          StorageService.saveWorkouts(mergedW, pId);
+        }
         if (pData.defaults) StorageService.saveStickyDefaults(pData.defaults, pId);
         if (pData.focus) StorageService.saveFocusData(pData.focus, pId);
-        if (pData.habits) StorageService.saveHabitsData(pData.habits, pId);
+        if (pData.habits) {
+          const localH = StorageService.getHabitsData(pId);
+          const mergedH = mergeHabitsData(localH, pData.habits);
+          StorageService.saveHabitsData(mergedH, pId);
+        }
       }
     }
     window.dispatchEvent(new CustomEvent('pulsesync_cloud_sync_updated'));
