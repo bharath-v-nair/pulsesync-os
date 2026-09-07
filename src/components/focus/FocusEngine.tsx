@@ -126,9 +126,87 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
     new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
   // ----------------------------------------------------
+  // Timer Tick Engine & Shared Accrual Buffer
+  // ----------------------------------------------------
+  const FLUSH_INTERVAL_SEC = 60;
+
+  const focusDataRef = useRef(focusData);
+  focusDataRef.current = focusData;
+
+  const pendingSecRef = useRef(0);
+  const lastTickRef = useRef<number>(Date.now());
+  const warnedRef = useRef(false);
+  const [displayRemaining, setDisplayRemaining] = useState<number | null>(null);
+
+  // Applies buffered seconds to root state in a SINGLE write.
+  const flushAccrual = () => {
+    const pending = Math.floor(pendingSecRef.current);
+    if (pending <= 0) return;
+    pendingSecRef.current = 0;
+
+    const fd = focusDataRef.current;
+    const ts = fd.timerState || defaultTimerState;
+    const now = Date.now();
+    const newRemaining = Math.max(0, ts.remainingSeconds - pending);
+
+    // ACCRUE BUFFERED TIME TO BOUND TASK:
+    let updatedTasks = fd.tasks;
+    if (ts.boundTaskId && ts.boundTaskId !== 'AZURE_AI_PRACTICE') {
+      updatedTasks = fd.tasks.map((task) => {
+        if (task.id === ts.boundTaskId) {
+          const updatedActiveSec = (task.activeSeconds || 0) + pending;
+          return {
+            ...task,
+            activeSeconds: updatedActiveSec,
+            durationMinutes: Math.max(1, Math.round(updatedActiveSec / 60)),
+          };
+        }
+        return task;
+      });
+    }
+
+    // Update current session receipt duration
+    const updatedCurrentSession = fd.currentSession
+      ? {
+          ...fd.currentSession,
+          durationSeconds: fd.currentSession.durationSeconds + pending,
+          durationMinutes: Math.round((fd.currentSession.durationSeconds + pending) / 60),
+        }
+      : null;
+
+    const nextData: FocusData = {
+      ...fd,
+      tasks: updatedTasks,
+      currentSession: updatedCurrentSession,
+      stats: {
+        ...fd.stats,
+        totalStudySeconds: fd.stats.totalStudySeconds + pending,
+      },
+      timerState: {
+        ...ts,
+        remainingSeconds: newRemaining,
+        lastTickTimestamp: now,
+        warningTriggered: warnedRef.current || ts.warningTriggered,
+      },
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
+    setDisplayRemaining(newRemaining);
+  };
+  const flushRef = useRef(flushAccrual);
+  flushRef.current = flushAccrual;
+
+  // ----------------------------------------------------
   // Timer Actions
   // ----------------------------------------------------
   const handleSelectPreset = (preset: any) => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    pendingSecRef.current = 0;
+    setDisplayRemaining(null);
+
     const configured = focusConfig?.timerPresets?.find((p) => p.id === preset);
     let secs = configured ? configured.studyMinutes * 60 : 50 * 60;
     if (!configured) {
@@ -146,16 +224,27 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       isRunning: false,
       startTimestamp: null,
       endTimestamp: null,
+      lastTickTimestamp: null,
       warningTriggered: false,
     };
 
-    onUpdateFocusData({
+    const nextData: FocusData = {
       ...focusData,
+      currentSession: null,
       timerState: updatedTimer,
-    });
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
   };
 
   const handleBindTask = (taskId: string) => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    pendingSecRef.current = 0;
+    setDisplayRemaining(null);
+
     const now = Date.now();
     let newSessions = [...focusData.sessions];
     let updatedTasks = [...focusData.tasks];
@@ -216,24 +305,28 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       warningTriggered: false,
     };
 
-    onUpdateFocusData({
+    const nextData: FocusData = {
       ...focusData,
       tasks: updatedTasks,
       sessions: newSessions,
       azureMinutes: newAzureMinutes,
       currentSession: null,
       timerState: updatedTimer,
-    });
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
   };
 
   const handleUnbindTask = () => {
-    onUpdateFocusData({
+    const nextData: FocusData = {
       ...focusData,
       timerState: {
         ...timerState,
         boundTaskId: null,
       },
-    });
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
   };
 
   const handleStartTimer = () => {
@@ -261,6 +354,11 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
         : t
     );
 
+    // Reset pending tick accumulator and align wall-clock anchor
+    pendingSecRef.current = 0;
+    lastTickRef.current = now;
+    setDisplayRemaining(timerState.remainingSeconds);
+
     // Create active session receipt
     const newCurrentSession: FocusSession = {
       id: `sess_${now}_${Math.random().toString(36).substring(2, 7)}`,
@@ -280,7 +378,7 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       durationSeconds: 0,
     };
 
-    onUpdateFocusData({
+    const nextData: FocusData = {
       ...focusData,
       tasks: updatedTasks,
       currentSession: newCurrentSession,
@@ -292,109 +390,57 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
         endTimestamp: now + timerState.remainingSeconds * 1000,
         lastTickTimestamp: now,
       },
-    });
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
   };
 
   const handlePauseTimer = () => {
     if (!timerState.isRunning && !focusData.currentSession) return;
 
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+
     const now = Date.now();
+    const unbufferedSec = (timerState.isRunning && lastTickRef.current)
+      ? Math.max(0, Math.floor((now - lastTickRef.current) / 1000))
+      : 0;
+    const pending = Math.floor(pendingSecRef.current + unbufferedSec);
+    pendingSecRef.current = 0;
+    lastTickRef.current = now;
+
+    const newRemaining = Math.max(0, timerState.remainingSeconds - pending);
+    setDisplayRemaining(newRemaining);
+
     let newSessions = [...focusData.sessions];
     let azureMinutesToAdd = 0;
 
     // Finalize current session receipt if it ran for at least 5 seconds
     if (focusData.currentSession) {
-      const durationSec = Math.max(
-        5,
-        Math.floor((now - focusData.currentSession.startTimestamp) / 1000)
-      );
-
-      const durationMinutes = Math.max(1, Math.round(durationSec / 60));
-
-      const finalized: FocusSession = {
-        ...focusData.currentSession,
-        endTimestamp: now,
-        endTimeFormatted: format12h(now),
-        durationSeconds: durationSec,
-        durationMinutes,
-      };
-
-      newSessions.unshift(finalized);
-
-      if (focusData.currentSession.bucket === 'azure' && durationMinutes > 0) {
-        azureMinutesToAdd = durationMinutes;
+      const actualDurationSec = Math.floor((now - focusData.currentSession.startTimestamp) / 1000);
+      if (actualDurationSec >= 5) {
+        const durationMinutes = Math.max(1, Math.round(actualDurationSec / 60));
+        const finalized: FocusSession = {
+          ...focusData.currentSession,
+          endTimestamp: now,
+          endTimeFormatted: format12h(now),
+          durationSeconds: actualDurationSec,
+          durationMinutes,
+        };
+        newSessions.unshift(finalized);
+        if (focusData.currentSession.bucket === 'azure' && durationMinutes > 0) {
+          azureMinutesToAdd = durationMinutes;
+        }
       }
     }
 
-    onUpdateFocusData({
-      ...focusData,
-      azureMinutes: (focusData.azureMinutes || 0) + azureMinutesToAdd,
-      sessions: newSessions,
-      currentSession: null,
-      timerState: {
-        ...timerState,
-        isRunning: false,
-        startTimestamp: null,
-        endTimestamp: null,
-        lastTickTimestamp: null,
-      },
-    });
-  };
-
-  const handleResetTimer = () => {
-    handlePauseTimer();
-    onUpdateFocusData({
-      ...focusData,
-      currentSession: null,
-      timerState: {
-        ...timerState,
-        isRunning: false,
-        remainingSeconds: timerState.totalSeconds,
-        warningTriggered: false,
-        startTimestamp: null,
-        endTimestamp: null,
-        lastTickTimestamp: null,
-      },
-    });
-  };
-
-  // ----------------------------------------------------
-  // Timer Tick Engine — throttled persistence (Stabilization)
-  // ----------------------------------------------------
-  // Per-second ticks update LOCAL display state only. Accrued study seconds
-  // buffer in `pendingSecRef` and flush to root state (=> localStorage) once
-  // per FLUSH_INTERVAL_SEC, on pause/stop/complete, on timer-identity change,
-  // on tab-hide, and on unmount. Previously each 1s tick rewrote the entire
-  // FocusData blob to disk (~3,000 writes per 50m session).
-  const FLUSH_INTERVAL_SEC = 60;
-
-  const focusDataRef = useRef(focusData);
-  const pendingSecRef = useRef(0);
-  const lastTickRef = useRef<number>(Date.now());
-  const warnedRef = useRef(false);
-  const [displayRemaining, setDisplayRemaining] = useState<number | null>(null);
-
-  // Keep the latest snapshot reachable from the stable 1s interval.
-  useEffect(() => {
-    focusDataRef.current = focusData;
-  });
-
-  // Applies buffered seconds to root state in a SINGLE write.
-  const flushAccrual = () => {
-    const pending = Math.floor(pendingSecRef.current);
-    if (pending <= 0) return;
-    pendingSecRef.current = 0;
-
-    const fd = focusDataRef.current;
-    const ts = fd.timerState || defaultTimerState;
-    const now = Date.now();
-    const newRemaining = Math.max(0, ts.remainingSeconds - pending);
-
-    // ACCRUE BUFFERED TIME TO BOUND TASK:
-    let updatedTasks = fd.tasks;
-    if (ts.boundTaskId && ts.boundTaskId !== 'AZURE_AI_PRACTICE') {
-      updatedTasks = fd.tasks.map((task) => {
-        if (task.id === ts.boundTaskId) {
+    // Accrue buffered time to bound task:
+    let updatedTasks = focusData.tasks;
+    if (pending > 0 && timerState.boundTaskId && timerState.boundTaskId !== 'AZURE_AI_PRACTICE') {
+      updatedTasks = focusData.tasks.map((task) => {
+        if (task.id === timerState.boundTaskId) {
           const updatedActiveSec = (task.activeSeconds || 0) + pending;
           return {
             ...task,
@@ -406,34 +452,103 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       });
     }
 
-    // Update current session receipt duration
-    const updatedCurrentSession = fd.currentSession
-      ? {
-          ...fd.currentSession,
-          durationSeconds: fd.currentSession.durationSeconds + pending,
-          durationMinutes: Math.round((fd.currentSession.durationSeconds + pending) / 60),
-        }
-      : null;
-
-    onUpdateFocusData({
-      ...fd,
+    const nextData: FocusData = {
+      ...focusData,
+      azureMinutes: (focusData.azureMinutes || 0) + azureMinutesToAdd,
+      sessions: newSessions,
       tasks: updatedTasks,
-      currentSession: updatedCurrentSession,
+      currentSession: null,
       stats: {
-        ...fd.stats,
-        totalStudySeconds: fd.stats.totalStudySeconds + pending,
+        ...focusData.stats,
+        totalStudySeconds: focusData.stats.totalStudySeconds + pending,
       },
       timerState: {
-        ...ts,
+        ...timerState,
         remainingSeconds: newRemaining,
-        lastTickTimestamp: now,
-        warningTriggered: warnedRef.current || ts.warningTriggered,
+        isRunning: false,
+        startTimestamp: null,
+        endTimestamp: null,
+        lastTickTimestamp: null,
       },
-    });
-    setDisplayRemaining(newRemaining);
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
   };
-  const flushRef = useRef(flushAccrual);
-  flushRef.current = flushAccrual;
+
+  const handleResetTimer = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+
+    const now = Date.now();
+    let newSessions = [...focusData.sessions];
+    let azureMinutesToAdd = 0;
+
+    const unbufferedSec = (timerState.isRunning && lastTickRef.current)
+      ? Math.max(0, Math.floor((now - lastTickRef.current) / 1000))
+      : 0;
+    const pending = Math.floor(pendingSecRef.current + unbufferedSec);
+    pendingSecRef.current = 0;
+    lastTickRef.current = now;
+
+    if (focusData.currentSession) {
+      const actualDurationSec = Math.floor((now - focusData.currentSession.startTimestamp) / 1000);
+      if (actualDurationSec >= 5) {
+        const durationMinutes = Math.max(1, Math.round(actualDurationSec / 60));
+        newSessions.unshift({
+          ...focusData.currentSession,
+          endTimestamp: now,
+          endTimeFormatted: format12h(now),
+          durationSeconds: actualDurationSec,
+          durationMinutes,
+        });
+        if (focusData.currentSession.bucket === 'azure' && durationMinutes > 0) {
+          azureMinutesToAdd = durationMinutes;
+        }
+      }
+    }
+
+    let updatedTasks = focusData.tasks;
+    if (pending > 0 && timerState.boundTaskId && timerState.boundTaskId !== 'AZURE_AI_PRACTICE') {
+      updatedTasks = focusData.tasks.map((task) => {
+        if (task.id === timerState.boundTaskId) {
+          const updatedActiveSec = (task.activeSeconds || 0) + pending;
+          return {
+            ...task,
+            activeSeconds: updatedActiveSec,
+            durationMinutes: Math.max(1, Math.round(updatedActiveSec / 60)),
+          };
+        }
+        return task;
+      });
+    }
+
+    setDisplayRemaining(null);
+
+    const nextData: FocusData = {
+      ...focusData,
+      tasks: updatedTasks,
+      sessions: newSessions,
+      azureMinutes: (focusData.azureMinutes || 0) + azureMinutesToAdd,
+      currentSession: null,
+      stats: {
+        ...focusData.stats,
+        totalStudySeconds: focusData.stats.totalStudySeconds + pending,
+      },
+      timerState: {
+        ...timerState,
+        isRunning: false,
+        remainingSeconds: timerState.totalSeconds,
+        warningTriggered: false,
+        startTimestamp: null,
+        endTimestamp: null,
+        lastTickTimestamp: null,
+      },
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
+  };
 
   // Latest pause handler for the completion path (render-scoped by necessity).
   const pauseRef = useRef(handlePauseTimer);
@@ -448,7 +563,6 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
-      setDisplayRemaining(null);
       return;
     }
 
@@ -480,11 +594,10 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
         triggerHaptic(30);
       }
 
-      // Session complete: flush the buffer, then finalize via wall-clock pause
+      // Session complete: finalize via wall-clock pause
       if (newDisplay <= 0) {
         playFeynmanChime();
         triggerHaptic(50);
-        flushRef.current();
         pauseRef.current();
         return;
       }
@@ -502,9 +615,7 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
     };
   }, [timerState.isRunning, timerState.boundTaskId]);
 
-  // Flush buffered seconds before timer identity changes (preset switch, task
-  // bind/unbind, pause/stop, complete), on tab-hide, and on unmount. The flush
-  // targets the LATEST snapshot via refs, so it never clobbers fresh updates.
+  // Flush buffered seconds on tab-hide or component unmount.
   useEffect(() => {
     const onHidden = () => {
       if (document.visibilityState === 'hidden') {
@@ -516,7 +627,7 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       document.removeEventListener('visibilitychange', onHidden);
       flushRef.current();
     };
-  }, [timerState.isRunning, timerState.boundTaskId, timerState.totalSeconds]);
+  }, []);
 
   // ----------------------------------------------------
   // Task Actions
@@ -566,6 +677,12 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
     // If bound task is completed, unbind and stop timer
     let updatedTimerState = { ...timerState };
     if (timerState.boundTaskId === id) {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      pendingSecRef.current = 0;
+      setDisplayRemaining(null);
       updatedTimerState.boundTaskId = null;
       updatedTimerState.isRunning = false;
       updatedTimerState.remainingSeconds = timerState.totalSeconds;
@@ -574,7 +691,7 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       updatedTimerState.lastTickTimestamp = null;
     }
 
-    onUpdateFocusData({
+    const nextData: FocusData = {
       ...focusData,
       tasks: updatedTasks,
       sessions: newSessions,
@@ -584,10 +701,19 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
         ...focusData.stats,
         completedQuestions: updatedTasks.filter((t) => t.completed && t.bucket !== 'azure').length,
       },
-    });
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
   };
 
   const handleCompleteAzurePractice = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    pendingSecRef.current = 0;
+    setDisplayRemaining(null);
+
     const now = Date.now();
     let newSessions = [...focusData.sessions];
 
@@ -619,7 +745,7 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
         0
       );
 
-    onUpdateFocusData({
+    const nextData: FocusData = {
       ...focusData,
       azureMinutes: newAzureMinutes,
       sessions: newSessions,
@@ -634,7 +760,9 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
         lastTickTimestamp: null,
         warningTriggered: false,
       },
-    });
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
   };
 
   const handleUpdateCompletedTask = (updatedTask: FocusTask) => {
@@ -757,9 +885,17 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
   };
 
   const handleStartAzureTimer = (title?: string, description?: string) => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
     const now = Date.now();
     const fortyFiveMinutes = 45 * 60;
     const cleanTitle = title?.trim() || 'Azure AI Deliberate Practice';
+
+    pendingSecRef.current = 0;
+    lastTickRef.current = now;
+    setDisplayRemaining(fortyFiveMinutes);
 
     const newCurrentSession: FocusSession = {
       id: `sess_az_${now}_${Math.random().toString(36).substring(2, 7)}`,
@@ -790,11 +926,13 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       warningTriggered: false,
     };
 
-    onUpdateFocusData({
+    const nextData: FocusData = {
       ...focusData,
       currentSession: newCurrentSession,
       timerState: updatedTimer,
-    });
+    };
+    focusDataRef.current = nextData;
+    onUpdateFocusData(nextData);
 
     // Smoothly scroll to the Feynman Timer card so the user sees it running immediately
     setTimeout(() => {
