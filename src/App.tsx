@@ -10,6 +10,7 @@ import {
   UserProfile
 } from './types';
 import { StorageService, getTodayDateStr, formatTime } from './services/storage';
+import { rolloverHabitsForNewDay } from './utils/habitsSync';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { SidebarDrawer } from './components/layout/SidebarDrawer';
@@ -66,11 +67,58 @@ export const App: React.FC = () => {
   const [activeProfile, setActiveProfile] = useState<UserProfile>(() => StorageService.getActiveProfile());
 
   // App Domain State
+  const [todayDateStr, setTodayDateStr] = useState<string>(() => getTodayDateStr());
   const [selectedDate, setSelectedDate] = useState<string>(() => getTodayDateStr());
   const [workouts, setWorkouts] = useState<WorkoutLog[]>(() => StorageService.getWorkouts());
   const [stickyDefaults, setStickyDefaults] = useState<StickyDefaults>(() => StorageService.getStickyDefaults());
   const [focusData, setFocusData] = useState<FocusData>(() => StorageService.getFocusData());
   const [habitsData, setHabitsData] = useState<HabitsData>(() => StorageService.getHabitsData());
+
+  // Automated Day-Rollover Heartbeat (Every 30s + On Tab Wakeup)
+  useEffect(() => {
+    const checkRollover = () => {
+      const nowStr = getTodayDateStr();
+      if (nowStr !== todayDateStr) {
+        setTodayDateStr(nowStr);
+        setSelectedDate((prev) => (prev === todayDateStr ? nowStr : prev));
+
+        // 1. Roll over HabitsData (archives yesterday, resets today)
+        setHabitsData((prevHabits) => {
+          const rolled = rolloverHabitsForNewDay(prevHabits, nowStr, prevHabits.lastActiveDate || todayDateStr);
+          StorageService.saveHabitsData(rolled);
+          return rolled;
+        });
+
+        // 2. Roll over FocusData (preserves running timer, resets daily counts)
+        setFocusData((prevFocus) => {
+          const rolled: FocusData = {
+            ...prevFocus,
+            jobAppsCount: prevFocus.dailyHistory?.[nowStr]?.jobApps ?? 0,
+            stats: {
+              ...prevFocus.stats,
+              dsaSolvedToday: 0,
+            },
+            lastActiveDate: nowStr,
+          };
+          StorageService.saveFocusData(rolled);
+          return rolled;
+        });
+      }
+    };
+
+    const timer = setInterval(checkRollover, 30000);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkRollover();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [todayDateStr]);
 
   // Profile Management Handlers
   const handleSwitchProfile = (profileId: string) => {
@@ -329,7 +377,6 @@ export const App: React.FC = () => {
   };
 
   // Move tab is 100% dedicated to TODAY's live execution
-  const todayDateStr = getTodayDateStr();
   const todayMoveLogs = workouts.filter((w) => !w.dateStr || w.dateStr === todayDateStr);
 
   return (
@@ -343,6 +390,8 @@ export const App: React.FC = () => {
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenAuth={() => setIsAuthModalOpen(true)}
           activeProfile={activeProfile}
+          currentDateStr={todayDateStr}
+          selectedDate={selectedDate}
         />
 
         {/* View Router */}

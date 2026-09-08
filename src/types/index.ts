@@ -147,6 +147,7 @@ export interface FocusData {
     completedQuestions: number;
     dsaSolvedToday: number;
   };
+  lastActiveDate?: string;
 }
 
 // ==========================================
@@ -276,6 +277,7 @@ export interface HabitsData {
   reading: ReadingState;
   keystones: KeystonesState;
   dailyRecords: Record<string, DailyHabitRecord>;
+  lastActiveDate?: string;
 }
 
 // ==========================================

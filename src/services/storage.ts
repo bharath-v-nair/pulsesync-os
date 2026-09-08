@@ -21,6 +21,7 @@ import {
   DEFAULT_FOCUS_CONFIG,
   DEFAULT_HABITS_CONFIG,
 } from '../types/index.ts';
+import { rolloverHabitsForNewDay } from '../utils/habitsSync.ts';
 
 export const STORAGE_KEYS = {
   // Legacy global keys (v4)
@@ -418,6 +419,7 @@ export function migrateHabitsData(raw: any): HabitsData {
     reading,
     keystones,
     dailyRecords,
+    lastActiveDate: typeof raw.lastActiveDate === 'string' ? raw.lastActiveDate : undefined,
   };
 }
 
@@ -694,27 +696,54 @@ export const StorageService = {
           localStorage.setItem(pKey, data);
         }
       }
-      if (!data) return JSON.parse(JSON.stringify(DEFAULT_FOCUS));
+      if (!data) {
+        const fresh = JSON.parse(JSON.stringify(DEFAULT_FOCUS));
+        fresh.lastActiveDate = getTodayDateStr();
+        return fresh;
+      }
       const parsed = JSON.parse(data);
+      let base: FocusData;
       if (!parsed.tasks || parsed.tasks.length <= 7 || !parsed.tasks[0]?.bucket) {
-        return {
+        base = {
           ...JSON.parse(JSON.stringify(DEFAULT_FOCUS)),
           ...parsed,
           tasks: JSON.parse(JSON.stringify(DEFAULT_FOCUS.tasks)),
         };
+      } else {
+        base = { ...JSON.parse(JSON.stringify(DEFAULT_FOCUS)), ...parsed };
       }
-      return { ...JSON.parse(JSON.stringify(DEFAULT_FOCUS)), ...parsed };
+
+      const todayStr = getTodayDateStr();
+      if (!base.lastActiveDate) {
+        base.lastActiveDate = todayStr;
+        return base;
+      }
+      if (base.lastActiveDate !== todayStr) {
+        return {
+          ...base,
+          jobAppsCount: base.dailyHistory?.[todayStr]?.jobApps ?? 0,
+          stats: {
+            ...base.stats,
+            dsaSolvedToday: 0,
+          },
+          lastActiveDate: todayStr,
+        };
+      }
+      return base;
     } catch {
-      return JSON.parse(JSON.stringify(DEFAULT_FOCUS));
+      const fallback = JSON.parse(JSON.stringify(DEFAULT_FOCUS));
+      fallback.lastActiveDate = getTodayDateStr();
+      return fallback;
     }
   },
 
   saveFocusData(data: FocusData, profileId?: string): void {
     try {
       const targetId = profileId || this.getActiveProfileId();
-      localStorage.setItem(getPartitionKey(targetId, 'focus'), JSON.stringify(data));
+      const withDate = { ...data, lastActiveDate: data.lastActiveDate || getTodayDateStr() };
+      localStorage.setItem(getPartitionKey(targetId, 'focus'), JSON.stringify(withDate));
       if (targetId === DEFAULT_USER_PROFILE.id) {
-        localStorage.setItem(STORAGE_KEYS.FOCUS, JSON.stringify(data));
+        localStorage.setItem(STORAGE_KEYS.FOCUS, JSON.stringify(withDate));
       }
       notifyMutation(targetId, 'focus');
     } catch (e) {
@@ -733,21 +762,37 @@ export const StorageService = {
           localStorage.setItem(pKey, data);
         }
       }
-      if (!data) return JSON.parse(JSON.stringify(DEFAULT_HABITS));
+      if (!data) {
+        const fresh = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+        fresh.lastActiveDate = getTodayDateStr();
+        return fresh;
+      }
       const parsed = JSON.parse(data);
-      return migrateHabitsData(parsed);
+      const migrated = migrateHabitsData(parsed);
+      const todayStr = getTodayDateStr();
+      if (!migrated.lastActiveDate) {
+        migrated.lastActiveDate = todayStr;
+        return migrated;
+      }
+      if (migrated.lastActiveDate !== todayStr) {
+        return rolloverHabitsForNewDay(migrated, todayStr, migrated.lastActiveDate);
+      }
+      return migrated;
     } catch (e) {
       console.error('Failed to parse habits from localStorage, falling back to default', e);
-      return JSON.parse(JSON.stringify(DEFAULT_HABITS));
+      const fallback = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+      fallback.lastActiveDate = getTodayDateStr();
+      return fallback;
     }
   },
 
   saveHabitsData(data: HabitsData, profileId?: string): void {
     try {
       const targetId = profileId || this.getActiveProfileId();
-      localStorage.setItem(getPartitionKey(targetId, 'habits'), JSON.stringify(data));
+      const withDate = { ...data, lastActiveDate: data.lastActiveDate || getTodayDateStr() };
+      localStorage.setItem(getPartitionKey(targetId, 'habits'), JSON.stringify(withDate));
       if (targetId === DEFAULT_USER_PROFILE.id) {
-        localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(data));
+        localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(withDate));
       }
       notifyMutation(targetId, 'habits');
     } catch (e) {

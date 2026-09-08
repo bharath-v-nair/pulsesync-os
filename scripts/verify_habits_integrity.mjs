@@ -60,6 +60,7 @@ import {
   isCleanDay,
   syncTodayCockpitToDailyRecords,
   applyDailyRecordUpdateWithSync,
+  rolloverHabitsForNewDay,
 } from '../src/utils/habitsSync.ts';
 
 // ANSI Styling
@@ -1315,6 +1316,61 @@ suite('Tier 3: Biphasic & Multi-Session Sleep Calculation & Sync Integrity', () 
   assertEquals(edited.sleep.sleepDurationHours, 9.0, 'Day Ledger edit propagates combined hours to live today sleep');
   assertEquals(edited.sleep.sessions?.length, 2, 'Day Ledger edit propagates sessions to live today sleep');
   assertEquals(edited.sleep.sleepDebtHours, -1.0, 'Day Ledger edit derives surplus vs 8.0h target');
+});
+
+// --- Feature 22: Automated Daily Rollover Engine ---
+suite('Tier 3 - Feature 22: Automated Daily Rollover & Rehydration', () => {
+  const yesterdayHabits = {
+    hydration: { currentMl: 3500, targetMl: 3500, quickAdds: [250, 500], lastLoggedAt: '2026-09-07T21:00:00Z' },
+    sleep: { bedtimeRaw: '23:30', wakeupRaw: '07:30', sleepDuration: '8h 00m', sleepDurationHours: 8.0, isOptimal: true, sunlightDone: true, targetHours: 8.0 },
+    detox: { cleanDays: 5, tierName: 'Disciplined', cleanDiet: true, zeroDoomscroll: true, dailySupplements: true, bedMade: true },
+    reading: { activeBookId: 'book_1', books: [{ id: 'book_1', title: 'DDIA', totalPages: 500, currentPage: 100 }], startPage: 80, endPage: 100, pagesReadToday: 20, timerSeconds: 1200, isTimerRunning: false, targetPagesPerDay: 20 },
+    keystones: { cleanDiet: true, zeroDoomscroll: true, dailySupplements: true, bedMade: true, roomReset: true },
+    dailyRecords: {},
+    lastActiveDate: '2026-09-07',
+  };
+
+  // 1. Rollover to new day with NO prior record (clean slate)
+  const rolledOver = rolloverHabitsForNewDay(yesterdayHabits, '2026-09-08');
+
+  // Verify Zero-Loss Archiving of yesterday:
+  assert(Boolean(rolledOver.dailyRecords['2026-09-07']), 'Yesterday is safely archived in dailyRecords');
+  assertEquals(rolledOver.dailyRecords['2026-09-07'].hydrationMl, 3500, 'Archived yesterday hydration is 3500ml');
+  assertEquals(rolledOver.dailyRecords['2026-09-07'].cleanDay, true, 'Archived yesterday cleanDay is true');
+  assertEquals(rolledOver.dailyRecords['2026-09-07'].pagesRead, 20, 'Archived yesterday pagesRead is 20');
+
+  // Verify Fresh Slate for today:
+  assertEquals(rolledOver.hydration.currentMl, 0, 'Today hydration starts at 0ml');
+  assertEquals(rolledOver.hydration.targetMl, 3500, 'Target hydration is preserved at 3500ml');
+  assertEquals(rolledOver.keystones.cleanDiet, false, 'Today cleanDiet resets to false');
+  assertEquals(rolledOver.keystones.bedMade, false, 'Today bedMade resets to false');
+  assertEquals(rolledOver.keystones.dailySupplements, false, 'Today dailySupplements resets to false');
+  assertEquals(rolledOver.keystones.zeroDoomscroll, false, 'Today zeroDoomscroll resets to false');
+  assertEquals(rolledOver.reading.pagesReadToday, 0, 'Today pagesReadToday resets to 0');
+  assertEquals(rolledOver.sleep.sunlightDone, false, 'Today sunlightDone resets to false');
+  assertEquals(rolledOver.lastActiveDate, '2026-09-08', 'lastActiveDate advanced to 2026-09-08');
+
+  // 2. Rollover when today ALREADY has a record (rehydration)
+  const partiallyLoggedToday = {
+    ...rolledOver,
+    dailyRecords: {
+      ...rolledOver.dailyRecords,
+      '2026-09-08': {
+        hydrationMl: 1500,
+        hydrationTargetMl: 3500,
+        cleanDiet: true,
+        zeroDoomscroll: true,
+        dailySupplements: false,
+        bedMade: true,
+        pagesRead: 15,
+      },
+    },
+  };
+  const rehydrated = rolloverHabitsForNewDay(partiallyLoggedToday, '2026-09-08');
+  assertEquals(rehydrated.hydration.currentMl, 1500, 'Rehydration restores today existing 1500ml water');
+  assertEquals(rehydrated.keystones.cleanDiet, true, 'Rehydration restores today cleanDiet true');
+  assertEquals(rehydrated.keystones.dailySupplements, false, 'Rehydration restores today dailySupplements false');
+  assertEquals(rehydrated.reading.pagesReadToday, 15, 'Rehydration restores today 15 pages read');
 });
 
 // ============================================================================

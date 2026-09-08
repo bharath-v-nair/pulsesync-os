@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   FocusData,
   FocusTask,
@@ -1008,6 +1008,21 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       ? { ...timerState, remainingSeconds: displayRemaining }
       : timerState;
 
+  // Today's actual study seconds (sum of sessions for today + unbuffered running seconds)
+  const todayStudySeconds = useMemo(() => {
+    const sessionSecs = focusData.sessions
+      .filter((s) => s.dateStr === todayStr)
+      .reduce(
+        (sum, s) =>
+          sum + (s.durationSeconds || (s.durationMinutes ? s.durationMinutes * 60 : 0)),
+        0
+      );
+    const activeSecs = timerState.isRunning && focusData.currentSession
+      ? Math.floor(pendingSecRef.current)
+      : 0;
+    return sessionSecs + activeSecs;
+  }, [focusData.sessions, todayStr, timerState.isRunning, focusData.currentSession]);
+
   return (
     <div className="space-y-4 pb-6">
       {/* ZONE 1: Day Navigation Bar */}
@@ -1041,7 +1056,7 @@ export const FocusEngine: React.FC<FocusEngineProps> = ({
       {/* ZONE 3: Consolidated Daily Progress Card */}
       <TodayFocusProgressCard
         tasks={currentDayTasks}
-        totalStudySeconds={focusData.stats.totalStudySeconds}
+        totalStudySeconds={todayStudySeconds}
         targetHours={focusConfig?.dailyStudyTargetHours ?? 5.5}
       />
 

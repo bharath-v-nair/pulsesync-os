@@ -158,6 +158,7 @@ export function syncTodayCockpitToDailyRecords(
       bedMade: habits.keystones?.bedMade ?? false,
     },
     dailyRecords: newDailyRecords,
+    lastActiveDate: todayStr,
   };
 }
 
@@ -296,6 +297,7 @@ export function applyDailyRecordUpdateWithSync(
     reading: updatedReading,
     detox: updatedDetox,
     dailyRecords: updatedDailyRecords,
+    lastActiveDate: isToday ? todayStr : habits.lastActiveDate,
   };
 }
 
@@ -359,6 +361,7 @@ export function deepMigrateHabitsData(raw: any, defaultSeed: HabitsData): Habits
     reading,
     keystones,
     dailyRecords,
+    lastActiveDate: typeof raw.lastActiveDate === 'string' ? raw.lastActiveDate : undefined,
   };
 }
 
@@ -424,3 +427,157 @@ export function getHabitRecordForDate(
   }
   return null;
 }
+
+/**
+ * CONTRACT F: Day Rollover & Cockpit Rehydration Engine.
+ * Safely archives previous day's live cockpit state into habits.dailyRecords[prevDateStr]
+ * and initializes habits state for newDateStr:
+ * - If habits.dailyRecords[newDateStr] already exists (e.g. user previously logged for today):
+ *   Hydrates the live cockpit with today's existing values.
+ * - If habits.dailyRecords[newDateStr] does NOT exist:
+ *   Resets hydration.currentMl = 0, resets keystones to false, resets pagesReadToday = 0,
+ *   resets sleep.sunlightDone = false, removes multi-sessions, preserves calibrated targets.
+ * Updates consecutive streak ending on newDateStr and marks lastActiveDate.
+ */
+export function rolloverHabitsForNewDay(
+  habits: HabitsData,
+  newDateStr: string,
+  prevDateStr?: string
+): HabitsData {
+  if (!habits) return habits;
+
+  // Determine the previous date to archive from: explicit prevDateStr or habits.lastActiveDate
+  const archiveDate = prevDateStr || habits.lastActiveDate;
+  let updatedDailyRecords = { ...(habits.dailyRecords || {}) };
+
+  // Step 1: Zero-loss archiving for the previous date (if valid and different from newDateStr)
+  if (archiveDate && archiveDate !== newDateStr) {
+    const existingArchive = updatedDailyRecords[archiveDate] || {};
+    const archivedClean = isCleanDay(habits.keystones);
+    const multiSessions = habits.sleep?.sessions;
+    let sleepDur = habits.sleep?.sleepDuration;
+    let sleepDurHours = habits.sleep?.sleepDurationHours;
+
+    if (multiSessions && multiSessions.length > 0) {
+      const multi = calculateMultiSessionSleep(multiSessions);
+      sleepDur = multi.totalFormatted;
+      sleepDurHours = multi.totalHours;
+    } else if (!sleepDur || sleepDurHours === undefined) {
+      const calc = calculateSleepDuration(habits.sleep?.bedtimeRaw, habits.sleep?.wakeupRaw);
+      sleepDur = calc.durationFormatted;
+      sleepDurHours = calc.durationHours;
+    }
+
+    updatedDailyRecords[archiveDate] = {
+      ...existingArchive,
+      bedtimeRaw: habits.sleep?.bedtimeRaw ?? existingArchive.bedtimeRaw ?? '23:15',
+      wakeupRaw: habits.sleep?.wakeupRaw ?? existingArchive.wakeupRaw ?? '07:15',
+      sleepDuration: sleepDur ?? existingArchive.sleepDuration ?? '8h 00m',
+      sleepDurationHours: sleepDurHours ?? existingArchive.sleepDurationHours ?? 8.0,
+      sleepSessions: multiSessions ?? existingArchive.sleepSessions,
+      sunlightDone: habits.sleep?.sunlightDone ?? existingArchive.sunlightDone ?? false,
+      hydrationMl: habits.hydration?.currentMl ?? existingArchive.hydrationMl ?? 0,
+      hydrationTargetMl: habits.hydration?.targetMl ?? existingArchive.hydrationTargetMl ?? 3500,
+      cleanDiet: habits.keystones?.cleanDiet ?? existingArchive.cleanDiet ?? false,
+      zeroDoomscroll: habits.keystones?.zeroDoomscroll ?? existingArchive.zeroDoomscroll ?? false,
+      dailySupplements: habits.keystones?.dailySupplements ?? existingArchive.dailySupplements ?? false,
+      bedMade: habits.keystones?.bedMade ?? existingArchive.bedMade ?? false,
+      roomReset: habits.keystones?.roomReset ?? existingArchive.roomReset ?? false,
+      cleanDay: existingArchive.cleanDay !== undefined ? existingArchive.cleanDay : archivedClean,
+      pagesRead: habits.reading?.pagesReadToday ?? existingArchive.pagesRead ?? 0,
+      loggedAt: existingArchive.loggedAt || new Date().toISOString(),
+    };
+  }
+
+  // Step 2: Hydrate or reset for newDateStr
+  const todayRecord = updatedDailyRecords[newDateStr];
+
+  let newHydration: HydrationRecord;
+  let newKeystones: KeystonesState;
+  let newReading: ReadingState;
+  let newSleep: SleepRecord;
+
+  if (todayRecord) {
+    // Re-hydrate live cockpit from today's existing record
+    newHydration = {
+      ...habits.hydration,
+      currentMl: todayRecord.hydrationMl ?? 0,
+      targetMl: todayRecord.hydrationTargetMl ?? habits.hydration?.targetMl ?? 3500,
+    };
+    newKeystones = {
+      cleanDiet: todayRecord.cleanDiet ?? false,
+      zeroDoomscroll: todayRecord.zeroDoomscroll ?? false,
+      dailySupplements: todayRecord.dailySupplements ?? false,
+      bedMade: todayRecord.bedMade ?? false,
+      roomReset: todayRecord.roomReset ?? false,
+    };
+    newReading = {
+      ...habits.reading,
+      pagesReadToday: todayRecord.pagesRead ?? 0,
+    };
+    newSleep = {
+      ...habits.sleep,
+      bedtimeRaw: todayRecord.bedtimeRaw ?? habits.sleep?.bedtimeRaw ?? '23:15',
+      wakeupRaw: todayRecord.wakeupRaw ?? habits.sleep?.wakeupRaw ?? '07:15',
+      sleepDuration: todayRecord.sleepDuration ?? habits.sleep?.sleepDuration ?? '8h 00m',
+      sleepDurationHours: todayRecord.sleepDurationHours ?? habits.sleep?.sleepDurationHours ?? 8.0,
+      sunlightDone: todayRecord.sunlightDone ?? false,
+      sessions: todayRecord.sleepSessions,
+    };
+  } else {
+    // Fresh slate for newDateStr
+    newHydration = {
+      ...habits.hydration,
+      currentMl: 0,
+      lastLoggedAt: undefined,
+    };
+    newKeystones = {
+      cleanDiet: false,
+      zeroDoomscroll: false,
+      dailySupplements: false,
+      bedMade: false,
+      roomReset: false,
+    };
+    newReading = {
+      ...habits.reading,
+      pagesReadToday: 0,
+      isTimerRunning: false,
+      timerSeconds: 20 * 60,
+    };
+    newSleep = {
+      ...habits.sleep,
+      sunlightDone: false,
+      sessions: undefined, // collapse secondary biphasic session
+      sleepDuration: '8h 00m',
+      sleepDurationHours: habits.sleep?.targetHours || 8.0,
+      sleepDebtHours: 0,
+      isOptimal: true,
+    };
+  }
+
+  // Step 3: Recalculate streak & tier based on newDateStr
+  const streak = calculateConsecutiveCleanDays(updatedDailyRecords, newDateStr);
+  const tier = getCleanDayTier(streak);
+
+  const newDetox: DetoxState = {
+    ...habits.detox,
+    cleanDays: streak,
+    tierName: tier,
+    cleanDiet: newKeystones.cleanDiet,
+    zeroDoomscroll: newKeystones.zeroDoomscroll,
+    dailySupplements: newKeystones.dailySupplements,
+    bedMade: newKeystones.bedMade,
+  };
+
+  return {
+    ...habits,
+    hydration: newHydration,
+    keystones: newKeystones,
+    reading: newReading,
+    sleep: newSleep,
+    detox: newDetox,
+    dailyRecords: updatedDailyRecords,
+    lastActiveDate: newDateStr,
+  };
+}
+

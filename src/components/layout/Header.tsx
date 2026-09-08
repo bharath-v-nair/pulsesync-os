@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Activity, BarChart2, Cloud } from 'lucide-react';
+import { Menu, Activity, BarChart2, Calendar } from 'lucide-react';
 import { ActiveView, UserProfile } from '../../types';
 
 interface HeaderProps {
@@ -9,15 +9,34 @@ interface HeaderProps {
   onOpenSettings?: () => void;
   onOpenAuth?: () => void;
   activeProfile?: UserProfile;
+  currentDateStr?: string;
+  selectedDate?: string;
+}
+
+export function formatHeaderDate(dateStr: string): string {
+  try {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    if (!y || !m || !d) return dateStr;
+    const date = new Date(y, m - 1, d);
+    const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    return `${day}, ${d} ${month}`; // e.g. "Tue, 8 Sep"
+  } catch {
+    return dateStr;
+  }
 }
 
 export const Header: React.FC<HeaderProps> = ({
   activeView,
   onToggleOverview,
   onOpenSidebar,
-  onOpenAuth,
+  currentDateStr,
+  selectedDate,
 }) => {
   const isOverviewActive = activeView === 'overview';
+  const effectiveDate = selectedDate || currentDateStr || new Date().toISOString().slice(0, 10);
+  const isPastDay = Boolean(selectedDate && currentDateStr && selectedDate !== currentDateStr);
+  const formattedDate = formatHeaderDate(effectiveDate);
 
   return (
     <header className="flex items-center justify-between py-3.5 border-b border-white/[0.07] mb-4 gap-2">
@@ -45,18 +64,19 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right: Cloud Sync & Overview Toggle */}
+      {/* Right: Active Date Pill & Overview Toggle */}
       <div className="flex items-center gap-2 shrink-0">
-        {onOpenAuth && (
-          <button
-            onClick={onOpenAuth}
-            className="spring-btn p-2 rounded-xl bg-[#141b29] border border-white/10 text-sky-400 hover:border-sky-500/30 tap-target shrink-0 flex items-center justify-center"
-            aria-label="Cloud Sync & Devices"
-            title="Cloud Sync & Devices"
-          >
-            <Cloud className="w-4 h-4" />
-          </button>
-        )}
+        <div
+          className={`px-2.5 py-1.5 rounded-xl border flex items-center gap-1.5 font-mono text-xs transition-colors shrink-0 ${
+            isPastDay
+              ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+              : 'bg-[#141b29] border-white/10 text-slate-300'
+          }`}
+          title={isPastDay ? `Viewing Past Day: ${effectiveDate}` : `Active Logging Date: ${effectiveDate}`}
+        >
+          <Calendar className={`w-3.5 h-3.5 shrink-0 ${isPastDay ? 'text-amber-400' : 'text-sky-400'}`} />
+          <span className="font-semibold tracking-tight">{formattedDate}</span>
+        </div>
 
         <button
           onClick={onToggleOverview}
@@ -74,3 +94,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+
