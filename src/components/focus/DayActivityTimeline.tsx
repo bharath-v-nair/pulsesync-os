@@ -41,27 +41,70 @@ export const DayActivityTimeline: React.FC<DayActivityTimelineProps> = ({
   const intervals: TimelineInterval[] = [];
 
   // 1. SLEEP TRACK
-  let bedtime = '23:15';
-  let wakeup = '07:15';
-  if (habits.dailyRecords && habits.dailyRecords[selectedDate]?.sleepDuration) {
-    bedtime = habits.dailyRecords[selectedDate].bedtimeRaw || bedtime;
-    wakeup = habits.dailyRecords[selectedDate].wakeupRaw || wakeup;
-  } else if (isToday && habits.sleep) {
-    bedtime = habits.sleep.bedtimeRaw || bedtime;
-    wakeup = habits.sleep.wakeupRaw || wakeup;
-  }
+  const rawSleepSessions = habits.dailyRecords?.[selectedDate]?.sleepSessions ||
+    (isToday && habits.sleep?.sessions ? habits.sleep.sessions : undefined);
 
-  // Calculate morning sleep (from 00:00 to wakeup)
-  const [wH, wM] = wakeup.split(':').map(Number);
-  const wakeMinutes = wH * 60 + wM;
-  if (wakeMinutes > 0) {
-    intervals.push({
-      track: 'Sleep',
-      label: `Sleep & Recovery (${(wakeMinutes / 60).toFixed(1)}h)`,
-      startMinutes: 0,
-      endMinutes: Math.min(1440, wakeMinutes),
-      color: '#818cf8',
+  if (Array.isArray(rawSleepSessions) && rawSleepSessions.length > 1) {
+    rawSleepSessions.forEach((sess, idx) => {
+      const [bH, bM] = (sess.bedtimeRaw || '23:15').split(':').map(Number);
+      const [wH, wM] = (sess.wakeupRaw || '07:15').split(':').map(Number);
+      const bMins = (bH || 0) * 60 + (bM || 0);
+      const wMins = (wH || 0) * 60 + (wM || 0);
+
+      if (wMins > bMins) {
+        // Same-day daytime or morning sleep (e.g. 11:00 to 16:00)
+        intervals.push({
+          track: 'Sleep',
+          label: `${sess.label || (idx === 0 ? 'Primary Sleep' : '2nd Sleep / Nap')} (${sess.durationFormatted || ((wMins - bMins) / 60).toFixed(1) + 'h'})`,
+          startMinutes: Math.max(0, bMins),
+          endMinutes: Math.min(1440, wMins),
+          color: idx === 0 ? '#818cf8' : '#a5b4fc',
+        });
+      } else {
+        // Cross-midnight sleep (e.g. 23:00 to 03:00)
+        if (wMins > 0) {
+          intervals.push({
+            track: 'Sleep',
+            label: `${sess.label || 'Night Sleep'} (${(wMins / 60).toFixed(1)}h)`,
+            startMinutes: 0,
+            endMinutes: Math.min(1440, wMins),
+            color: '#818cf8',
+          });
+        }
+        if (bMins < 1440) {
+          intervals.push({
+            track: 'Sleep',
+            label: `Evening Sleep (${((1440 - bMins) / 60).toFixed(1)}h)`,
+            startMinutes: Math.max(0, bMins),
+            endMinutes: 1440,
+            color: '#818cf8',
+          });
+        }
+      }
     });
+  } else {
+    let bedtime = '23:15';
+    let wakeup = '07:15';
+    if (habits.dailyRecords && habits.dailyRecords[selectedDate]?.sleepDuration) {
+      bedtime = habits.dailyRecords[selectedDate].bedtimeRaw || bedtime;
+      wakeup = habits.dailyRecords[selectedDate].wakeupRaw || wakeup;
+    } else if (isToday && habits.sleep) {
+      bedtime = habits.sleep.bedtimeRaw || bedtime;
+      wakeup = habits.sleep.wakeupRaw || wakeup;
+    }
+
+    // Calculate morning sleep (from 00:00 to wakeup)
+    const [wH, wM] = wakeup.split(':').map(Number);
+    const wakeMinutes = (wH || 0) * 60 + (wM || 0);
+    if (wakeMinutes > 0) {
+      intervals.push({
+        track: 'Sleep',
+        label: `Sleep & Recovery (${(wakeMinutes / 60).toFixed(1)}h)`,
+        startMinutes: 0,
+        endMinutes: Math.min(1440, wakeMinutes),
+        color: '#818cf8',
+      });
+    }
   }
 
   // 2. FOCUS TRACK

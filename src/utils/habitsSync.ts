@@ -7,6 +7,7 @@ import type {
   DetoxState, 
   ReadingState 
 } from '../types';
+import { calculateMultiSessionSleep } from './habitsMath.ts';
 
 /**
  * Computes cross-midnight duration between bedtime and wakeup timestamps in 24h format.
@@ -96,15 +97,34 @@ export function syncTodayCockpitToDailyRecords(
   todayStr: string
 ): HabitsData {
   const existingRecord = habits.dailyRecords?.[todayStr] || {};
-  const sleepCalc = calculateSleepDuration(habits.sleep?.bedtimeRaw, habits.sleep?.wakeupRaw);
+  
+  let sleepDuration = habits.sleep?.sleepDuration;
+  let sleepDurationHours = habits.sleep?.sleepDurationHours;
+  let bedtimeRaw = habits.sleep?.bedtimeRaw ?? existingRecord.bedtimeRaw;
+  let wakeupRaw = habits.sleep?.wakeupRaw ?? existingRecord.wakeupRaw;
+  const sessions = habits.sleep?.sessions;
+
+  if (sessions && sessions.length > 0) {
+    const multi = calculateMultiSessionSleep(sessions);
+    sleepDuration = multi.totalFormatted;
+    sleepDurationHours = multi.totalHours;
+    bedtimeRaw = sessions[0].bedtimeRaw;
+    wakeupRaw = sessions[0].wakeupRaw;
+  } else if (!sleepDuration || sleepDurationHours === undefined) {
+    const sleepCalc = calculateSleepDuration(habits.sleep?.bedtimeRaw, habits.sleep?.wakeupRaw);
+    sleepDuration = habits.sleep?.sleepDuration || sleepCalc.durationFormatted;
+    sleepDurationHours = habits.sleep?.sleepDurationHours ?? sleepCalc.durationHours;
+  }
+
   const cleanDay = isCleanDay(habits.keystones);
 
   const updatedTodayRecord: DailyHabitRecord = {
     ...existingRecord,
-    bedtimeRaw: habits.sleep?.bedtimeRaw ?? existingRecord.bedtimeRaw,
-    wakeupRaw: habits.sleep?.wakeupRaw ?? existingRecord.wakeupRaw,
-    sleepDuration: habits.sleep?.sleepDuration || sleepCalc.durationFormatted,
-    sleepDurationHours: habits.sleep?.sleepDurationHours ?? sleepCalc.durationHours,
+    bedtimeRaw,
+    wakeupRaw,
+    sleepDuration,
+    sleepDurationHours,
+    sleepSessions: sessions ?? existingRecord.sleepSessions,
     sunlightDone: habits.sleep?.sunlightDone ?? existingRecord.sunlightDone ?? false,
     hydrationMl: habits.hydration?.currentMl ?? existingRecord.hydrationMl ?? 0,
     hydrationTargetMl: habits.hydration?.targetMl ?? existingRecord.hydrationTargetMl ?? 3500,
@@ -155,10 +175,21 @@ export function applyDailyRecordUpdateWithSync(
   const isToday = dateStr === todayStr;
   const existingRecord = habits.dailyRecords?.[dateStr] || {};
 
-  // Recompute sleep duration if bedtime/wakeup updated without duration string
+  // Recompute sleep duration if bedtime/wakeup updated without duration string or if sleepSessions provided
   let sleepDuration = updates.sleepDuration ?? existingRecord.sleepDuration;
   let sleepDurationHours = updates.sleepDurationHours ?? existingRecord.sleepDurationHours;
-  if ((updates.bedtimeRaw || updates.wakeupRaw) && !updates.sleepDuration) {
+  let sleepSessions = updates.sleepSessions !== undefined ? updates.sleepSessions : existingRecord.sleepSessions;
+  let bedtimeRaw = updates.bedtimeRaw ?? existingRecord.bedtimeRaw;
+  let wakeupRaw = updates.wakeupRaw ?? existingRecord.wakeupRaw;
+
+  if (updates.sleepSessions !== undefined && updates.sleepSessions.length > 0) {
+    const multi = calculateMultiSessionSleep(updates.sleepSessions);
+    sleepDuration = multi.totalFormatted;
+    sleepDurationHours = multi.totalHours;
+    bedtimeRaw = updates.sleepSessions[0].bedtimeRaw;
+    wakeupRaw = updates.sleepSessions[0].wakeupRaw;
+    sleepSessions = multi.sessions;
+  } else if ((updates.bedtimeRaw || updates.wakeupRaw) && !updates.sleepDuration) {
     const calc = calculateSleepDuration(
       updates.bedtimeRaw ?? existingRecord.bedtimeRaw ?? '23:15',
       updates.wakeupRaw ?? existingRecord.wakeupRaw ?? '07:15'
@@ -182,8 +213,11 @@ export function applyDailyRecordUpdateWithSync(
   const updatedRecord: DailyHabitRecord = {
     ...existingRecord,
     ...updates,
+    bedtimeRaw,
+    wakeupRaw,
     sleepDuration,
     sleepDurationHours,
+    sleepSessions,
     cleanDay: computedCleanDay,
     loggedAt: updates.loggedAt ?? new Date().toISOString(),
   };
@@ -209,16 +243,17 @@ export function applyDailyRecordUpdateWithSync(
 
   if (isToday) {
     // Atomically propagate to live cockpit
-    if (updates.bedtimeRaw !== undefined || updates.wakeupRaw !== undefined || updates.sleepDuration !== undefined || updates.sunlightDone !== undefined) {
+    if (updates.bedtimeRaw !== undefined || updates.wakeupRaw !== undefined || updates.sleepDuration !== undefined || updates.sunlightDone !== undefined || updates.sleepSessions !== undefined) {
       updatedSleep = {
         ...habits.sleep,
-        bedtimeRaw: updates.bedtimeRaw ?? habits.sleep.bedtimeRaw,
-        wakeupRaw: updates.wakeupRaw ?? habits.sleep.wakeupRaw,
+        bedtimeRaw: bedtimeRaw ?? habits.sleep.bedtimeRaw,
+        wakeupRaw: wakeupRaw ?? habits.sleep.wakeupRaw,
         sleepDuration: sleepDuration ?? habits.sleep.sleepDuration,
         sleepDurationHours: sleepDurationHours ?? habits.sleep.sleepDurationHours,
         sunlightDone: updates.sunlightDone ?? habits.sleep.sunlightDone,
         isOptimal: (sleepDurationHours ?? 8.0) >= 7.5 && (sleepDurationHours ?? 8.0) <= 8.5,
         sleepDebtHours: Math.round(((habits.sleep.targetHours || 8.0) - (sleepDurationHours ?? 8.0)) * 100) / 100,
+        sessions: sleepSessions ?? habits.sleep.sessions,
       };
     }
 
@@ -278,6 +313,7 @@ export function deepMigrateHabitsData(raw: any, defaultSeed: HabitsData): Habits
     targetHours: raw.sleep?.targetHours ?? defaultSeed.sleep.targetHours ?? 8.0,
     isOptimal: raw.sleep?.isOptimal ?? defaultSeed.sleep.isOptimal ?? true,
     sunlightDone: raw.sleep?.sunlightDone ?? defaultSeed.sleep.sunlightDone ?? false,
+    sessions: Array.isArray(raw.sleep?.sessions) ? raw.sleep.sessions : defaultSeed.sleep.sessions,
   };
 
   const hydration: HydrationRecord = {
@@ -373,6 +409,7 @@ export function getHabitRecordForDate(
       sleepDuration: habits.sleep?.sleepDuration ?? '8h 00m',
       bedtimeRaw: habits.sleep?.bedtimeRaw ?? '23:15',
       wakeupRaw: habits.sleep?.wakeupRaw ?? '07:15',
+      sleepSessions: habits.sleep?.sessions,
       sunlightDone: habits.sleep?.sunlightDone ?? false,
       hydrationMl: habits.hydration?.currentMl ?? 0,
       hydrationTargetMl: habits.hydration?.targetMl ?? 3500,

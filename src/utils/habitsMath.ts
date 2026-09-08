@@ -13,7 +13,7 @@
  * ============================================================================
  */
 
-import type { DailyHabitRecord } from '../types';
+import type { DailyHabitRecord, SleepSession } from '../types';
 
 // ============================================================================
 // CONSTANTS & CANONICAL BENCHMARKS
@@ -210,6 +210,93 @@ export function parseSleepDuration(formatted?: string | null): number {
  */
 export function isSleepOptimal(durationHours?: number | null): boolean {
   return typeof durationHours === 'number' && !isNaN(durationHours) && durationHours >= 7.5 && durationHours <= 8.5;
+}
+
+export interface MultiSessionSleepResult {
+  totalMinutes: number;
+  totalHours: number;
+  totalFormatted: string;
+  isOptimal: boolean;
+  sessions: SleepSession[];
+}
+
+/**
+ * Computes individual session durations and composite total duration for multi-session / biphasic sleep.
+ */
+export function calculateMultiSessionSleep(
+  rawSessions: Array<{ id?: string; bedtimeRaw: string; wakeupRaw: string; label?: string }>
+): MultiSessionSleepResult {
+  if (!rawSessions || rawSessions.length === 0) {
+    return {
+      totalMinutes: 0,
+      totalHours: 0.0,
+      totalFormatted: '0h 00m',
+      isOptimal: false,
+      sessions: [],
+    };
+  }
+
+  let totalMinutes = 0;
+  const sessions: SleepSession[] = rawSessions.map((s, idx) => {
+    const calc = calculateSleepDuration(s.bedtimeRaw, s.wakeupRaw);
+    totalMinutes += calc.durationMinutes;
+    return {
+      id: s.id || `sess_${idx + 1}`,
+      bedtimeRaw: s.bedtimeRaw,
+      wakeupRaw: s.wakeupRaw,
+      durationHours: calc.durationHours,
+      durationFormatted: calc.durationFormatted,
+      label: s.label || (idx === 0 ? 'Primary Sleep' : 'Second Sleep / Nap'),
+    };
+  });
+
+  const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  const totalFormatted = `${h}h ${String(m).padStart(2, '0')}m`;
+  const isOptimal = isSleepOptimal(totalHours);
+
+  return {
+    totalMinutes,
+    totalHours,
+    totalFormatted,
+    isOptimal,
+    sessions,
+  };
+}
+
+/**
+ * Safely extracts sleep sessions from a habit record or synthesizes a single primary session.
+ */
+export function getNormalizedSleepSessions(
+  record?: {
+    bedtimeRaw?: string | null;
+    wakeupRaw?: string | null;
+    sleepDuration?: string | null;
+    sleepDurationHours?: number | null;
+    sessions?: SleepSession[] | null;
+    sleepSessions?: SleepSession[] | null;
+  } | null
+): SleepSession[] {
+  if (!record) return [];
+  const list = record.sessions || record.sleepSessions;
+  if (Array.isArray(list) && list.length > 0) {
+    return list;
+  }
+  if (record.bedtimeRaw && record.wakeupRaw) {
+    const calc = calculateSleepDuration(record.bedtimeRaw, record.wakeupRaw);
+    return [
+      {
+        id: 'primary',
+        bedtimeRaw: record.bedtimeRaw,
+        wakeupRaw: record.wakeupRaw,
+        durationHours: record.sleepDurationHours ?? calc.durationHours,
+        durationFormatted: record.sleepDuration ?? calc.durationFormatted,
+        label: 'Primary Sleep',
+      },
+    ];
+  }
+  return [];
 }
 
 /**

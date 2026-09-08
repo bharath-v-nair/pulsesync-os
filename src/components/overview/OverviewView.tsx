@@ -847,6 +847,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             initialSleepDurationHours={record?.sleepDurationHours ?? habits.sleep.sleepDurationHours}
             initialBedtime={record?.bedtimeRaw || habits.sleep.bedtimeRaw}
             initialWakeup={record?.wakeupRaw || habits.sleep.wakeupRaw}
+            initialSleepSessions={record?.sleepSessions || (selectedDate === getTodayDateStr() ? habits.sleep?.sessions : undefined)}
             initialSunlightDone={record?.sunlightDone ?? habits.sleep.sunlightDone}
             initialHydrationMl={record?.hydrationMl ?? habits.hydration?.currentMl ?? 3500}
             initialPagesRead={record?.pagesRead ?? habits.reading.pagesReadToday}

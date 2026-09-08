@@ -116,6 +116,7 @@ export const DayLedgerFeed: React.FC<DayLedgerFeedProps> = ({
   const sleepHoursDisplay = habitRecord?.sleepDurationHours ?? (isToday ? habits.sleep.sleepDurationHours : 8.0);
   const bedtimeDisplay = habitRecord?.bedtimeRaw || (isToday ? habits.sleep.bedtimeRaw : null);
   const wakeupDisplay = habitRecord?.wakeupRaw || (isToday ? habits.sleep.wakeupRaw : null);
+  const sleepSessions = habitRecord?.sleepSessions || (isToday ? habits.sleep?.sessions : undefined);
   const sunlightDisplay = habitRecord?.sunlightDone ?? (isToday ? habits.sleep.sunlightDone : false);
   const hydrationDisplay = habitRecord?.hydrationMl ?? (isToday ? habits.hydration?.currentMl : 3500);
   const cleanDayStatus = habitRecord?.cleanDay ?? (isToday ? (habits.keystones?.cleanDiet && habits.keystones?.zeroDoomscroll && habits.keystones?.dailySupplements && habits.keystones?.bedMade) : null);
@@ -514,8 +515,12 @@ export const DayLedgerFeed: React.FC<DayLedgerFeedProps> = ({
                     {sleepDisplay || `${sleepHoursDisplay.toFixed(1)}h`}
                   </span>
                   <div className="flex items-center justify-between text-[9px] text-slate-400 pt-0.5">
-                    <span>{bedtimeDisplay && wakeupDisplay ? `${bedtimeDisplay} - ${wakeupDisplay}` : '8h Base'}</span>
-                    {sunlightDisplay && <span className="text-amber-400 font-semibold flex items-center gap-0.5"><Sun className="w-2.5 h-2.5" /> Sun</span>}
+                    <span className="truncate max-w-[120px]">
+                      {sleepSessions && sleepSessions.length > 1
+                        ? sleepSessions.map((s) => `${s.bedtimeRaw}-${s.wakeupRaw}`).join(' + ')
+                        : (bedtimeDisplay && wakeupDisplay ? `${bedtimeDisplay} - ${wakeupDisplay}` : '8h Base')}
+                    </span>
+                    {sunlightDisplay && <span className="text-amber-400 font-semibold flex items-center gap-0.5 shrink-0 ml-1"><Sun className="w-2.5 h-2.5" /> Sun</span>}
                   </div>
                 </div>
 

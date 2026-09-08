@@ -23,6 +23,15 @@ interface SleepDayPoint {
   wakeupHourDecimal: number;  // 0 to 24
   status: 'optimal' | 'delayed' | 'shifted' | 'short';
   isSevereShift: boolean;
+  sessions?: Array<{
+    bedtimeRaw: string;
+    wakeupRaw: string;
+    durationHours: number;
+    durationFormatted: string;
+    bedtimeHourDecimal: number;
+    wakeupHourDecimal: number;
+    label?: string;
+  }>;
 }
 
 export const SleepTelemetryChart: React.FC<SleepTelemetryChartProps> = ({
@@ -73,11 +82,27 @@ export const SleepTelemetryChart: React.FC<SleepTelemetryChartProps> = ({
     const isToday = dateStr === todayStr;
     const dayHabit = habits.dailyRecords?.[dateStr];
 
-    let bedtimeRaw = dayHabit?.bedtimeRaw || (isToday ? habits.sleep?.bedtimeRaw : undefined) || '23:30';
-    let wakeupRaw = dayHabit?.wakeupRaw || (isToday ? habits.sleep?.wakeupRaw : undefined) || '07:30';
+    const rawSessions = dayHabit?.sleepSessions || (isToday && habits.sleep?.sessions ? habits.sleep.sessions : undefined);
+    let sessions: SleepDayPoint['sessions'] = undefined;
+    if (Array.isArray(rawSessions) && rawSessions.length > 1) {
+      sessions = rawSessions.map((s) => ({
+        bedtimeRaw: s.bedtimeRaw,
+        wakeupRaw: s.wakeupRaw,
+        durationHours: s.durationHours,
+        durationFormatted: s.durationFormatted,
+        bedtimeHourDecimal: parseHourDecimal(s.bedtimeRaw),
+        wakeupHourDecimal: parseHourDecimal(s.wakeupRaw),
+        label: s.label,
+      }));
+    }
+
+    let bedtimeRaw = sessions && sessions.length > 0 ? sessions[0].bedtimeRaw : (dayHabit?.bedtimeRaw || (isToday ? habits.sleep?.bedtimeRaw : undefined) || '23:30');
+    let wakeupRaw = sessions && sessions.length > 0 ? sessions[0].wakeupRaw : (dayHabit?.wakeupRaw || (isToday ? habits.sleep?.wakeupRaw : undefined) || '07:30');
     let durationHours = dayHabit?.sleepDurationHours || 8.0;
 
-    if (!dayHabit?.sleepDurationHours) {
+    if (sessions && sessions.length > 0) {
+      durationHours = sessions.reduce((acc, s) => acc + s.durationHours, 0) || durationHours;
+    } else if (!dayHabit?.sleepDurationHours) {
       if (dayHabit?.sleepDuration) {
         const m = dayHabit.sleepDuration.match(/(\d+)h\s*(\d*)m?/);
         if (m) durationHours = parseInt(m[1], 10) + (parseInt(m[2], 10) || 0) / 60;
@@ -122,6 +147,7 @@ export const SleepTelemetryChart: React.FC<SleepTelemetryChartProps> = ({
       wakeupHourDecimal,
       status,
       isSevereShift,
+      sessions,
     };
   });
 
@@ -246,7 +272,11 @@ export const SleepTelemetryChart: React.FC<SleepTelemetryChartProps> = ({
           <div className="flex items-center gap-2">
             <Clock className="w-3.5 h-3.5 text-indigo-400" />
             <span className="font-bold text-white">{hoveredDay.fullDate}</span>
-            <span className="text-slate-400">({hoveredDay.bedtimeRaw} → {hoveredDay.wakeupRaw})</span>
+            <span className="text-slate-400">
+              {hoveredDay.sessions && hoveredDay.sessions.length > 1
+                ? `(${hoveredDay.sessions.map((s) => `${s.bedtimeRaw}→${s.wakeupRaw}`).join(' + ')})`
+                : `(${hoveredDay.bedtimeRaw} → ${hoveredDay.wakeupRaw})`}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-bold text-indigo-300">{hoveredDay.durationFormatted}</span>
@@ -395,18 +425,43 @@ export const SleepTelemetryChart: React.FC<SleepTelemetryChartProps> = ({
                         />
                       )}
 
-                      {/* Floating Sleep Bar */}
-                      <rect
-                        x={x}
-                        y={topY}
-                        width={barWidth}
-                        height={barHeight}
-                        rx={barWidth / 2}
-                        fill={barFill}
-                        fillOpacity={isHovered || isSelected ? 0.95 : 0.75}
-                        stroke={isSelected ? '#38bdf8' : isHovered ? '#ffffff' : barFill}
-                        strokeWidth={isSelected ? 2 : isHovered ? 1.5 : 1}
-                      />
+                      {/* Floating Sleep Bar(s) */}
+                      {p.sessions && p.sessions.length > 1 ? (
+                        p.sessions.map((sess, sIdx) => {
+                          const sessTopY = mapHourToY(sess.bedtimeHourDecimal);
+                          let sessBottomY = mapHourToY(sess.wakeupHourDecimal);
+                          if (sessBottomY <= sessTopY) {
+                            sessBottomY = sessTopY + Math.max(8, sess.durationHours * (chartHeight / timelineTotalHours));
+                          }
+                          const sessBarHeight = Math.max(6, sessBottomY - sessTopY);
+                          return (
+                            <rect
+                              key={`${p.dateStr}_s${sIdx}`}
+                              x={x}
+                              y={sessTopY}
+                              width={barWidth}
+                              height={sessBarHeight}
+                              rx={barWidth / 2}
+                              fill={barFill}
+                              fillOpacity={isHovered || isSelected ? 0.95 : 0.75}
+                              stroke={isSelected ? '#38bdf8' : isHovered ? '#ffffff' : barFill}
+                              strokeWidth={isSelected ? 2 : isHovered ? 1.5 : 1}
+                            />
+                          );
+                        })
+                      ) : (
+                        <rect
+                          x={x}
+                          y={topY}
+                          width={barWidth}
+                          height={barHeight}
+                          rx={barWidth / 2}
+                          fill={barFill}
+                          fillOpacity={isHovered || isSelected ? 0.95 : 0.75}
+                          stroke={isSelected ? '#38bdf8' : isHovered ? '#ffffff' : barFill}
+                          strokeWidth={isSelected ? 2 : isHovered ? 1.5 : 1}
+                        />
+                      )}
 
                       {/* Day Label on X-Axis */}
                       <text

@@ -257,6 +257,7 @@ export function migrateHabitsData(raw: any): HabitsData {
     sunlightDone: Boolean(rawSleep.sunlightDone),
     sleepDebtHours,
     targetHours,
+    sessions: Array.isArray(rawSleep.sessions) ? rawSleep.sessions : undefined,
   };
 
   // 3. Keystones Migration
@@ -389,6 +390,7 @@ export function migrateHabitsData(raw: any): HabitsData {
       isOptimal: durHours >= 7.5 && durHours <= 8.5,
       sleepDebtHours: Math.max(0, Math.round((8.0 - durHours) * 100) / 100),
       sleepMinutes: typeof r.sleepMinutes === 'number' ? r.sleepMinutes : Math.round(durHours * 60),
+      sleepSessions: Array.isArray(r.sleepSessions) ? r.sleepSessions : undefined,
 
       hydrationMl: hydMl,
       hydrationCurrentMl: hydMl,

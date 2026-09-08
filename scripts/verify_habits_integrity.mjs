@@ -39,6 +39,8 @@ if (!process.execArgv.includes('--experimental-strip-types')) {
 // ============================================================================
 import {
   calculateSleepDuration,
+  calculateMultiSessionSleep,
+  getNormalizedSleepSessions,
   isSleepOptimal,
   classifyCircadianPhase,
   calculateSleepDebt,
@@ -1253,6 +1255,66 @@ suite('Tier 3 - Grounded Sync Contracts (live habitsSync cockpit <-> dailyRecord
   assertEquals(edited.dailyRecords['2026-09-04'].cleanDay, true, '3.x.6: Live Day-Ledger edit derives cleanDay on past record');
   assertEquals(edited.detox.cleanDays, 2, '3.x.7: Live Day-Ledger edit extends backward streak to 2 days');
   assertEquals(edited.hydration.currentMl, 700, '3.x.8: Past-date edit leaves live today cockpit hydration untouched');
+});
+
+suite('Tier 3: Biphasic & Multi-Session Sleep Calculation & Sync Integrity', () => {
+  // 1. Math calculation for 11pm-3am + 11am-4pm
+  const biphasic = calculateMultiSessionSleep([
+    { bedtimeRaw: '23:00', wakeupRaw: '03:00', label: 'Primary Sleep' },
+    { bedtimeRaw: '11:00', wakeupRaw: '16:00', label: 'Second Sleep / Nap' },
+  ]);
+
+  assertEquals(biphasic.totalMinutes, 540, 'Biphasic total minutes is 540m (240m + 300m)');
+  assertEquals(biphasic.totalHours, 9.0, 'Biphasic total hours is exactly 9.0h');
+  assertEquals(biphasic.totalFormatted, '9h 00m', 'Biphasic formatted string is 9h 00m');
+  assertEquals(biphasic.isOptimal, false, '9.0h exceeds Walker optimal ceiling (7.5-8.5h)');
+  assertEquals(biphasic.sessions.length, 2, 'Biphasic output preserves both sessions');
+  assertEquals(biphasic.sessions[0].durationHours, 4.0, 'Session 1 is 4.0h');
+  assertEquals(biphasic.sessions[1].durationHours, 5.0, 'Session 2 is 5.0h');
+
+  // 2. Normalized sessions extraction
+  const normalizedFromMulti = getNormalizedSleepSessions({ sessions: biphasic.sessions });
+  assertEquals(normalizedFromMulti.length, 2, 'Extracts multiple sessions when present');
+
+  const normalizedFromSingle = getNormalizedSleepSessions({ bedtimeRaw: '23:15', wakeupRaw: '07:15', sleepDurationHours: 8.0 });
+  assertEquals(normalizedFromSingle.length, 1, 'Synthesizes single session fallback');
+  assertEquals(normalizedFromSingle[0].durationHours, 8.0, 'Synthesized single session has 8.0h');
+
+  // 3. Cockpit Sync with Sessions
+  const cockpitSeed = {
+    sleep: {
+      bedtimeRaw: '23:00',
+      wakeupRaw: '03:00',
+      sleepDuration: '9h 00m',
+      sleepDurationHours: 9.0,
+      isOptimal: false,
+      sunlightDone: true,
+      targetHours: 8.0,
+      sessions: biphasic.sessions,
+    },
+    hydration: { currentMl: 3500, targetMl: 3500, quickAdds: [700] },
+    keystones: { cleanDiet: true, zeroDoomscroll: true, dailySupplements: true, bedMade: true, roomReset: true },
+    detox: { cleanDays: 5, tierName: 'Calibrated' },
+    reading: { books: [], pagesReadToday: 20, timerSeconds: 1200, isTimerRunning: false, targetPagesPerDay: 20 },
+    dailyRecords: {},
+  };
+
+  const synced = syncTodayCockpitToDailyRecords(cockpitSeed, '2026-09-08');
+  assertEquals(synced.dailyRecords['2026-09-08'].sleepDurationHours, 9.0, 'Cockpit sync saves combined 9.0h to dailyRecords');
+  assertEquals(synced.dailyRecords['2026-09-08'].sleepSessions?.length, 2, 'Cockpit sync preserves both sleep sessions in dailyRecords');
+
+  // 4. Day Ledger Edit with Sessions
+  const edited = applyDailyRecordUpdateWithSync(
+    synced,
+    '2026-09-08',
+    {
+      sleepSessions: biphasic.sessions,
+    },
+    '2026-09-08'
+  );
+  assertEquals(edited.sleep.sleepDurationHours, 9.0, 'Day Ledger edit propagates combined hours to live today sleep');
+  assertEquals(edited.sleep.sessions?.length, 2, 'Day Ledger edit propagates sessions to live today sleep');
+  assertEquals(edited.sleep.sleepDebtHours, -1.0, 'Day Ledger edit derives surplus vs 8.0h target');
 });
 
 // ============================================================================

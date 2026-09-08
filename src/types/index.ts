@@ -160,15 +160,25 @@ export interface HydrationRecord {
   lastLoggedAt?: string;    // ISO timestamp of most recent fluid entry
 }
 
+export interface SleepSession {
+  id: string;
+  bedtimeRaw: string;            // 24h format e.g. '23:00' or '11:00'
+  wakeupRaw: string;             // 24h format e.g. '03:00' or '16:00'
+  durationHours: number;         // Decimal hours e.g. 4.0 or 5.0
+  durationFormatted: string;     // Formatted string e.g. '4h 00m' or '5h 00m'
+  label?: string;                // e.g. 'Primary Sleep', 'Second Sleep / Nap'
+}
+
 export interface SleepRecord {
   bedtimeRaw: string;            // 24h format e.g. '23:15'
   wakeupRaw: string;             // 24h format e.g. '07:15'
-  sleepDuration: string;         // Formatted duration string e.g. '8h 00m'
-  sleepDurationHours: number;    // Numeric decimal hours e.g. 8.0
+  sleepDuration: string;         // Combined formatted duration string e.g. '8h 00m' or '9h 00m'
+  sleepDurationHours: number;    // Combined numeric decimal hours e.g. 8.0 or 9.0
   isOptimal: boolean;            // Matthew Walker optimal window (7.5h <= duration <= 8.5h)
   sunlightDone: boolean;         // Huberman morning sunlight anchor (10m within 30m of waking)
   sleepDebtHours?: number;       // Acute daily/accumulated sleep debt vs 8.0h baseline
   targetHours: number;           // Calibrated baseline target hours (default 8.0)
+  sessions?: SleepSession[];     // Optional segmented/biphasic sleep sessions
 }
 
 export interface KeystonesState {
@@ -230,6 +240,7 @@ export interface DailyHabitRecord {
   isOptimal?: boolean;           // Within optimal window
   sleepDebtHours?: number;       // Debt against 8.0h baseline
   sleepMinutes?: number;         // Legacy seed compatibility e.g. 380
+  sleepSessions?: SleepSession[]; // Optional segmented/biphasic sleep sessions
 
   // Fluid Dynamics Pillar
   hydrationMl?: number;          // Total ml logged for date e.g. 3500

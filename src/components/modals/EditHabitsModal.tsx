@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, ShieldCheck, Moon, Sun, Droplets, BookOpen } from 'lucide-react';
-import { DailyHabitRecord } from '../../types';
+import { X, Check, ShieldCheck, Moon, Sun, Droplets, BookOpen, Plus, Trash2 } from 'lucide-react';
+import { DailyHabitRecord, SleepSession } from '../../types';
 import { triggerHaptic } from '../../hooks/useHaptics';
+import { calculateSleepDuration, calculateMultiSessionSleep } from '../../utils/habitsMath';
 
 export interface EditHabitsModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ export interface EditHabitsModalProps {
   initialSleepDurationHours?: number;
   initialBedtime?: string;
   initialWakeup?: string;
+  initialSleepSessions?: SleepSession[];
   initialSunlightDone?: boolean;
   initialHydrationMl?: number;
   initialPagesRead?: number;
@@ -28,6 +30,7 @@ export const EditHabitsModal: React.FC<EditHabitsModalProps> = ({
   initialSleepDuration = '8h 00m',
   initialBedtime = '23:15',
   initialWakeup = '07:15',
+  initialSleepSessions,
   initialSunlightDone = false,
   initialHydrationMl = 3500,
   initialPagesRead = 20,
@@ -41,6 +44,7 @@ export const EditHabitsModal: React.FC<EditHabitsModalProps> = ({
   const [bedtime, setBedtime] = useState(initialBedtime);
   const [wakeup, setWakeup] = useState(initialWakeup);
   const [sleepDuration, setSleepDuration] = useState(initialSleepDuration);
+  const [sleepSessions, setSleepSessions] = useState<SleepSession[] | undefined>(initialSleepSessions);
   const [sunlightDone, setSunlightDone] = useState(initialSunlightDone);
   const [hydrationMl, setHydrationMl] = useState<number | ''>(initialHydrationMl);
   const [pagesRead, setPagesRead] = useState<number | ''>(initialPagesRead);
@@ -54,6 +58,7 @@ export const EditHabitsModal: React.FC<EditHabitsModalProps> = ({
       setBedtime(initialBedtime);
       setWakeup(initialWakeup);
       setSleepDuration(initialSleepDuration);
+      setSleepSessions(initialSleepSessions);
       setSunlightDone(initialSunlightDone);
       setHydrationMl(initialHydrationMl);
       setPagesRead(initialPagesRead);
@@ -67,6 +72,7 @@ export const EditHabitsModal: React.FC<EditHabitsModalProps> = ({
     initialBedtime,
     initialWakeup,
     initialSleepDuration,
+    initialSleepSessions,
     initialSunlightDone,
     initialHydrationMl,
     initialPagesRead,
@@ -90,28 +96,89 @@ export const EditHabitsModal: React.FC<EditHabitsModalProps> = ({
 
   const isCleanDayActive = cleanDiet && zeroDoomscroll && dailySupplements && bedMade;
 
+  const hasSecondSleep = Boolean(sleepSessions && sleepSessions.length > 1);
+  const s1: SleepSession = sleepSessions && sleepSessions.length > 0
+    ? sleepSessions[0]
+    : {
+        id: 'sess_1',
+        bedtimeRaw: bedtime,
+        wakeupRaw: wakeup,
+        durationHours: 0,
+        durationFormatted: '',
+        label: 'Primary Sleep',
+      };
+  const s2: SleepSession | null = hasSecondSleep ? sleepSessions![1] : null;
+
   const handleBedtimeChange = (newBedtime: string) => {
     setBedtime(newBedtime);
-    const [bH, bM] = newBedtime.split(':').map(Number);
-    const [wH, wM] = wakeup.split(':').map(Number);
-    const bMins = (bH || 0) * 60 + (bM || 0);
-    const wMins = (wH || 0) * 60 + (wM || 0);
-    const diff = wMins >= bMins ? wMins - bMins : (1440 - bMins) + wMins;
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-    setSleepDuration(`${h}h ${String(m).padStart(2, '0')}m`);
+    if (hasSecondSleep && s2) {
+      const updatedS1: SleepSession = { ...s1, bedtimeRaw: newBedtime };
+      const multi = calculateMultiSessionSleep([updatedS1, s2]);
+      setSleepDuration(multi.totalFormatted);
+      setSleepSessions(multi.sessions);
+    } else {
+      const calc = calculateSleepDuration(newBedtime, wakeup);
+      setSleepDuration(calc.durationFormatted);
+    }
   };
 
   const handleWakeupChange = (newWakeup: string) => {
     setWakeup(newWakeup);
-    const [bH, bM] = bedtime.split(':').map(Number);
-    const [wH, wM] = newWakeup.split(':').map(Number);
-    const bMins = (bH || 0) * 60 + (bM || 0);
-    const wMins = (wH || 0) * 60 + (wM || 0);
-    const diff = wMins >= bMins ? wMins - bMins : (1440 - bMins) + wMins;
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-    setSleepDuration(`${h}h ${String(m).padStart(2, '0')}m`);
+    if (hasSecondSleep && s2) {
+      const updatedS1: SleepSession = { ...s1, wakeupRaw: newWakeup };
+      const multi = calculateMultiSessionSleep([updatedS1, s2]);
+      setSleepDuration(multi.totalFormatted);
+      setSleepSessions(multi.sessions);
+    } else {
+      const calc = calculateSleepDuration(bedtime, newWakeup);
+      setSleepDuration(calc.durationFormatted);
+    }
+  };
+
+  const handleAddSecondSleep = () => {
+    triggerHaptic(15);
+    const initialS1: SleepSession = {
+      id: 'sess_1',
+      bedtimeRaw: bedtime,
+      wakeupRaw: wakeup,
+      durationHours: 0,
+      durationFormatted: '',
+      label: 'Primary Sleep',
+    };
+    const initialS2: SleepSession = {
+      id: 'sess_2',
+      bedtimeRaw: '11:00',
+      wakeupRaw: '16:00',
+      durationHours: 0,
+      durationFormatted: '',
+      label: 'Second Sleep / Nap',
+    };
+    const multi = calculateMultiSessionSleep([initialS1, initialS2]);
+    setSleepSessions(multi.sessions);
+    setSleepDuration(multi.totalFormatted);
+  };
+
+  const handleRemoveSecondSleep = () => {
+    triggerHaptic(15);
+    const calc = calculateSleepDuration(bedtime, wakeup);
+    setSleepSessions(undefined);
+    setSleepDuration(calc.durationFormatted);
+  };
+
+  const handleS2BedtimeChange = (newBedtime: string) => {
+    if (!s2) return;
+    const updatedS2: SleepSession = { ...s2, bedtimeRaw: newBedtime };
+    const multi = calculateMultiSessionSleep([s1, updatedS2]);
+    setSleepSessions(multi.sessions);
+    setSleepDuration(multi.totalFormatted);
+  };
+
+  const handleS2WakeupChange = (newWakeup: string) => {
+    if (!s2) return;
+    const updatedS2: SleepSession = { ...s2, wakeupRaw: newWakeup };
+    const multi = calculateMultiSessionSleep([s1, updatedS2]);
+    setSleepSessions(multi.sessions);
+    setSleepDuration(multi.totalFormatted);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -136,6 +203,7 @@ export const EditHabitsModal: React.FC<EditHabitsModalProps> = ({
       sleepDurationHours: sleepHours,
       bedtimeRaw: bedtime,
       wakeupRaw: wakeup,
+      sleepSessions: hasSecondSleep && sleepSessions ? sleepSessions : undefined,
       sunlightDone,
       hydrationMl: currentHydration,
       hydrationCurrentMl: currentHydration,
@@ -187,33 +255,100 @@ export const EditHabitsModal: React.FC<EditHabitsModalProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-300 font-mono">
                 <Moon className="w-3.5 h-3.5" />
-                <span>Sleep & Recovery</span>
+                <span>{hasSecondSleep ? 'Sleep & Recovery (Combined)' : 'Sleep & Recovery'}</span>
               </div>
               <span className="text-[10px] font-mono text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
                 {sleepDuration}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[10px] font-mono text-slate-400 block mb-1">Bedtime</label>
-                <input
-                  type="time"
-                  value={bedtime}
-                  onChange={(e) => handleBedtimeChange(e.target.value)}
-                  className="w-full h-10 px-2.5 rounded-lg bg-black/60 border border-white/10 text-white font-mono text-xs focus:border-indigo-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-mono text-slate-400 block mb-1">Wakeup</label>
-                <input
-                  type="time"
-                  value={wakeup}
-                  onChange={(e) => handleWakeupChange(e.target.value)}
-                  className="w-full h-10 px-2.5 rounded-lg bg-black/60 border border-white/10 text-white font-mono text-xs focus:border-indigo-400 focus:outline-none"
-                />
+            {/* Session 1 */}
+            <div className="space-y-1.5">
+              {hasSecondSleep && (
+                <div className="flex items-center justify-between px-0.5">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Session 1 (Night Sleep)</span>
+                  <span className="text-[9px] font-mono text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                    {s1.durationFormatted || calculateSleepDuration(s1.bedtimeRaw, s1.wakeupRaw).durationFormatted}
+                  </span>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-mono text-slate-400 block mb-1">Bedtime</label>
+                  <input
+                    type="time"
+                    value={bedtime}
+                    onChange={(e) => handleBedtimeChange(e.target.value)}
+                    className="w-full h-10 px-2.5 rounded-lg bg-black/60 border border-white/10 text-white font-mono text-xs focus:border-indigo-400 focus:outline-none cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono text-slate-400 block mb-1">Wakeup</label>
+                  <input
+                    type="time"
+                    value={wakeup}
+                    onChange={(e) => handleWakeupChange(e.target.value)}
+                    className="w-full h-10 px-2.5 rounded-lg bg-black/60 border border-white/10 text-white font-mono text-xs focus:border-indigo-400 focus:outline-none cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
+
+            {/* Optional Second Sleep / Nap Section */}
+            {hasSecondSleep && s2 ? (
+              <div className="p-2.5 rounded-xl bg-black/60 border border-indigo-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-wider font-semibold">
+                      Session 2 (2nd Sleep / Nap)
+                    </span>
+                    <span className="text-[9px] font-mono text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                      {s2.durationFormatted || calculateSleepDuration(s2.bedtimeRaw, s2.wakeupRaw).durationFormatted}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveSecondSleep}
+                    className="text-slate-400 hover:text-rose-400 px-1.5 py-0.5 text-[10px] font-mono flex items-center gap-1 transition-colors rounded hover:bg-rose-500/10 cursor-pointer"
+                    title="Remove 2nd sleep session"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>Remove</span>
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-mono text-slate-400 block mb-1">Bedtime</label>
+                    <input
+                      type="time"
+                      value={s2.bedtimeRaw}
+                      onChange={(e) => handleS2BedtimeChange(e.target.value)}
+                      className="w-full h-10 px-2.5 rounded-lg bg-black/80 border border-white/10 text-white font-mono text-xs focus:border-indigo-400 focus:outline-none cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono text-slate-400 block mb-1">Wakeup</label>
+                    <input
+                      type="time"
+                      value={s2.wakeupRaw}
+                      onChange={(e) => handleS2WakeupChange(e.target.value)}
+                      className="w-full h-10 px-2.5 rounded-lg bg-black/80 border border-white/10 text-white font-mono text-xs focus:border-indigo-400 focus:outline-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="pt-0.5">
+                <button
+                  type="button"
+                  onClick={handleAddSecondSleep}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-mono text-slate-400 hover:text-indigo-300 active:text-indigo-200 transition-colors py-0.5 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3 text-indigo-400" />
+                  <span>+ Add 2nd sleep / nap (biphasic)</span>
+                </button>
+              </div>
+            )}
 
             <button
               type="button"
