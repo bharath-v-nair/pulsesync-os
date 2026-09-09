@@ -1351,7 +1351,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         const bottleSize = parseInt(e.target.value, 10) || 700;
                         updateHabits({ 
                           containerMl: bottleSize,
-                          quickAddAmounts: [bottleSize, Math.round(bottleSize / 2)]
+                          quickAddAmounts: [bottleSize, 70]
                         });
                       }}
                       className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-400 tabular-nums font-bold"

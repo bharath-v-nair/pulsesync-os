@@ -101,8 +101,8 @@ export const DEFAULT_HABITS: HabitsData = {
   hydration: {
     currentMl: 0,
     targetMl: 3500,
-    quickAdds: [700, 350],
-    quickAddUnits: [700, 350],
+    quickAdds: [700, 70],
+    quickAddUnits: [700, 70],
     lastLoggedAt: undefined,
   },
   sleep: {

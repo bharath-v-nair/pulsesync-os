@@ -580,7 +580,7 @@ export const DEFAULT_HABITS_CONFIG: UserHabitsConfig = {
   sleepOptimalWindowDelta: 0.5,
   hydrationTargetMl: 3500,
   containerMl: 700,
-  quickAddAmounts: [700, 350],
+  quickAddAmounts: [700, 70],
   readingTargetPages: 20,
   keystones: [
     { id: 'cleanDiet', label: 'Clean Nutrition (Zero Junk)', isCore: true, iconName: 'Apple' },

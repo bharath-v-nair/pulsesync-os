@@ -177,11 +177,11 @@ export const HydrationCard: React.FC<HydrationCardProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => handleQuickAdd(Math.round(bottleUnit / 2))}
+          onClick={() => handleQuickAdd(70)}
           className="spring-btn min-h-[44px] px-3.5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:bg-sky-500/30 border border-sky-500/25 flex items-center justify-center gap-2 tap-target transition-all active:scale-[0.98]"
         >
           <Droplets className="w-4 h-4 text-sky-400" />
-          <span className="text-xs font-bold font-mono text-sky-200">+{Math.round(bottleUnit / 2)} ml Half</span>
+          <span className="text-xs font-bold font-mono text-sky-200">+70 ml Gulp</span>
         </button>
       </div>
 

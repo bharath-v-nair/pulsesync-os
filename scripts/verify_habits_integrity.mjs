@@ -1213,7 +1213,7 @@ suite('Tier 4 - Scenario 4.4: 90-Day Full Circadian Transformation Simulation', 
 setTier('tier3');
 suite('Tier 3 - Grounded Sync Contracts (live habitsSync cockpit <-> dailyRecords)', () => {
   const cockpitSeed = {
-    hydration: { currentMl: 700, targetMl: 3500, quickAdds: [700, 350], lastLoggedAt: undefined },
+    hydration: { currentMl: 700, targetMl: 3500, quickAdds: [700, 70], lastLoggedAt: undefined },
     sleep: {
       bedtimeRaw: '23:15', wakeupRaw: '07:15',
       sleepDuration: '8h 00m', sleepDurationHours: 8.0,

@@ -397,11 +397,11 @@ export const EditHabitsModal: React.FC<EditHabitsModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setHydrationMl((prev) => (typeof prev === 'number' ? prev + 350 : 350))}
+                onClick={() => setHydrationMl((prev) => (typeof prev === 'number' ? prev + 70 : 70))}
                 className="px-3 h-10 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 text-xs font-mono font-bold tap-target"
-                title="Add half bottle (350ml)"
+                title="Add 1 gulp (70ml)"
               >
-                +350ml
+                +70ml
               </button>
             </div>
           </div>
