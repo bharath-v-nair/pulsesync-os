@@ -124,7 +124,7 @@ export function syncTodayCockpitToDailyRecords(
     wakeupRaw,
     sleepDuration,
     sleepDurationHours,
-    sleepSessions: sessions ?? existingRecord.sleepSessions,
+    sleepSessions: sessions && sessions.length > 0 ? sessions : undefined,
     sunlightDone: habits.sleep?.sunlightDone ?? existingRecord.sunlightDone ?? false,
     hydrationMl: habits.hydration?.currentMl ?? existingRecord.hydrationMl ?? 0,
     hydrationTargetMl: habits.hydration?.targetMl ?? existingRecord.hydrationTargetMl ?? 3500,
@@ -474,7 +474,7 @@ export function rolloverHabitsForNewDay(
       wakeupRaw: habits.sleep?.wakeupRaw ?? existingArchive.wakeupRaw ?? '07:15',
       sleepDuration: sleepDur ?? existingArchive.sleepDuration ?? '8h 00m',
       sleepDurationHours: sleepDurHours ?? existingArchive.sleepDurationHours ?? 8.0,
-      sleepSessions: multiSessions ?? existingArchive.sleepSessions,
+      sleepSessions: multiSessions && multiSessions.length > 0 ? multiSessions : undefined,
       sunlightDone: habits.sleep?.sunlightDone ?? existingArchive.sunlightDone ?? false,
       hydrationMl: habits.hydration?.currentMl ?? existingArchive.hydrationMl ?? 0,
       hydrationTargetMl: habits.hydration?.targetMl ?? existingArchive.hydrationTargetMl ?? 3500,
@@ -522,7 +522,9 @@ export function rolloverHabitsForNewDay(
       sleepDuration: todayRecord.sleepDuration ?? habits.sleep?.sleepDuration ?? '8h 00m',
       sleepDurationHours: todayRecord.sleepDurationHours ?? habits.sleep?.sleepDurationHours ?? 8.0,
       sunlightDone: todayRecord.sunlightDone ?? false,
-      sessions: todayRecord.sleepSessions,
+      sessions: todayRecord.sleepSessions && todayRecord.sleepSessions.length > 0 ? todayRecord.sleepSessions : undefined,
+      isLoggedToday: Boolean(todayRecord.loggedAt || todayRecord.bedtimeRaw),
+      lastLoggedDate: newDateStr,
     };
   } else {
     // Fresh slate for newDateStr
@@ -552,6 +554,8 @@ export function rolloverHabitsForNewDay(
       sleepDurationHours: habits.sleep?.targetHours || 8.0,
       sleepDebtHours: 0,
       isOptimal: true,
+      isLoggedToday: false,
+      lastLoggedDate: undefined,
     };
   }
 

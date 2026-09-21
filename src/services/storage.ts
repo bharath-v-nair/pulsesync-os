@@ -772,10 +772,13 @@ export const StorageService = {
       const todayStr = getTodayDateStr();
       if (!migrated.lastActiveDate) {
         migrated.lastActiveDate = todayStr;
+        this.saveHabitsData(migrated, targetId);
         return migrated;
       }
       if (migrated.lastActiveDate !== todayStr) {
-        return rolloverHabitsForNewDay(migrated, todayStr, migrated.lastActiveDate);
+        const rolled = rolloverHabitsForNewDay(migrated, todayStr, migrated.lastActiveDate);
+        this.saveHabitsData(rolled, targetId);
+        return rolled;
       }
       return migrated;
     } catch (e) {

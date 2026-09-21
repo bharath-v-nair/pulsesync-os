@@ -180,6 +180,8 @@ export interface SleepRecord {
   sleepDebtHours?: number;       // Acute daily/accumulated sleep debt vs 8.0h baseline
   targetHours: number;           // Calibrated baseline target hours (default 8.0)
   sessions?: SleepSession[];     // Optional segmented/biphasic sleep sessions
+  isLoggedToday?: boolean;       // Explicit user confirmation for today
+  lastLoggedDate?: string;       // Date string (YYYY-MM-DD) when sleep was confirmed
 }
 
 export interface KeystonesState {

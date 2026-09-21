@@ -110,23 +110,43 @@ function mergeHabitsData(local: HabitsData, remote: HabitsData): HabitsData {
         mergedRecords[dateStr] = rRec;
       } else {
         const lRec = mergedRecords[dateStr];
-        mergedRecords[dateStr] = {
-          ...lRec,
-          ...rRec,
-          hydrationMl: Math.max(lRec.hydrationMl || 0, rRec.hydrationMl || 0),
-          sleepMinutes: rRec.sleepMinutes || lRec.sleepMinutes,
-        };
+        const lTime = lRec.loggedAt ? new Date(lRec.loggedAt).getTime() : 0;
+        const rTime = rRec.loggedAt ? new Date(rRec.loggedAt).getTime() : 0;
+        if (rTime > lTime) {
+          mergedRecords[dateStr] = {
+            ...lRec,
+            ...rRec,
+            hydrationMl: Math.max(lRec.hydrationMl || 0, rRec.hydrationMl || 0),
+          };
+        } else {
+          mergedRecords[dateStr] = {
+            ...rRec,
+            ...lRec,
+            hydrationMl: Math.max(lRec.hydrationMl || 0, rRec.hydrationMl || 0),
+          };
+        }
       }
     }
   }
 
+  const todayStr = getTodayDateStr();
+  const isLocalToday = local.lastActiveDate === todayStr || (local.dailyRecords && local.dailyRecords[todayStr] !== undefined);
+
   return {
     ...remote,
-    hydration: {
-      ...remote.hydration,
-      currentMl: Math.max(local.hydration?.currentMl || 0, remote.hydration?.currentMl || 0),
-    },
+    ...local,
+    hydration: isLocalToday && local.hydration
+      ? {
+          ...local.hydration,
+          currentMl: Math.max(local.hydration.currentMl || 0, remote.hydration?.currentMl || 0),
+        }
+      : (remote.hydration || local.hydration),
+    sleep: isLocalToday && local.sleep ? local.sleep : (remote.sleep || local.sleep),
+    keystones: isLocalToday && local.keystones ? local.keystones : (remote.keystones || local.keystones),
+    detox: isLocalToday && local.detox ? local.detox : (remote.detox || local.detox),
+    reading: isLocalToday && local.reading ? local.reading : (remote.reading || local.reading),
     dailyRecords: mergedRecords,
+    lastActiveDate: isLocalToday ? todayStr : (remote.lastActiveDate || local.lastActiveDate || todayStr),
   };
 }
 

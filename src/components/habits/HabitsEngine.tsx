@@ -6,7 +6,7 @@ import { DeepReadingCard } from './DeepReadingCard';
 import { KeystonesCard } from './KeystonesCard';
 import { ProtocolSidebar } from './ProtocolSidebar';
 import { syncTodayCockpitToDailyRecords } from '../../utils/habitsSync';
-import { getTodayDateStr } from '../../services/storage';
+import { StorageService, getTodayDateStr } from '../../services/storage';
 
 interface HabitsEngineProps {
   habitsData: HabitsData;
@@ -38,22 +38,30 @@ export const HabitsEngine: React.FC<HabitsEngineProps> = ({
 
   const handleUpdateHydration = (hydration: HydrationRecord) => {
     const updated = { ...habitsData, hydration };
-    onUpdateHabitsData(syncTodayCockpitToDailyRecords(updated, todayStr));
+    const synced = syncTodayCockpitToDailyRecords(updated, todayStr);
+    StorageService.saveHabitsData(synced);
+    onUpdateHabitsData(synced);
   };
 
   const handleUpdateSleep = (sleep: SleepRecord) => {
     const updated = { ...habitsData, sleep };
-    onUpdateHabitsData(syncTodayCockpitToDailyRecords(updated, todayStr));
+    const synced = syncTodayCockpitToDailyRecords(updated, todayStr);
+    StorageService.saveHabitsData(synced);
+    onUpdateHabitsData(synced);
   };
 
   const handleUpdateReading = (reading: ReadingState) => {
     const updated = { ...habitsData, reading };
-    onUpdateHabitsData(syncTodayCockpitToDailyRecords(updated, todayStr));
+    const synced = syncTodayCockpitToDailyRecords(updated, todayStr);
+    StorageService.saveHabitsData(synced);
+    onUpdateHabitsData(synced);
   };
 
   const handleUpdateKeystones = (keystones: KeystonesState) => {
     const updated = { ...habitsData, keystones };
-    onUpdateHabitsData(syncTodayCockpitToDailyRecords(updated, todayStr));
+    const synced = syncTodayCockpitToDailyRecords(updated, todayStr);
+    StorageService.saveHabitsData(synced);
+    onUpdateHabitsData(synced);
   };
 
   return (
