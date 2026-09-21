@@ -45,11 +45,12 @@ export const SleepCard: React.FC<SleepCardProps> = ({
   const [napWakeup, setNapWakeup] = useState<string>(existingSecondSession?.wakeupRaw || '14:00');
 
   useEffect(() => {
-    const has2nd = Boolean(sleep.sessions && sleep.sessions.length > 1);
-    setShowNap(has2nd);
-    if (has2nd && sleep.sessions![1]) {
-      setNapBedtime(sleep.sessions![1].bedtimeRaw);
-      setNapWakeup(sleep.sessions![1].wakeupRaw);
+    if (sleep.sessions && sleep.sessions.length > 1) {
+      setShowNap(true);
+      if (sleep.sessions[1]) {
+        setNapBedtime(sleep.sessions[1].bedtimeRaw);
+        setNapWakeup(sleep.sessions[1].wakeupRaw);
+      }
     }
   }, [sleep.sessions]);
 
