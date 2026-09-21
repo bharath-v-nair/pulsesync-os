@@ -259,6 +259,8 @@ export function migrateHabitsData(raw: any): HabitsData {
     sleepDebtHours,
     targetHours,
     sessions: Array.isArray(rawSleep.sessions) ? rawSleep.sessions : undefined,
+    isLoggedToday: Boolean(rawSleep.isLoggedToday),
+    lastLoggedDate: typeof rawSleep.lastLoggedDate === 'string' ? rawSleep.lastLoggedDate : undefined,
   };
 
   // 3. Keystones Migration
